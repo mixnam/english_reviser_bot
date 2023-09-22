@@ -18,15 +18,18 @@ export const Property = {
  * NotionDB
  */
 export class NotionDB {
+  #client;
+  #databaseID;
+
   /**
    * @param {string} secret - notion API key secret
    * @param {string} databaseID - notion database id
    */
   constructor(secret, databaseID) {
-    this.client = new Client({
+    this.#client = new Client({
       auth: secret,
     });
-    this.databaseID = databaseID;
+    this.#databaseID = databaseID;
   }
 
   /**
@@ -40,8 +43,8 @@ export class NotionDB {
     lastRevisedThreshhold.setMonth(lastRevisedThreshhold.getMonth() - 1);
 
 
-    const response = await this.client.databases.query({
-      database_id: this.databaseID,
+    const response = await this.#client.databases.query({
+      database_id: this.#databaseID,
       page_size: randomPageSize,
       filter: {
         or: [
@@ -75,7 +78,7 @@ export class NotionDB {
    * @return {Promise<Page>}
    */
   getPageById = async (pageID) => {
-    return this.client.pages.retrieve({page_id: pageID});
+    return this.#client.pages.retrieve({page_id: pageID});
   };
 
   /**
@@ -84,7 +87,7 @@ export class NotionDB {
    */
   markPageAsForgotten = async (pageID) => {
     try {
-      await this.client.pages.update({
+      await this.#client.pages.update({
         page_id: pageID,
         properties: {
           [Property.Progress]: {
@@ -114,7 +117,7 @@ export class NotionDB {
    */
   markPageAsRevised = async (pageID) => {
     try {
-      await this.client.pages.update({
+      await this.#client.pages.update({
         page_id: pageID,
         properties: {
           [Property.LastRevised]: {
