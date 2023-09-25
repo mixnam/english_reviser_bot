@@ -1,2 +1,5 @@
-export {NotionDB} from './src/database';
-export {Bot} from './src/telegram';
+const {Bot} = require('./src/telegram.js');
+
+module.exports = {
+  Bot,
+};

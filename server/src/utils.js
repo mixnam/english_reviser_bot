@@ -16,6 +16,10 @@
  * @param {RichText} richText
  * @return {string}
  */
-export const renderRichText = (richText) => {
+const renderRichText = (richText) => {
   return richText.rich_text.map((text) => text.plain_text).join('');
+};
+
+module.exports = {
+  renderRichText,
 };

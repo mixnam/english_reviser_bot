@@ -1,6 +1,6 @@
-import {Client} from '@notionhq/client';
+const {Client} = require('@notionhq/client');
 
-export const Property = {
+const Property = {
   Progress: 'Progress',
   English: 'English',
   LastRevised: 'Last Revised',
@@ -17,7 +17,7 @@ export const Property = {
 /**
  * NotionDB
  */
-export class NotionDB {
+class NotionDB {
   #client;
   #databaseID;
 
@@ -135,3 +135,7 @@ export class NotionDB {
   };
 }
 
+module.exports = {
+  Property,
+  NotionDB,
+};

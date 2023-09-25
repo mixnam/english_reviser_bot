@@ -1,12 +1,13 @@
-import dotenv from 'dotenv';
-import TelegramBot from 'node-telegram-bot-api';
-import {NotionDB, Property} from './database.js';
-import {renderRichText} from './utils.js';
+const dotenv = require('dotenv');
+const TelegramBot = require('node-telegram-bot-api');
+const {escapeMarkdown} = require('telegram-escape');
+const {NotionDB, Property} = require('./database.js');
+const {renderRichText} = require('./utils.js');
 
 /**
  * Bot
  */
-export class Bot {
+class Bot {
   #bot;
   #notionDB;
 
@@ -34,25 +35,7 @@ export class Bot {
         );
         return;
       }
-
-      const page = await this.#notionDB.getRandomPageForRevise();
-
-      this.#bot.sendMessage(
-          msg.chat.id,
-          renderRichText(page.properties[Property.English]),
-          {
-            reply_markup: {
-              inline_keyboard: [
-                [{
-                  text: 'Remember ✅',
-                  callback_data: `${page.id} true`},
-                {
-                  text: 'Forgot ❌',
-                  callback_data: `${page.id} false`,
-                }],
-              ],
-            },
-          });
+      this.#nextWord(msg);
     });
 
     this.#bot.on('callback_query', async (query) => {
@@ -69,13 +52,20 @@ export class Bot {
           return;
         }
         const page = await this.#notionDB.getPageById(data.pageId);
+        const english = escapeMarkdown(
+            renderRichText(page.properties[Property.English]),
+        );
+        const translation = escapeMarkdown(
+            renderRichText(page.properties[Property.Translation]),
+        );
         this.#bot.editMessageText(`
-    ${renderRichText(page.properties[Property.English])} - <b>Revised ✅</b>
+*English:*
+${english} \\- *Revised ✅*
 
-<b>Translation:</b>
-${renderRichText(page.properties[Property.Translation])}
+*Translation:*
+||${translation}||
     `, {
-          parse_mode: 'HTML',
+          parse_mode: 'MarkdownV2',
           message_id: query.message.message_id,
           chat_id: query.message.chat.id,
         });
@@ -86,18 +76,63 @@ ${renderRichText(page.properties[Property.Translation])}
           return;
         }
         const page = await this.#notionDB.getPageById(data.pageId);
+        const english = escapeMarkdown(
+            renderRichText(page.properties[Property.English]),
+        );
+        const translation = escapeMarkdown(
+            renderRichText(page.properties[Property.Translation]),
+        );
         this.#bot.editMessageText(`
-    ${renderRichText(page.properties[Property.English])} - <b>Forgot ❌</b>
+*English:*
+${english} \\- *Forgot ❌*
 
-<b>Translation:</b>
-${renderRichText(page.properties[Property.Translation])}
+*Translation:*
+||${translation}||
     `, {
-          parse_mode: 'HTML',
+          parse_mode: 'MarkdownV2',
           message_id: query.message.message_id,
           chat_id: query.message.chat.id,
         });
       }
+      this.#nextWord(query.message);
     });
+  };
+
+  /**
+   * @param {TelegramBot.Message} msg
+   */
+  #nextWord = async (msg) => {
+    const page = await this.#notionDB.getRandomPageForRevise();
+    const english = escapeMarkdown(
+        renderRichText(page.properties[Property.English]),
+    );
+    const translation = escapeMarkdown(
+        renderRichText(page.properties[Property.Translation]),
+    );
+
+    this.#bot.sendMessage(
+        msg.chat.id,
+        `
+*English:*
+${english}
+
+*Translation:*
+||${translation}||
+          `,
+        {
+          parse_mode: 'MarkdownV2',
+          reply_markup: {
+            inline_keyboard: [
+              [{
+                text: 'Remember ✅',
+                callback_data: `${page.id} true`},
+              {
+                text: 'Forgot ❌',
+                callback_data: `${page.id} false`,
+              }],
+            ],
+          },
+        });
   };
 
   /**
@@ -131,23 +166,27 @@ ${renderRichText(page.properties[Property.Translation])}
     ) {
       return {
         pageId: parsed[0],
-        remember: Boolean(parsed[1]),
+        remember: parsed[1] === 'true',
       };
     }
     return new Error(`can't parse callback_data: ${input}`);
   };
 
   /**
-   * @param {TelegramBot.Update} req
+   * @param {TelegramBot.Update} update
    */
-  handleRequest = (req) => {
-    this.#bot.processUpdate(req);
+  handleRequest = (update) => {
+    this.#bot.processUpdate(update);
   };
 
   startPolling = () => {
     this.#bot.startPolling();
   };
 }
+
+module.exports = {
+  Bot,
+};
 
 if (process.argv[2] === '--dev') {
   dotenv.config();
