@@ -35,7 +35,22 @@ class Bot {
         );
         return;
       }
-      this.#nextWord(msg);
+      switch (msg.text) {
+        case '/ping':
+          this.#bot.sendMessage(
+              msg.chat.id,
+              `Pong: ${new Date()}`,
+          );
+          return;
+        case '/revise':
+          this.#nextWord(msg);
+          return;
+        default:
+          this.#bot.sendMessage(
+              msg.chat.id,
+              'Have no idea what you want from me',
+          );
+      }
     });
 
     this.#bot.on('callback_query', async (query) => {
@@ -94,7 +109,6 @@ ${english} \\- *Forgot ❌*
           chat_id: query.message.chat.id,
         });
       }
-      this.#nextWord(query.message);
     });
   };
 

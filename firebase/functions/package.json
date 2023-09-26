@@ -7,7 +7,7 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "sync": "test -d ./server && rm -r ./server && cp ../server ./server"
+    "sync": "rm -r ./server && cp -r ../../server ./server"
   },
   "engines": {
     "node": "18"
