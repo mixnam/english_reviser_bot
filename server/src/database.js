@@ -40,7 +40,6 @@ class NotionDB {
       'getRandomPageForRevise',
       async () => {
         const random = Math.random();
-        const randomPageSize = Math.round(random * 100);
         const randomSort = Math.round(random); // 1 - ascending, 0 - descending
         const lastRevisedThreshhold = new Date();
         lastRevisedThreshhold.setMonth(lastRevisedThreshhold.getMonth() - 1);
@@ -48,7 +47,7 @@ class NotionDB {
 
         const response = await this.#client.databases.query({
           database_id: this.#databaseID,
-          page_size: randomPageSize,
+          page_size: 10,
           filter: {
             and: [
               {
@@ -93,6 +92,20 @@ class NotionDB {
    */
   getPageById = executionTime('getPageById', async (pageID) => {
     return this.#client.pages.retrieve({page_id: pageID});
+  });
+
+  /**
+   * @param {string} blockID
+   * @return {Promise<
+   *  import('@notionhq/client/build/src/api-endpoints')
+   *   .ListBlockChildrenResponse
+   *  >}
+   */
+  getBlockById = executionTime('getBlockById', async (blockID) => {
+    return this.#client.blocks.children.list({
+      block_id: blockID,
+      page_size: 50,
+    });
   });
 
   /**
