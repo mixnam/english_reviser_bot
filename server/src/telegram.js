@@ -1,8 +1,7 @@
 const dotenv = require('dotenv');
 const TelegramBot = require('node-telegram-bot-api');
-const {escapeMarkdown} = require('telegram-escape');
-const {NotionDB, Property} = require('./database.js');
-const {renderRichText} = require('./utils.js');
+const {NotionDB} = require('./database.js');
+const {ReviseCommand} =require('./commands/revise.js');
 
 /**
  * Bot
@@ -10,6 +9,7 @@ const {renderRichText} = require('./utils.js');
 class Bot {
   #bot;
   #notionDB;
+  #reviseCommand;
 
   /**
    * Bot constructor
@@ -22,6 +22,7 @@ class Bot {
         process.env.NOTION_SECRET,
         process.env.NOTION_DATABASE_ID,
     );
+    this.#reviseCommand = new ReviseCommand(this.#bot, this.#notionDB);
 
     this.#setup();
   }
@@ -43,7 +44,7 @@ class Bot {
           );
           return;
         case '/revise':
-          this.#nextWord(msg);
+          this.#reviseCommand.processMsg(msg);
           return;
         default:
           this.#bot.sendMessage(
@@ -54,99 +55,8 @@ class Bot {
     });
 
     this.#bot.on('callback_query', async (query) => {
-      const data = this.#parseCallbackData(query.data);
-      if (data instanceof Error) {
-        console.error(data);
-        return;
-      }
-
-      if (data.remember) {
-        const res = await this.#notionDB.markPageAsRevised(data.pageId);
-        if (res !== null) {
-          console.error(res);
-          return;
-        }
-        const page = await this.#notionDB.getPageById(data.pageId);
-        const english = escapeMarkdown(
-            renderRichText(page.properties[Property.English]),
-        );
-        const translation = escapeMarkdown(
-            renderRichText(page.properties[Property.Translation]),
-        );
-        this.#bot.editMessageText(`
-*English:*
-${english} \\- *Revised ✅*
-
-*Translation:*
-||${translation}||
-    `, {
-          parse_mode: 'MarkdownV2',
-          message_id: query.message.message_id,
-          chat_id: query.message.chat.id,
-        });
-      } else {
-        const res = await this.#notionDB.markPageAsForgotten(data.pageId);
-        if (res !== null) {
-          console.error(res);
-          return;
-        }
-        const page = await this.#notionDB.getPageById(data.pageId);
-        const english = escapeMarkdown(
-            renderRichText(page.properties[Property.English]),
-        );
-        const translation = escapeMarkdown(
-            renderRichText(page.properties[Property.Translation]),
-        );
-        this.#bot.editMessageText(`
-*English:*
-${english} \\- *Forgot ❌*
-
-*Translation:*
-||${translation}||
-    `, {
-          parse_mode: 'MarkdownV2',
-          message_id: query.message.message_id,
-          chat_id: query.message.chat.id,
-        });
-      }
+      this.#reviseCommand.processCallback(query);
     });
-  };
-
-  /**
-   * @param {TelegramBot.Message} msg
-   */
-  #nextWord = async (msg) => {
-    const page = await this.#notionDB.getRandomPageForRevise();
-    const english = escapeMarkdown(
-        renderRichText(page.properties[Property.English]),
-    );
-    const translation = escapeMarkdown(
-        renderRichText(page.properties[Property.Translation]),
-    );
-
-    this.#bot.sendMessage(
-        msg.chat.id,
-        `
-*English:*
-${english}
-
-*Translation:*
-||${translation}||
-          `,
-        {
-          parse_mode: 'MarkdownV2',
-          reply_markup: {
-            inline_keyboard: [
-              [{
-                text: 'Remember ✅',
-                callback_data: `${page.id} true`},
-              {
-                text: 'Forgot ❌',
-                callback_data: `${page.id} false`,
-              }],
-            ],
-          },
-        });
   };
 
   /**
@@ -158,32 +68,6 @@ ${english}
       return true;
     }
     return false;
-  };
-
-  /**
-   * @typedef CallbackData
-   * @type {object}
-   * @property {string} pageId
-   * @property {boolean} remember
-   */
-
-  /**
-   * @param {string} input
-   * @return {CallbackData|Error}
-   */
-  #parseCallbackData = (input) => {
-    const parsed = input.split(' ');
-    if (
-      parsed.length === 2 &&
-    typeof parsed[0] === 'string' &&
-      (parsed[1] === 'true' || parsed[1] === 'false')
-    ) {
-      return {
-        pageId: parsed[0],
-        remember: parsed[1] === 'true',
-      };
-    }
-    return new Error(`can't parse callback_data: ${input}`);
   };
 
   /**

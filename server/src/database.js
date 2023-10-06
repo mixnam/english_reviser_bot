@@ -8,6 +8,14 @@ const Property = {
   Translation: 'Translation',
 };
 
+const Progress = {
+  HaveProblems: 'Have problems',
+  NeedToRepeat: 'Need to repeat',
+  HaveToPayAttention: 'Have to pay attention',
+  ActiveLearning: 'Active learning',
+  Learned: 'Learned',
+};
+
 /**
  * @typedef Page
  * @type {object}
@@ -53,7 +61,7 @@ class NotionDB {
               {
                 property: Property.Progress,
                 select: {
-                  equals: 'Learned',
+                  equals: Progress.Learned,
                 },
               },
               {
@@ -85,6 +93,79 @@ class NotionDB {
         const page = response.results[randomPage];
         return page;
       });
+
+  /**
+   * @return {Promise<Page|undefined>}
+   */
+  getRandomPageForLearn = executionTime('getRandomPageForLearn', async () => {
+    const random = Math.random();
+    const randomSort = Math.round(random); // 1 - ascending, 0 - descending
+    const lastRevisedThreshhold = new Date();
+    lastRevisedThreshhold.setMonth(lastRevisedThreshhold.getDay() - 2);
+
+
+    const response = await this.#client.databases.query({
+      database_id: this.#databaseID,
+      page_size: 10,
+      filter: {
+        and: [
+          {
+            or: [
+              {
+                property: Property.Progress,
+                select: {
+                  equals: Progress.HaveProblems,
+                },
+              },
+              {
+                property: Property.Progress,
+                select: {
+                  equals: Progress.HaveToPayAttention,
+                },
+              },
+              {
+                property: Property.Progress,
+                select: {
+                  equals: Progress.NeedToRepeat,
+                },
+              },
+              {
+                property: Property.Progress,
+                select: {
+                  equals: Progress.ActiveLearning,
+                },
+              },
+            ],
+          },
+          {
+            or: [
+              {
+                property: Property.LastRevised,
+                date: {
+                  before: lastRevisedThreshhold,
+                },
+              },
+              {
+                property: Property.LastRevised,
+                date: {
+                  is_empty: true,
+                },
+              },
+
+            ],
+          },
+        ],
+      },
+      sorts: [{
+        timestamp: 'created_time',
+        direction: randomSort ? 'ascending' : 'descending',
+      }],
+    });
+
+    const randomPage = Math.round(random * (response.results.length - 1));
+    const page = response.results[randomPage];
+    return page;
+  });
 
   /**
    * @param {string} pageID
@@ -122,7 +203,7 @@ class NotionDB {
               [Property.Progress]: {
                 type: 'select',
                 select: {
-                  name: 'Have problems',
+                  name: Progress.HaveProblems,
                   color: 'red',
                 },
               },
@@ -168,5 +249,6 @@ class NotionDB {
 
 module.exports = {
   Property,
+  Progress,
   NotionDB,
 };
