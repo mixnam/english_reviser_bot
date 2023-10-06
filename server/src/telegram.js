@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
 const TelegramBot = require('node-telegram-bot-api');
 const {NotionDB} = require('./database.js');
-const {ReviseCommand} =require('./commands/revise.js');
+const {ReviseCommand, ReviseCallbackId} =require('./commands/revise.js');
 
 /**
  * Bot
@@ -55,7 +55,14 @@ class Bot {
     });
 
     this.#bot.on('callback_query', async (query) => {
-      this.#reviseCommand.processCallback(query);
+      const [callbakId, data] = this.#parseCallbackData(query.data);
+      switch (callbakId) {
+        case ReviseCallbackId:
+          this.#reviseCommand.processCallback(query.message, data);
+          return;
+        default:
+          console.error(`Can not understand callback_id ${callbakId}`);
+      }
     });
   };
 
@@ -68,6 +75,18 @@ class Bot {
       return true;
     }
     return false;
+  };
+
+  /**
+   * @param {string} input
+   * @return {[string, Array<any>] | Error}
+   */
+  #parseCallbackData = (input) => {
+    const parsed = input.split(' ');
+    if (typeof parsed[0] === 'string') {
+      return [parsed[0], parsed.slice(1)];
+    }
+    return new Error(`can't parse callback_data: ${input}`);
   };
 
   /**

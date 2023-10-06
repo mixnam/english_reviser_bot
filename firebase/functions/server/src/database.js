@@ -8,6 +8,14 @@ const Property = {
   Translation: 'Translation',
 };
 
+const Progress = {
+  HaveProblems: 'Have problems',
+  NeedToRepeat: 'Need to repeat',
+  HaveToPayAttention: 'Have to pay attention',
+  ActiveLearning: 'Active learning',
+  Learned: 'Learned',
+};
+
 /**
  * @typedef Page
  * @type {object}
@@ -40,7 +48,6 @@ class NotionDB {
       'getRandomPageForRevise',
       async () => {
         const random = Math.random();
-        const randomPageSize = Math.round(random * 100);
         const randomSort = Math.round(random); // 1 - ascending, 0 - descending
         const lastRevisedThreshhold = new Date();
         lastRevisedThreshhold.setMonth(lastRevisedThreshhold.getMonth() - 1);
@@ -48,13 +55,13 @@ class NotionDB {
 
         const response = await this.#client.databases.query({
           database_id: this.#databaseID,
-          page_size: randomPageSize,
+          page_size: 10,
           filter: {
             and: [
               {
                 property: Property.Progress,
                 select: {
-                  equals: 'Learned',
+                  equals: Progress.Learned,
                 },
               },
               {
@@ -88,11 +95,98 @@ class NotionDB {
       });
 
   /**
+   * @return {Promise<Page|undefined>}
+   */
+  getRandomPageForLearn = executionTime('getRandomPageForLearn', async () => {
+    const random = Math.random();
+    const randomSort = Math.round(random); // 1 - ascending, 0 - descending
+    const lastRevisedThreshhold = new Date();
+    lastRevisedThreshhold.setMonth(lastRevisedThreshhold.getDay() - 2);
+
+
+    const response = await this.#client.databases.query({
+      database_id: this.#databaseID,
+      page_size: 10,
+      filter: {
+        and: [
+          {
+            or: [
+              {
+                property: Property.Progress,
+                select: {
+                  equals: Progress.HaveProblems,
+                },
+              },
+              {
+                property: Property.Progress,
+                select: {
+                  equals: Progress.HaveToPayAttention,
+                },
+              },
+              {
+                property: Property.Progress,
+                select: {
+                  equals: Progress.NeedToRepeat,
+                },
+              },
+              {
+                property: Property.Progress,
+                select: {
+                  equals: Progress.ActiveLearning,
+                },
+              },
+            ],
+          },
+          {
+            or: [
+              {
+                property: Property.LastRevised,
+                date: {
+                  before: lastRevisedThreshhold,
+                },
+              },
+              {
+                property: Property.LastRevised,
+                date: {
+                  is_empty: true,
+                },
+              },
+
+            ],
+          },
+        ],
+      },
+      sorts: [{
+        timestamp: 'created_time',
+        direction: randomSort ? 'ascending' : 'descending',
+      }],
+    });
+
+    const randomPage = Math.round(random * (response.results.length - 1));
+    const page = response.results[randomPage];
+    return page;
+  });
+
+  /**
    * @param {string} pageID
    * @return {Promise<Page>}
    */
   getPageById = executionTime('getPageById', async (pageID) => {
     return this.#client.pages.retrieve({page_id: pageID});
+  });
+
+  /**
+   * @param {string} blockID
+   * @return {Promise<
+   *  import('@notionhq/client/build/src/api-endpoints')
+   *   .ListBlockChildrenResponse
+   *  >}
+   */
+  getBlockById = executionTime('getBlockById', async (blockID) => {
+    return this.#client.blocks.children.list({
+      block_id: blockID,
+      page_size: 50,
+    });
   });
 
   /**
@@ -109,7 +203,7 @@ class NotionDB {
               [Property.Progress]: {
                 type: 'select',
                 select: {
-                  name: 'Have problems',
+                  name: Progress.HaveProblems,
                   color: 'red',
                 },
               },
@@ -155,5 +249,6 @@ class NotionDB {
 
 module.exports = {
   Property,
+  Progress,
   NotionDB,
 };

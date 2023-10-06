@@ -6,8 +6,6 @@ const {Command} = require('./command');
 const {NotionDB, Property} = require('../database');
 const {renderRichText} = require('../utils.js');
 
-const ReviseCallbackId = '[LEARN]';
-
 /**
  * ReviseCommand
  */
@@ -53,10 +51,10 @@ ${english}
             inline_keyboard: [
               [{
                 text: 'Remember ✅',
-                callback_data: `${ReviseCallbackId} ${page.id} true`},
+                callback_data: `${page.id} true`},
               {
                 text: 'Forgot ❌',
-                callback_data: `${ReviseCallbackId} ${page.id} false`,
+                callback_data: `${page.id} false`,
               }],
             ],
           },
@@ -64,11 +62,10 @@ ${english}
   };
 
   /**
-   * @param {TelegramBot.Message} msg
-   * @param {Array<any>} rawData
+   * @param {TelegramBot.CallbackQuery} query
    */
-  async processCallback(msg, rawData) {
-    const data = this.#parseCallbackData(rawData);
+  async processCallback(query) {
+    const data = this.#parseCallbackData(query.data);
     if (data instanceof Error) {
       console.error(data);
       return;
@@ -95,8 +92,8 @@ ${english} \\- *Revised ✅*
 ||${translation}||
     `, {
         parse_mode: 'MarkdownV2',
-        message_id: msg.message_id,
-        chat_id: msg.chat.id,
+        message_id: query.message.message_id,
+        chat_id: query.message.chat.id,
       });
     } else {
       const res = await this.#notionDB.markPageAsForgotten(data.pageId);
@@ -133,18 +130,19 @@ ${english} \\- *Forgot ❌*
    */
 
   /**
-   * @param {Array<any>} rawData
+   * @param {string} input
    * @return {CallbackData|Error}
    */
-  #parseCallbackData = (rawData) => {
+  #parseCallbackData = (input) => {
+    const parsed = input.split(' ');
     if (
-      rawData.length === 2 &&
-    typeof rawData[0] === 'string' &&
-      (rawData[1] === 'true' || rawData[1] === 'false')
+      parsed.length === 2 &&
+    typeof parsed[0] === 'string' &&
+      (parsed[1] === 'true' || parsed[1] === 'false')
     ) {
       return {
-        pageId: rawData[0],
-        remember: rawData[1] === 'true',
+        pageId: parsed[0],
+        remember: parsed[1] === 'true',
       };
     }
     return new Error(`can't parse callback_data: ${input}`);
@@ -153,5 +151,4 @@ ${english} \\- *Forgot ❌*
 
 module.exports = {
   ReviseCommand,
-  ReviseCallbackId,
 };
