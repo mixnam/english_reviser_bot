@@ -16,6 +16,14 @@ const Progress = {
   Learned: 'Learned',
 };
 
+const ProgressOrder = [
+  Progress.HaveProblems,
+  Progress.HaveToPayAttention,
+  Progress.NeedToRepeat,
+  Progress.ActiveLearning,
+  Progress.Learned,
+];
+
 /**
  * @typedef Page
  * @type {object}
@@ -101,7 +109,7 @@ class NotionDB {
     const random = Math.random();
     const randomSort = Math.round(random); // 1 - ascending, 0 - descending
     const lastRevisedThreshhold = new Date();
-    lastRevisedThreshhold.setMonth(lastRevisedThreshhold.getDay() - 2);
+    lastRevisedThreshhold.setDate(lastRevisedThreshhold.getDay() - 2);
 
 
     const response = await this.#client.databases.query({
@@ -232,6 +240,50 @@ class NotionDB {
           await this.#client.pages.update({
             page_id: pageID,
             properties: {
+              [Property.LastRevised]: {
+                type: 'date',
+                date: {
+                  start: new Date(),
+                },
+              },
+            },
+          });
+        } catch (err) {
+          return new Error(`error in markPageAsRevised - ${err}`);
+        }
+        return null;
+      });
+
+  /**
+   * @param {string} pageID
+   * @param {Progress} currentProgress
+   * @param {'up' | 'down'} order
+   * @return {Promis<Error|null>}
+   */
+  markPageProgress = executionTime(
+      'markPageProgress',
+      async (pageID, currentProgress, order) => {
+        const currentProgressIdx = ProgressOrder.findIndex(
+            (i) => i === currentProgress,
+        );
+        const nextProgressIdx = currentProgressIdx + (
+            order === 'up' ?
+             1 : -1
+        );
+        const nextProgress = ProgressOrder[
+            nextProgressIdx
+        ] ?? currentProgress;
+
+        try {
+          await this.#client.pages.update({
+            page_id: pageID,
+            properties: {
+              [Property.Progress]: {
+                type: 'select',
+                select: {
+                  name: nextProgress,
+                },
+              },
               [Property.LastRevised]: {
                 type: 'date',
                 date: {

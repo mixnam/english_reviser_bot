@@ -6,7 +6,7 @@ const {Command} = require('./command');
 const {NotionDB, Property} = require('../database');
 const {renderRichText} = require('../utils.js');
 
-const ReviseCallbackId = '[LEARN]';
+const ReviseCallbackId = '[REVISE]';
 
 /**
  * ReviseCommand
@@ -53,10 +53,10 @@ ${english}
             inline_keyboard: [
               [{
                 text: 'Remember ✅',
-                callback_data: `${ReviseCallbackId} ${page.id} true`},
+                callback_data: `${ReviseCallbackId},${page.id},true`},
               {
                 text: 'Forgot ❌',
-                callback_data: `${ReviseCallbackId} ${page.id} false`,
+                callback_data: `${ReviseCallbackId},${page.id},false`,
               }],
             ],
           },
@@ -119,8 +119,8 @@ ${english} \\- *Forgot ❌*
 ||${translation}||
     `, {
         parse_mode: 'MarkdownV2',
-        message_id: query.message.message_id,
-        chat_id: query.message.chat.id,
+        message_id: msg.message_id,
+        chat_id: msg.chat.id,
       });
     }
   };
