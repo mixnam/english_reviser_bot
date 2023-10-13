@@ -58,7 +58,7 @@ class NotionDB {
         const random = Math.random();
         const randomSort = Math.round(random); // 1 - ascending, 0 - descending
         const lastRevisedThreshhold = new Date();
-        lastRevisedThreshhold.setMonth(lastRevisedThreshhold.getMonth() - 1);
+        lastRevisedThreshhold.setDate(lastRevisedThreshhold.getDate() - 14);
 
 
         const response = await this.#client.databases.query({
@@ -109,7 +109,7 @@ class NotionDB {
     const random = Math.random();
     const randomSort = Math.round(random); // 1 - ascending, 0 - descending
     const lastRevisedThreshhold = new Date();
-    lastRevisedThreshhold.setDate(lastRevisedThreshhold.getDay() - 2);
+    lastRevisedThreshhold.setDate(lastRevisedThreshhold.getDate() - 1);
 
 
     const response = await this.#client.databases.query({

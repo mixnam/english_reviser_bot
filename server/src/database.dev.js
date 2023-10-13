@@ -1,4 +1,4 @@
-const {NotionDB} = require('./database');
+const {NotionDB, Property} = require('./database');
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -9,6 +9,9 @@ const notion = new NotionDB(
 );
 
 (async () => {
-  const page = await notion.getBlockById('47958c6ea7ca439fb96dc78179c08eb4');
+  const page = await notion.getRandomPageForLearn();
+  if (page) {
+    console.log(page.properties[Property.Progress]);
+  }
   console.log(JSON.stringify(page, undefined, 2));
 })();

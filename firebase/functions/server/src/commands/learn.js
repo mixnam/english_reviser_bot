@@ -6,12 +6,12 @@ const {Command} = require('./command');
 const {NotionDB, Property} = require('../database');
 const {renderRichText} = require('../utils.js');
 
-const ReviseCallbackId = '[REVISE]';
+const LearnCallbackId = '[LEARN]';
 
 /**
  * ReviseCommand
  */
-class ReviseCommand extends Command {
+class LearnCommand extends Command {
   #bot;
   #notionDB;
 
@@ -30,13 +30,7 @@ class ReviseCommand extends Command {
    * @param {TelegramBot.Message} msg
    */
   async processMsg(msg) {
-    const page = await this.#notionDB.getRandomPageForRevise();
-    if (page === undefined) {
-      this.#bot.sendMessage(
-          msg.chat.id,
-          'You have revised all your words 🎉',
-      );
-    }
+    const page = await this.#notionDB.getRandomPageForLearn();
     const english = escapeMarkdown(
         renderRichText(page.properties[Property.English]),
     );
@@ -58,11 +52,20 @@ ${english}
           reply_markup: {
             inline_keyboard: [
               [{
-                text: 'Remember ✅',
-                callback_data: `${ReviseCallbackId},${page.id},true`},
+                text: 'UP',
+                callback_data: [
+                  LearnCallbackId,
+                  page.id,
+                  'true',
+                ].join(','),
+              },
               {
-                text: 'Forgot ❌',
-                callback_data: `${ReviseCallbackId},${page.id},false`,
+                text: 'DOWN',
+                callback_data: [
+                  LearnCallbackId,
+                  page.id,
+                  'false',
+                ].join(','),
               }],
             ],
           },
@@ -80,13 +83,18 @@ ${english}
       return;
     }
 
+    console.log(data);
     if (data.remember) {
-      const res = await this.#notionDB.markPageAsRevised(data.pageId);
+      const page = await this.#notionDB.getPageById(data.pageId);
+      const res = await this.#notionDB.markPageProgress(
+          data.pageId,
+          page.properties[Property.Progress].select.name,
+          'up',
+      );
       if (res !== null) {
         console.error(res);
         return;
       }
-      const page = await this.#notionDB.getPageById(data.pageId);
       const english = escapeMarkdown(
           renderRichText(page.properties[Property.English]),
       );
@@ -95,7 +103,7 @@ ${english}
       );
       this.#bot.editMessageText(`
 *English:*
-${english} \\- *Revised ✅*
+${english} \\- 🟢 *UP*
 
 *Translation:*
 ||${translation}||
@@ -105,12 +113,16 @@ ${english} \\- *Revised ✅*
         chat_id: msg.chat.id,
       });
     } else {
-      const res = await this.#notionDB.markPageAsForgotten(data.pageId);
+      const page = await this.#notionDB.getPageById(data.pageId);
+      const res = await this.#notionDB.markPageProgress(
+          data.pageId,
+          page.properties[Property.Progress].select.name,
+          'down',
+      );
       if (res !== null) {
         console.error(res);
         return;
       }
-      const page = await this.#notionDB.getPageById(data.pageId);
       const english = escapeMarkdown(
           renderRichText(page.properties[Property.English]),
       );
@@ -119,7 +131,7 @@ ${english} \\- *Revised ✅*
       );
       this.#bot.editMessageText(`
 *English:*
-${english} \\- *Forgot ❌*
+${english} \\- 🔻 *DOWN*
 
 *Translation:*
 ||${translation}||
@@ -158,6 +170,6 @@ ${english} \\- *Forgot ❌*
 }
 
 module.exports = {
-  ReviseCommand,
-  ReviseCallbackId,
+  LearnCommand,
+  LearnCallbackId,
 };

@@ -31,6 +31,12 @@ class LearnCommand extends Command {
    */
   async processMsg(msg) {
     const page = await this.#notionDB.getRandomPageForLearn();
+    if (page === undefined) {
+      this.#bot.sendMessage(
+          msg.chat.id,
+          'You have learned all your words 🎉',
+      );
+    }
     const english = escapeMarkdown(
         renderRichText(page.properties[Property.English]),
     );
@@ -83,7 +89,6 @@ ${english}
       return;
     }
 
-    console.log(data);
     if (data.remember) {
       const page = await this.#notionDB.getPageById(data.pageId);
       const res = await this.#notionDB.markPageProgress(
@@ -103,7 +108,7 @@ ${english}
       );
       this.#bot.editMessageText(`
 *English:*
-${english} \\- *UP*
+${english} \\- 🟢 *UP*
 
 *Translation:*
 ||${translation}||
@@ -131,7 +136,7 @@ ${english} \\- *UP*
       );
       this.#bot.editMessageText(`
 *English:*
-${english} \\- *DOWN*
+${english} \\- 🔻 *DOWN*
 
 *Translation:*
 ||${translation}||
