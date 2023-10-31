@@ -2,67 +2,57 @@
 const TelegramBot = require('node-telegram-bot-api');
 const {escapeMarkdown} = require('telegram-escape');
 const {Command} = require('./command');
-// eslint-disable-next-line
-const {NotionDB, Property} = require('../database');
-const {renderRichText} = require('../utils.js');
+const {
+  getRandomWordByUserIDForRevise,
+  setWordAsRevisedByWordID,
+  getWordByID,
+  setWordAsForgottenByWordID,
+} = require('../repo/words');
 
 const ReviseCallbackId = '[REVISE]';
+const QuestionMark = '❓';
 
 /**
  * ReviseCommand
  */
 class ReviseCommand extends Command {
   #bot;
-  #notionDB;
 
   /**
    * ReviseCommand constructor
    * @param {TelegramBot} bot
-   * @param {NotionDB} notionDB
    */
-  constructor(bot, notionDB) {
+  constructor(bot) {
     super();
     this.#bot = bot;
-    this.#notionDB = notionDB;
   }
 
   /**
    * @param {TelegramBot.Message} msg
+   * @param {import('../repo/users').User} user
    */
-  async processMsg(msg) {
-    const page = await this.#notionDB.getRandomPageForRevise();
-    if (page === undefined) {
+  async processMsg(msg, user) {
+    const word = await getRandomWordByUserIDForRevise(user._id);
+    if (word === null) {
       this.#bot.sendMessage(
           msg.chat.id,
           'You have revised all your words 🎉',
       );
     }
-    const english = escapeMarkdown(
-        renderRichText(page.properties[Property.English]),
-    );
-    const translation = escapeMarkdown(
-        renderRichText(page.properties[Property.Translation]),
-    );
 
     this.#bot.sendMessage(
         msg.chat.id,
-        `
-*English:*
-${english}
-
-*Translation:*
-||${translation}||
-          `,
+        this.#renderMardown(word, QuestionMark),
         {
           parse_mode: 'MarkdownV2',
           reply_markup: {
             inline_keyboard: [
               [{
                 text: 'Remember ✅',
-                callback_data: `${ReviseCallbackId},${page.id},true`},
+                callback_data: `${ReviseCallbackId},${word._id},true`},
               {
                 text: 'Forgot ❌',
-                callback_data: `${ReviseCallbackId},${page.id},false`,
+                callback_data: `${ReviseCallbackId},${word._id},false`,
               }],
             ],
           },
@@ -80,61 +70,46 @@ ${english}
       return;
     }
 
+    let status = '';
     if (data.remember) {
-      const res = await this.#notionDB.markPageAsRevised(data.pageId);
+      const res = await setWordAsRevisedByWordID(data.wordID);
       if (res !== null) {
         console.error(res);
         return;
       }
-      const page = await this.#notionDB.getPageById(data.pageId);
-      const english = escapeMarkdown(
-          renderRichText(page.properties[Property.English]),
-      );
-      const translation = escapeMarkdown(
-          renderRichText(page.properties[Property.Translation]),
-      );
-      this.#bot.editMessageText(`
-*English:*
-${english} \\- *Revised ✅*
-
-*Translation:*
-||${translation}||
-    `, {
-        parse_mode: 'MarkdownV2',
-        message_id: msg.message_id,
-        chat_id: msg.chat.id,
-      });
+      status = '*Revised ✅*';
     } else {
-      const res = await this.#notionDB.markPageAsForgotten(data.pageId);
+      const res = await setWordAsForgottenByWordID(data.wordID);
       if (res !== null) {
         console.error(res);
         return;
       }
-      const page = await this.#notionDB.getPageById(data.pageId);
-      const english = escapeMarkdown(
-          renderRichText(page.properties[Property.English]),
-      );
-      const translation = escapeMarkdown(
-          renderRichText(page.properties[Property.Translation]),
-      );
-      this.#bot.editMessageText(`
-*English:*
-${english} \\- *Forgot ❌*
-
-*Translation:*
-||${translation}||
-    `, {
-        parse_mode: 'MarkdownV2',
-        message_id: msg.message_id,
-        chat_id: msg.chat.id,
-      });
+      status = '*Forgot ❌*';
     }
+
+    const word = await getWordByID(data.wordID);
+    if (word instanceof Error) {
+      console.error(word);
+      return;
+    }
+    if (word === null) {
+      console.error(`can\'t find word by ID - ${data.wordID}`);
+      return;
+    }
+
+    this.#bot.editMessageText(
+        this.#renderMardown(word, status),
+        {
+          parse_mode: 'MarkdownV2',
+          message_id: msg.message_id,
+          chat_id: msg.chat.id,
+        });
   };
 
   /**
    * @typedef CallbackData
    * @type {object}
-   * @property {string} pageId
+   * @property {string} wordID
    * @property {boolean} remember
    */
 
@@ -149,11 +124,33 @@ ${english} \\- *Forgot ❌*
       (rawData[1] === 'true' || rawData[1] === 'false')
     ) {
       return {
-        pageId: rawData[0],
+        wordID: rawData[0],
         remember: rawData[1] === 'true',
       };
     }
     return new Error(`can't parse callback_data: ${input}`);
+  };
+
+  /**
+   * @param {import('../repo/words').Word} word
+   * @param {string} status
+   * @return {string}
+   */
+  #renderMardown = (word, status) => {
+    const english = escapeMarkdown(word.English);
+    const translation = escapeMarkdown(word.Translation);
+    const examples = escapeMarkdown(word.Examples);
+
+    return `
+*English:*
+${english} \\- ${status} 
+
+*Examples:*
+||${examples}||
+
+*Translation:*
+||${translation}||
+          `;
   };
 }
 

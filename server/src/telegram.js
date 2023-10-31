@@ -1,8 +1,10 @@
 const dotenv = require('dotenv');
 const TelegramBot = require('node-telegram-bot-api');
 const {NotionDB} = require('./database.js');
-const {ReviseCommand, ReviseCallbackId} =require('./commands/revise.js');
+const {ReviseCommand, ReviseCallbackId} = require('./commands/revise.js');
 const {LearnCommand, LearnCallbackId} = require('./commands/learn.js');
+const {TestDBCommand} = require('./commands/testDB.js');
+const {getUserByChatID} = require('./repo/users.js');
 
 /**
  * Bot
@@ -12,6 +14,7 @@ class Bot {
   #notionDB;
   #reviseCommand;
   #learnCommand;
+  #testDBCommand;
 
   /**
    * Bot constructor
@@ -26,12 +29,14 @@ class Bot {
     );
     this.#reviseCommand = new ReviseCommand(this.#bot, this.#notionDB);
     this.#learnCommand = new LearnCommand(this.#bot, this.#notionDB);
+    this.#testDBCommand = new TestDBCommand(this.#bot);
 
     this.#setup();
   }
 
   #setup = () => {
     this.#bot.on('message', async (msg) => {
+      // TODO remove accessChecker
       if (!this.#accessChecker(msg)) {
         this.#bot.sendMessage(
             msg.chat.id,
@@ -39,6 +44,13 @@ class Bot {
         );
         return;
       }
+
+      const user = await getUserByChatID(msg.chat.id);
+      if (user instanceof Error) {
+        console.log(user);
+        return;
+      }
+
       switch (msg.text) {
         case '/ping':
           this.#bot.sendMessage(
@@ -47,10 +59,13 @@ class Bot {
           );
           return;
         case '/revise':
-          this.#reviseCommand.processMsg(msg);
+          this.#reviseCommand.processMsg(msg, user);
           return;
         case '/learn':
-          this.#learnCommand.processMsg(msg);
+          this.#learnCommand.processMsg(msg, user);
+          return;
+        case '/testDB':
+          this.#testDBCommand.processMsg(msg);
           return;
         default:
           this.#bot.sendMessage(

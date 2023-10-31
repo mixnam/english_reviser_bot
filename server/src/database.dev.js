@@ -1,17 +1,35 @@
-const {NotionDB, Property} = require('./database');
-const dotenv = require('dotenv');
-
-dotenv.config();
-
-const notion = new NotionDB(
-    process.env.NOTION_SECRET,
-    process.env.NOTION_DATABASE_ID,
-);
+const {getClient} = require('./repo/repo');
 
 (async () => {
-  const page = await notion.getRandomPageForLearn();
-  if (page) {
-    console.log(page.properties[Property.Progress]);
+  const client = await getClient();
+  const db = client.db('englishbot');
+  const words = db.collection('english_words');
+  const users = db.collection('users');
+
+  const user = await users.findOne({username: 'mixnam'});
+  if (user === null) {
+    console.log('cant find user');
+    return;
   }
-  console.log(JSON.stringify(page, undefined, 2));
+
+
+  const lastRevisedThreshhold = new Date();
+  lastRevisedThreshhold.setDate(lastRevisedThreshhold.getDate() - 14);
+  const result = words.aggregate([
+    {
+      $match: {
+        'Last Revised': {
+          $lt: lastRevisedThreshhold,
+        },
+      },
+    },
+    {
+      $sample: {
+        size: 1,
+      },
+    },
+  ]);
+
+  console.log((await result.hasNext()));
+  console.log((await result.next()));
 })();
