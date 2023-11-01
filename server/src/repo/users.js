@@ -36,6 +36,9 @@ const addNewUser = executionTime(
             `[repo][addNewUser]: cant't verify if user exists - ${result}`,
         );
       }
+      if (result !== null) {
+        return result._id;
+      }
 
       try {
         const result = await users.insertOne(user);
@@ -47,7 +50,7 @@ const addNewUser = executionTime(
 
 /**
  * @param {number|string} chatID
- * @return {Promise<User|Error>}
+ * @return {Promise<User|null|Error>}
  */
 const getUserByChatID = executionTime(
     'getUserByChatID',
@@ -57,11 +60,6 @@ const getUserByChatID = executionTime(
       const users = db.collection('users');
       try {
         const user = await users.findOne({chatID: chatID});
-        if (user === null) {
-          return new Error(
-              `[repo][getUserByChatID]: no user with chatID ${chatID}`,
-          );
-        }
         return user;
       } catch (err) {
         return new Error(

@@ -1,6 +1,7 @@
 // eslint-disable-next-line
 const TelegramBot = require('node-telegram-bot-api');
 const {Command} = require('./command');
+const {getUserByChatID} = require('../repo/users');
 const {
   getRandomWordByUserIDForLearn,
   ProgressOrder,
@@ -29,12 +30,20 @@ class LearnCommand extends Command {
     this.#bot = bot;
   }
 
-  // eslint-disable-next-line
   /**
    * @param {TelegramBot.Message} msg
-   * @param {import('../repo/users').User} user
    */
-  async processMsg(msg, user) {
+  async processMsg(msg ) {
+    const user = await getUserByChatID(msg.chat.id);
+    if (user instanceof Error) {
+      console.log(user);
+      return;
+    }
+    if (user === null) {
+      console.error(`no user with chatID - ${msg.chat.id}`);
+      return;
+    }
+
     const word = await getRandomWordByUserIDForLearn(user._id);
     if (word === null) {
       this.#bot.sendMessage(

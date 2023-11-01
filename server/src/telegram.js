@@ -3,7 +3,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const {ReviseCommand, ReviseCallbackId} = require('./commands/revise.js');
 const {LearnCommand, LearnCallbackId} = require('./commands/learn.js');
 const {TestDBCommand} = require('./commands/testDB.js');
-const {getUserByChatID} = require('./repo/users.js');
+const {StartCommand} = require('./commands/start.js');
 
 /**
  * Bot
@@ -13,6 +13,7 @@ class Bot {
   #reviseCommand;
   #learnCommand;
   #testDBCommand;
+  #startCommand;
 
   /**
    * Bot constructor
@@ -23,6 +24,8 @@ class Bot {
     );
     this.#reviseCommand = new ReviseCommand(this.#bot);
     this.#learnCommand = new LearnCommand(this.#bot);
+    this.#startCommand = new StartCommand(this.#bot);
+
     this.#testDBCommand = new TestDBCommand(this.#bot);
 
     this.#setup();
@@ -30,36 +33,26 @@ class Bot {
 
   #setup = () => {
     this.#bot.on('message', async (msg) => {
-      // TODO remove accessChecker
-      if (!this.#accessChecker(msg)) {
-        this.#bot.sendMessage(
-            msg.chat.id,
-            'You are not my master, I am not your slave',
-        );
-        return;
-      }
-
-      const user = await getUserByChatID(msg.chat.id);
-      if (user instanceof Error) {
-        console.log(user);
-        return;
-      }
-
       switch (msg.text) {
-        case '/ping':
-          this.#bot.sendMessage(
-              msg.chat.id,
-              `Pong: ${new Date()}`,
-          );
+        case '/start':
+          this.#startCommand.processMsg(msg);
           return;
         case '/revise':
-          this.#reviseCommand.processMsg(msg, user);
+          this.#reviseCommand.processMsg(msg);
           return;
         case '/learn':
-          this.#learnCommand.processMsg(msg, user);
+          this.#learnCommand.processMsg(msg);
+          return;
+        case '/ping':
+          this.#protectedCommand(msg, () => {
+            this.#bot.sendMessage(
+                msg.chat.id,
+                `Pong: ${new Date()}`,
+            );
+          });
           return;
         case '/testDB':
-          this.#testDBCommand.processMsg(msg);
+          this.#protectedCommand(msg, this.#testDBCommand.processMsg);
           return;
         default:
           this.#bot.sendMessage(
@@ -93,6 +86,21 @@ class Bot {
       return true;
     }
     return false;
+  };
+
+  /**
+   * @param {TelegramBot.Message} msg
+   * @param {Function} fn
+   */
+  #protectedCommand = (msg, fn) => {
+    if (!this.#accessChecker(msg)) {
+      this.#bot.sendMessage(
+          msg.chat.id,
+          'You are not my master, I am not your slave',
+      );
+      return;
+    }
+    fn(msg);
   };
 
   /**
