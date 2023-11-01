@@ -1,6 +1,5 @@
 // eslint-disable-next-line
 const TelegramBot = require('node-telegram-bot-api');
-const {escapeMarkdown} = require('telegram-escape');
 const {Command} = require('./command');
 const {
   getRandomWordByUserIDForRevise,
@@ -8,6 +7,7 @@ const {
   getWordByID,
   setWordAsForgottenByWordID,
 } = require('../repo/words');
+const {renderWordWithCustomStatus} = require('../render/renderWord');
 
 const ReviseCallbackId = '[REVISE]';
 const QuestionMark = '❓';
@@ -27,6 +27,7 @@ class ReviseCommand extends Command {
     this.#bot = bot;
   }
 
+  // eslint-disable-next-line
   /**
    * @param {TelegramBot.Message} msg
    * @param {import('../repo/users').User} user
@@ -42,7 +43,7 @@ class ReviseCommand extends Command {
 
     this.#bot.sendMessage(
         msg.chat.id,
-        this.#renderMardown(word, QuestionMark),
+        renderWordWithCustomStatus(word, QuestionMark),
         {
           parse_mode: 'MarkdownV2',
           reply_markup: {
@@ -98,7 +99,7 @@ class ReviseCommand extends Command {
     }
 
     this.#bot.editMessageText(
-        this.#renderMardown(word, status),
+        renderWordWithCustomStatus(word, status),
         {
           parse_mode: 'MarkdownV2',
           message_id: msg.message_id,
@@ -129,28 +130,6 @@ class ReviseCommand extends Command {
       };
     }
     return new Error(`can't parse callback_data: ${input}`);
-  };
-
-  /**
-   * @param {import('../repo/words').Word} word
-   * @param {string} status
-   * @return {string}
-   */
-  #renderMardown = (word, status) => {
-    const english = escapeMarkdown(word.English);
-    const translation = escapeMarkdown(word.Translation);
-    const examples = escapeMarkdown(word.Examples);
-
-    return `
-*English:*
-${english} \\- ${status} 
-
-*Examples:*
-||${examples}||
-
-*Translation:*
-||${translation}||
-          `;
   };
 }
 

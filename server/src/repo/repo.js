@@ -12,7 +12,6 @@ const getClient = async () => {
   }
 
   const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@englishbot.nkcnrjn.mongodb.net/?retryWrites=true&w=majority`;
-  console.log(uri);
   global.client = new MongoClient(uri, {
     serverApi: {
       version: ServerApiVersion.v1,

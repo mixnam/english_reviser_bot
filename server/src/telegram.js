@@ -1,6 +1,5 @@
 const dotenv = require('dotenv');
 const TelegramBot = require('node-telegram-bot-api');
-const {NotionDB} = require('./database.js');
 const {ReviseCommand, ReviseCallbackId} = require('./commands/revise.js');
 const {LearnCommand, LearnCallbackId} = require('./commands/learn.js');
 const {TestDBCommand} = require('./commands/testDB.js');
@@ -11,7 +10,6 @@ const {getUserByChatID} = require('./repo/users.js');
  */
 class Bot {
   #bot;
-  #notionDB;
   #reviseCommand;
   #learnCommand;
   #testDBCommand;
@@ -23,12 +21,8 @@ class Bot {
     this.#bot = new TelegramBot(
         process.env.TELEGRAM_BOT_API_KEY,
     );
-    this.#notionDB = new NotionDB(
-        process.env.NOTION_SECRET,
-        process.env.NOTION_DATABASE_ID,
-    );
-    this.#reviseCommand = new ReviseCommand(this.#bot, this.#notionDB);
-    this.#learnCommand = new LearnCommand(this.#bot, this.#notionDB);
+    this.#reviseCommand = new ReviseCommand(this.#bot);
+    this.#learnCommand = new LearnCommand(this.#bot);
     this.#testDBCommand = new TestDBCommand(this.#bot);
 
     this.#setup();

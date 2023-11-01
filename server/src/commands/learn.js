@@ -1,58 +1,54 @@
 // eslint-disable-next-line
 const TelegramBot = require('node-telegram-bot-api');
-const {escapeMarkdown} = require('telegram-escape');
 const {Command} = require('./command');
-// eslint-disable-next-line
-const {NotionDB, Property} = require('../database');
-const {renderRichText} = require('../utils.js');
+const {
+  getRandomWordByUserIDForLearn,
+  ProgressOrder,
+  getWordByID,
+  setWordProgress,
+} = require('../repo/words');
+const {
+  renderWordWithCustomStatus,
+  mapWordProgressToStatus,
+} = require('../render/renderWord');
 
 const LearnCallbackId = '[LEARN]';
 
 /**
- * ReviseCommand
+ * LearnCommand
  */
 class LearnCommand extends Command {
   #bot;
-  #notionDB;
 
   /**
-   * ReviseCommand constructor
+   * LearnCommand constructor
    * @param {TelegramBot} bot
-   * @param {NotionDB} notionDB
    */
-  constructor(bot, notionDB) {
+  constructor(bot ) {
     super();
     this.#bot = bot;
-    this.#notionDB = notionDB;
   }
 
+  // eslint-disable-next-line
   /**
    * @param {TelegramBot.Message} msg
+   * @param {import('../repo/users').User} user
    */
-  async processMsg(msg) {
-    const page = await this.#notionDB.getRandomPageForLearn();
-    if (page === undefined) {
+  async processMsg(msg, user) {
+    const word = await getRandomWordByUserIDForLearn(user._id);
+    if (word === null) {
       this.#bot.sendMessage(
           msg.chat.id,
           'You have learned all your words 🎉',
       );
     }
-    const english = escapeMarkdown(
-        renderRichText(page.properties[Property.English]),
-    );
-    const translation = escapeMarkdown(
-        renderRichText(page.properties[Property.Translation]),
-    );
 
     this.#bot.sendMessage(
         msg.chat.id,
-        `
-*English:*
-${english}
-
-*Translation:*
-||${translation}||
-          `,
+        renderWordWithCustomStatus(
+            word,
+            mapWordProgressToStatus[word.Progress],
+        ),
         {
           parse_mode: 'MarkdownV2',
           reply_markup: {
@@ -61,7 +57,7 @@ ${english}
                 text: 'UP',
                 callback_data: [
                   LearnCallbackId,
-                  page.id,
+                  word._id,
                   'true',
                 ].join(','),
               },
@@ -69,7 +65,7 @@ ${english}
                 text: 'DOWN',
                 callback_data: [
                   LearnCallbackId,
-                  page.id,
+                  word._id,
                   'false',
                 ].join(','),
               }],
@@ -89,69 +85,43 @@ ${english}
       return;
     }
 
-    if (data.remember) {
-      const page = await this.#notionDB.getPageById(data.pageId);
-      const res = await this.#notionDB.markPageProgress(
-          data.pageId,
-          page.properties[Property.Progress].select.name,
-          'up',
-      );
-      if (res !== null) {
-        console.error(res);
-        return;
-      }
-      const english = escapeMarkdown(
-          renderRichText(page.properties[Property.English]),
-      );
-      const translation = escapeMarkdown(
-          renderRichText(page.properties[Property.Translation]),
-      );
-      this.#bot.editMessageText(`
-*English:*
-${english} \\- 🟢 *UP*
-
-*Translation:*
-||${translation}||
-    `, {
-        parse_mode: 'MarkdownV2',
-        message_id: msg.message_id,
-        chat_id: msg.chat.id,
-      });
-    } else {
-      const page = await this.#notionDB.getPageById(data.pageId);
-      const res = await this.#notionDB.markPageProgress(
-          data.pageId,
-          page.properties[Property.Progress].select.name,
-          'down',
-      );
-      if (res !== null) {
-        console.error(res);
-        return;
-      }
-      const english = escapeMarkdown(
-          renderRichText(page.properties[Property.English]),
-      );
-      const translation = escapeMarkdown(
-          renderRichText(page.properties[Property.Translation]),
-      );
-      this.#bot.editMessageText(`
-*English:*
-${english} \\- 🔻 *DOWN*
-
-*Translation:*
-||${translation}||
-    `, {
-        parse_mode: 'MarkdownV2',
-        message_id: msg.message_id,
-        chat_id: msg.chat.id,
-      });
+    const word = await getWordByID(data.wordID);
+    if (word instanceof Error) {
+      console.error(word);
+      return;
     }
+
+    const currentProgressIdx = ProgressOrder.findIndex(
+        (i) => i === word.Progress,
+    );
+
+    let nextProgress;
+    if (data.remember) {
+      nextProgress = ProgressOrder[currentProgressIdx + 1] ?? word.Progress;
+    } else {
+      nextProgress = ProgressOrder[currentProgressIdx - 1] ?? word.Progress;
+    }
+
+    const result = await setWordProgress(word._id, nextProgress);
+    if (result !== null) {
+      console.error(result);
+      return;
+    }
+
+    this.#bot.editMessageText(
+        renderWordWithCustomStatus(word, mapWordProgressToStatus[nextProgress]),
+        {
+          parse_mode: 'MarkdownV2',
+          message_id: msg.message_id,
+          chat_id: msg.chat.id,
+        },
+    );
   };
 
   /**
    * @typedef CallbackData
    * @type {object}
-   * @property {string} pageId
+   * @property {string} wordID
    * @property {boolean} remember
    */
 
@@ -166,7 +136,7 @@ ${english} \\- 🔻 *DOWN*
       (rawData[1] === 'true' || rawData[1] === 'false')
     ) {
       return {
-        pageId: rawData[0],
+        wordID: rawData[0],
         remember: rawData[1] === 'true',
       };
     }

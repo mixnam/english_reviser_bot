@@ -38,7 +38,7 @@ const ProgressOrder = [
  * @return {Promise<(Word|null)>}
  */
 const getRandomWordByUserIDForRevise = executionTime(
-    'getRandomWordForRevise',
+    'getRandomWordByUserIDForRevise',
     async (userID) => {
       const client = await getClient();
       const db = client.db('englishbot');
@@ -70,6 +70,77 @@ const getRandomWordByUserIDForRevise = executionTime(
     });
 
 /**
+ * @param {string} userID
+ * @return {Promise<(Word|null)>}
+ */
+const getRandomWordByUserIDForLearn = executionTime(
+    'getRandomWordByUserIDForLearn',
+    async (userID) => {
+      const client = await getClient();
+      const db = client.db('englishbot');
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      const lastRevisedThreshhold = new Date();
+      lastRevisedThreshhold.setDate(lastRevisedThreshhold.getDate() - 1);
+      const result = words.aggregate([
+        {
+          $match: {
+            userID,
+            'Progress': {
+              $in: [
+                Progress.HaveProblems,
+                Progress.NeedToRepeat,
+                Progress.ActiveLearning,
+                Progress.HaveToPayAttention,
+              ],
+            },
+            'Last Revised': {
+              $lt: lastRevisedThreshhold,
+            },
+          },
+        },
+        {
+          $sample: {
+            size: 1,
+          },
+        },
+      ]);
+
+      if (!(await result.hasNext())) {
+        return null;
+      }
+      return await result.next();
+    });
+
+/**
+ * @param {string} wordID
+ * @param {Progress} progress
+ * @return {Promise<Error|null>}
+ */
+const setWordProgress = executionTime(
+    'setWordProgress',
+    async (wordID, progress) => {
+      const client = await getClient();
+      const db = client.db('englishbot');
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      try {
+        await words.findOneAndUpdate(
+            {_id: new ObjectId(wordID)},
+            {
+              $set: {
+                'Progress': progress,
+                'Last Revised': new Date(),
+              },
+            },
+        );
+        return null;
+      } catch (err) {
+        return new Error(`[repo][setWordProgress] - ${err}`);
+      }
+    });
+
+/**
  * @param {string} wordID
  * @return {Promis<Word|null|Error>}
  */
@@ -96,23 +167,11 @@ const getWordByID = executionTime(
 const setWordAsRevisedByWordID = executionTime(
     'setWordAsRevisedByWordID',
     async (wordID) => {
-      const client = await getClient();
-      const db = client.db('englishbot');
-      const words = db.collection(WORD_COLLECTION_NAME);
-
-      try {
-        await words.findOneAndUpdate(
-            {_id: new ObjectId(wordID)},
-            {
-              $set: {
-                'Last Revised': new Date(),
-              },
-            },
-        );
-        return null;
-      } catch (err) {
-        return new Error(`[repo][setWordAsRevisedByWordID] - ${err}`);
+      const result = await setWordProgress(wordID, Progress.Learned);
+      if (result !== null) {
+        return new Error(`[repo][setWordAsRevisedByWordID] - ${result}`);
       }
+      return null;
     });
 
 /**
@@ -122,24 +181,11 @@ const setWordAsRevisedByWordID = executionTime(
 const setWordAsForgottenByWordID = executionTime(
     'setWordAsForgottenByWordID',
     async (wordID) => {
-      const client = await getClient();
-      const db = client.db('englishbot');
-      const words = db.collection(WORD_COLLECTION_NAME);
-
-      try {
-        await words.findOneAndUpdate(
-            {_id: new ObjectId(wordID)},
-            {
-              $set: {
-                'Progress': Progress.HaveProblems,
-                'Last Revised': new Date(),
-              },
-            },
-        );
-        return null;
-      } catch (err) {
+      const result = await setWordProgress(wordID, Progress.HaveProblems);
+      if (result !== null) {
         return new Error(`[repo][setWordAsForgottenByWordID] - ${err}`);
       }
+      return null;
     });
 
 module.exports = {
@@ -147,6 +193,8 @@ module.exports = {
   Progress,
   getWordByID,
   getRandomWordByUserIDForRevise,
+  getRandomWordByUserIDForLearn,
+  setWordProgress,
   setWordAsRevisedByWordID,
   setWordAsForgottenByWordID,
 };
