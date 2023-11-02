@@ -50,6 +50,7 @@ class Bot {
           return;
         case '/add':
           this.#addCommand.processMsg(msg);
+          return;
         case '/ping':
           this.#protectedCommand(msg, () => {
             this.#bot.sendMessage(
