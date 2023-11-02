@@ -4,6 +4,8 @@ const {ReviseCommand, ReviseCallbackId} = require('./commands/revise.js');
 const {LearnCommand, LearnCallbackId} = require('./commands/learn.js');
 const {TestDBCommand} = require('./commands/testDB.js');
 const {StartCommand} = require('./commands/start.js');
+const {forceTransition} = require('./flows/processor/index.js');
+const {AddCommand} = require('./commands/add.js');
 
 /**
  * Bot
@@ -14,6 +16,7 @@ class Bot {
   #learnCommand;
   #testDBCommand;
   #startCommand;
+  #addCommand;
 
   /**
    * Bot constructor
@@ -25,6 +28,8 @@ class Bot {
     this.#reviseCommand = new ReviseCommand(this.#bot);
     this.#learnCommand = new LearnCommand(this.#bot);
     this.#startCommand = new StartCommand(this.#bot);
+    this.#addCommand = new AddCommand(this.#bot);
+
 
     this.#testDBCommand = new TestDBCommand(this.#bot);
 
@@ -43,6 +48,8 @@ class Bot {
         case '/learn':
           this.#learnCommand.processMsg(msg);
           return;
+        case '/add':
+          this.#addCommand.processMsg(msg);
         case '/ping':
           this.#protectedCommand(msg, () => {
             this.#bot.sendMessage(
@@ -55,10 +62,7 @@ class Bot {
           this.#protectedCommand(msg, this.#testDBCommand.processMsg);
           return;
         default:
-          this.#bot.sendMessage(
-              msg.chat.id,
-              'Have no idea what you want from me',
-          );
+          forceTransition(this.#bot, msg.chat.id, msg.text);
       }
     });
 
@@ -72,7 +76,7 @@ class Bot {
           this.#learnCommand.processCallback(query.message, data);
           return;
         default:
-          console.error(`Can not understand callback_id ${callbakId}`);
+          forceTransition(this.#bot, query.message.chat.id, query.data);
       }
     });
   };

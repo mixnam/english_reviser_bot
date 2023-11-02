@@ -7,13 +7,13 @@ const {forceAction} = require('../flows/processor');
 
 
 /**
- * TextDBCommand
+ * AddCommand
  */
-class TestDBCommand extends Command {
+class AddCommand extends Command {
   #bot;
 
   /**
-   * ReviseCommand constructor
+   * AddCommand constructor
    * @param {TelegramBot} bot
    */
   constructor(bot) {
@@ -46,5 +46,5 @@ class TestDBCommand extends Command {
 }
 
 module.exports = {
-  TestDBCommand,
+  AddCommand,
 };

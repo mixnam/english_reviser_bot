@@ -27,10 +27,33 @@ const ProgressOrder = [
  * @property {string} userID
  * @property {string} English
  * @property {string} Translation
- * @property {string} Examples
+ * @property {string|undefined} Examples
  * @property {Progress} Progress
  * @property {Date} 'Last Revised'
  */
+
+/**
+ * @param {string} userID
+ * @param {Word} word
+ * @return {Promise<Error|null>}
+ */
+const addNewWord = executionTime(
+    'addNewWord',
+    async (userID, word) => {
+      const client = await getClient();
+      const db = client.db('englishbot');
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      try {
+        await words.insertOne({
+          userID,
+          ...word,
+        });
+        return null;
+      } catch (err) {
+        return new Error(`[repo][addNewWord] - ${err}`);
+      }
+    });
 
 
 /**
@@ -191,6 +214,7 @@ const setWordAsForgottenByWordID = executionTime(
 module.exports = {
   ProgressOrder,
   Progress,
+  addNewWord,
   getWordByID,
   getRandomWordByUserIDForRevise,
   getRandomWordByUserIDForLearn,

@@ -8,9 +8,8 @@ Hey!
 I will help you to study english words everyday!
 Here is what can I do:
 /revise - I will give you one random word you've added and want to repeat
-/learn - I will give you one random word you've added you want to learn
+/learn - I will give you one random word you've added and want to learn
 /add - I help you to add new word you want to learn
-/stats - I show you your current word progress
 `;
 
 module.exports = {

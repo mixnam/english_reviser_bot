@@ -1,5 +1,6 @@
 const {getClient} = require('./repo');
 const {executionTime} = require('../utils');
+const {ObjectId} = require('mongodb');
 
 /**
  * @typedef State
@@ -50,7 +51,7 @@ const addNewUser = executionTime(
 
 /**
  * @param {number|string} chatID
- * @return {Promise<User|null|Error>}
+ * @returns {string}
  */
 const getUserByChatID = executionTime(
     'getUserByChatID',
@@ -68,8 +69,66 @@ const getUserByChatID = executionTime(
       }
     });
 
+/**
+ * @param {string} userID
+ * @param {Object} state
+ * @return {Promise<Error|null>}
+ */
+const setUserState = executionTime(
+    'setUserState',
+    async (userID, state) => {
+      const client = await getClient();
+      const db = client.db('englishbot');
+      const users = db.collection('users');
+
+      try {
+        await users.findOneAndUpdate({
+          _id: new ObjectId(userID),
+        }, {
+          $set: {
+            state,
+          },
+        });
+        return null;
+      } catch (err) {
+        return new Error(
+            `[repo][setUserState]: can't update user state - ${err}`,
+        );
+      }
+    });
+
+/**
+ * @param {string} userID
+ * @param {Object} stepID
+ * @return {Promise<Error|null>}
+ */
+const setUserStepID = executionTime(
+    'setUserStepID',
+    async (userID, stepID) => {
+      const client = await getClient();
+      const db = client.db('englishbot');
+      const users = db.collection('users');
+
+      try {
+        await users.findOneAndUpdate({
+          _id: new ObjectId(userID),
+        }, {
+          $set: {
+            stepID,
+          },
+        });
+        return null;
+      } catch (err) {
+        return new Error(
+            `[repo][setUserStepID]: can't update user stepID - ${err}`,
+        );
+      }
+    });
+
 
 module.exports = {
   addNewUser,
   getUserByChatID,
+  setUserState,
+  setUserStepID,
 };

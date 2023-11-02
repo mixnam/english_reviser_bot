@@ -1,15 +1,12 @@
 // eslint-disable-next-line
 const TelegramBot = require('node-telegram-bot-api');
 const {
-  getUserByChatID,
   addNewUser,
-  NoUserWithChatIDError,
 } = require('../repo/users');
 const {Command} = require('./command');
 const {
   renderStartError,
   renderStartSuccess,
-  renderStartUserAlreadyExists,
 } = require('../render/renderStartMsg');
 
 /**

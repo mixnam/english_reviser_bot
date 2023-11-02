@@ -12,21 +12,21 @@ const mapWordProgressToStatus = {
 // eslint-disable-next-line
 /**
    * @param {import('../repo/words').Word} word
-   * @param {string} status
+   * @param {string|undefined} status
    * @return {string}
    */
 const renderWordWithCustomStatus = (word, status) => {
   const english = escapeMarkdown(word.English);
   const translation = escapeMarkdown(word.Translation);
-  const examples = escapeMarkdown(word.Examples);
+  const examples = word.Examples ? escapeMarkdown(word.Examples) : null;
 
   return `
 *English:*
-${english} \\- ${status} 
-
+${english} ${status ? `\\- ${status}` : ''}
+${examples ? `
 *Examples:*
 ${examples}
-
+`: ''}
 *Translation:*
 ||${translation}||
           `;
