@@ -100,8 +100,10 @@ const getRandomWordByUserIDForLearn = executionTime(
       const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
 
+      // Every yesterday word
       const lastRevisedThreshhold = new Date();
-      lastRevisedThreshhold.setDate(lastRevisedThreshhold.getDate() - 1);
+      lastRevisedThreshhold.setHours(0, 0, 0, 0);
+
       const result = words.aggregate([
         {
           $match: {

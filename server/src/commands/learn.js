@@ -50,6 +50,7 @@ class LearnCommand extends Command {
           msg.chat.id,
           'You have learned all your words 🎉',
       );
+      return;
     }
 
     this.#bot.sendMessage(
