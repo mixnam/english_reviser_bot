@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 const TelegramBot = require('node-telegram-bot-api');
 const {Command} = require('./command');
-const {getUserByChatID, setUserStepID} = require('../repo/users');
+const {setUserStepID} = require('../repo/users');
 const AddNewWord = require('../flows/steps/addNewWordStep');
 const {forceAction} = require('../flows/processor');
 
@@ -25,13 +25,9 @@ class AddCommand extends Command {
    * @param {TelegramBot.Message} msg
    */
   processMsg = async (msg) => {
-    const user = await getUserByChatID(msg.chat.id);
+    const user = await this.getSessionUser(msg);
     if (user instanceof Error) {
-      console.log(user);
-      return;
-    }
-    if (user === null) {
-      console.error(`no user with chatID - ${msg.chat.id}`);
+      console.error(user);
       return;
     }
 

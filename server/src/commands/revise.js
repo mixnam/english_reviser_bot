@@ -7,7 +7,6 @@ const {
   getWordByID,
   setWordAsForgottenByWordID,
 } = require('../repo/words');
-const {getUserByChatID} = require('../repo/users');
 const {renderWordWithCustomStatus} = require('../render/renderWord');
 
 const ReviseCallbackId = '[REVISE]';
@@ -32,13 +31,9 @@ class ReviseCommand extends Command {
    * @param {TelegramBot.Message} msg
    */
   async processMsg(msg) {
-    const user = await getUserByChatID(msg.chat.id);
+    const user = await this.getSessionUser(msg);
     if (user instanceof Error) {
-      console.log(user);
-      return;
-    }
-    if (user === null) {
-      console.error(`no user with chatID - ${msg.chat.id}`);
+      console.error(user);
       return;
     }
 
