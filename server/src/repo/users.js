@@ -1,4 +1,4 @@
-const {getClient} = require('./repo');
+const {getDb} = require('./repo');
 const {executionTime} = require('../utils');
 const {ObjectId} = require('mongodb');
 
@@ -27,8 +27,7 @@ const {ObjectId} = require('mongodb');
 const addNewUser = executionTime(
     'addNewUser',
     async (user) => {
-      const client = await getClient();
-      const db = client.db('englishbot');
+      const db = await getDb();
       const users = db.collection('users');
 
       const result = await getUserByChatID(user.chatID);
@@ -56,8 +55,7 @@ const addNewUser = executionTime(
 const getUserByChatID = executionTime(
     'getUserByChatID',
     async (chatID) => {
-      const client = await getClient();
-      const db = client.db('englishbot');
+      const db = await getDb();
       const users = db.collection('users');
       try {
         const user = await users.findOne({chatID: chatID});
@@ -77,8 +75,7 @@ const getUserByChatID = executionTime(
 const setUserState = executionTime(
     'setUserState',
     async (userID, state) => {
-      const client = await getClient();
-      const db = client.db('englishbot');
+      const db = await getDb();
       const users = db.collection('users');
 
       try {
@@ -105,8 +102,7 @@ const setUserState = executionTime(
 const setUserStepID = executionTime(
     'setUserStepID',
     async (userID, stepID) => {
-      const client = await getClient();
-      const db = client.db('englishbot');
+      const db = await getDb();
       const users = db.collection('users');
 
       try {

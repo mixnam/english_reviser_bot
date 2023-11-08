@@ -1,4 +1,5 @@
-const {MongoClient, ServerApiVersion} = require('mongodb');
+// eslint-disable-next-line
+const {MongoClient, ServerApiVersion, Db} = require('mongodb');
 
 global.client = null;
 
@@ -11,8 +12,7 @@ const getClient = async () => {
     return global.client;
   }
 
-  const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@englishbot.nkcnrjn.mongodb.net/?retryWrites=true&w=majority`;
-  global.client = new MongoClient(uri, {
+  global.client = new MongoClient(process.env.MONGODB_URI, {
     serverApi: {
       version: ServerApiVersion.v1,
       strict: true,
@@ -24,6 +24,15 @@ const getClient = async () => {
   return global.client;
 };
 
+/**
+ * @return {Promise<Db>}
+ */
+const getDb = async () => {
+  const client = await getClient();
+  return client.db(process.env.MONGODB_DB);
+};
+
 module.exports = {
   getClient,
+  getDb,
 };

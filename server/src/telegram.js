@@ -145,7 +145,7 @@ module.exports = {
 };
 
 if (process.argv[2] === '--dev') {
-  dotenv.config();
+  dotenv.config({path: '.env.dev', debug: true});
   const bot = new Bot();
   bot.startPolling();
 }
