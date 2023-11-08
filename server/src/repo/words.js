@@ -1,5 +1,5 @@
 const {ObjectId} = require('mongodb');
-const {getClient} = require('./repo');
+const {getDb} = require('./repo');
 const {executionTime} = require('../utils');
 
 const WORD_COLLECTION_NAME = 'english_words';
@@ -40,8 +40,7 @@ const ProgressOrder = [
 const addNewWord = executionTime(
     'addNewWord',
     async (userID, word) => {
-      const client = await getClient();
-      const db = client.db('englishbot');
+      const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
@@ -63,8 +62,7 @@ const addNewWord = executionTime(
 const getRandomWordByUserIDForRevise = executionTime(
     'getRandomWordByUserIDForRevise',
     async (userID) => {
-      const client = await getClient();
-      const db = client.db('englishbot');
+      const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
 
       const lastRevisedThreshhold = new Date();
@@ -99,8 +97,7 @@ const getRandomWordByUserIDForRevise = executionTime(
 const getRandomWordByUserIDForLearn = executionTime(
     'getRandomWordByUserIDForLearn',
     async (userID) => {
-      const client = await getClient();
-      const db = client.db('englishbot');
+      const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
 
       const lastRevisedThreshhold = new Date();
@@ -143,8 +140,7 @@ const getRandomWordByUserIDForLearn = executionTime(
 const setWordProgress = executionTime(
     'setWordProgress',
     async (wordID, progress) => {
-      const client = await getClient();
-      const db = client.db('englishbot');
+      const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
@@ -170,8 +166,7 @@ const setWordProgress = executionTime(
 const getWordByID = executionTime(
     'getWordByID',
     async (wordID) => {
-      const client = await getClient();
-      const db = client.db('englishbot');
+      const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
