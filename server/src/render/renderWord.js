@@ -3,7 +3,7 @@ const {Progress} = require('../repo/words');
 
 const mapWordProgressToStatus = {
   [Progress.Learned]: '*Learned 🟢*',
-  [Progress.ActiveLearning]: '*ActiveLearning 🔵*',
+  [Progress.ActiveLearning]: '*Active Learning 🔵*',
   [Progress.NeedToRepeat]: '*Need to repeat 🟡*',
   [Progress.HaveToPayAttention]: '*Have to pay attention 🟠*',
   [Progress.HaveProblems]: '*Have problems 🔴*',

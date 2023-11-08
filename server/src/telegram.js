@@ -6,6 +6,7 @@ const {TestDBCommand} = require('./commands/testDB.js');
 const {StartCommand} = require('./commands/start.js');
 const {forceTransition} = require('./flows/processor/index.js');
 const {AddCommand} = require('./commands/add.js');
+const {renderHelpMsg} = require('./render/renderHelpMsg.js');
 
 /**
  * Bot
@@ -41,6 +42,13 @@ class Bot {
       switch (msg.text) {
         case '/start':
           this.#startCommand.processMsg(msg);
+          return;
+        case '/help':
+          this.#bot.sendMessage(
+              msg.chat.id,
+              renderHelpMsg(), {
+                parse_mode: 'MarkdownV2',
+              });
           return;
         case '/revise':
           this.#reviseCommand.processMsg(msg);
