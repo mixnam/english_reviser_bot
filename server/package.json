@@ -15,6 +15,7 @@
     "dotenv": "^16.3.1",
     "fastify": "^4.22.2",
     "jest": "^29.7.0",
+    "js-levenshtein": "^1.1.6",
     "mongodb": "^6.2.0",
     "node-telegram-bot-api": "^0.63.0",
     "telegram-escape": "^1.1.1"

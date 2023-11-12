@@ -1,8 +1,8 @@
 const {Step} = require('./step');
 
 const StepID = 'ADD_NEW_WORD_EXAMPLES_FORK';
-const YesAnswer = 'YES';
-const NoAnswer = 'NO';
+const YesAnswer = 'Yes';
+const NoAnswer = 'No';
 
 /**
  * AddNewWordExamplesFork

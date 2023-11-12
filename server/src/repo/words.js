@@ -1,6 +1,7 @@
 const {ObjectId} = require('mongodb');
 const {getDb} = require('./repo');
 const {executionTime} = require('../utils');
+const levenshtein = require('js-levenshtein');
 
 const WORD_COLLECTION_NAME = 'english_words';
 
@@ -181,6 +182,26 @@ const getWordByID = executionTime(
     });
 
 /**
+ * @param {string} text
+ * @return {Promis<Word|null|Error>}
+ */
+const getWordByText = executionTime(
+    'getWordByText',
+    async (text) => {
+      const db = await getDb();
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      try {
+        // enchancment add text index
+        return await words.findOne(
+            {English: text},
+        );
+      } catch (err) {
+        return new Error(`[repo][getWordByID] - ${err}`);
+      }
+    });
+
+/**
  * @param {string} wordID
  * @return {Promis<Error|null>}
  */
@@ -208,13 +229,44 @@ const setWordAsForgottenByWordID = executionTime(
       return null;
     });
 
+/**
+ * @param {string} word
+ * @param {string} userID
+ *
+ * @return {Promise<Error|Array<Word>>}
+ */
+const getSpelcheckSuggestions = executionTime(
+    'getSpelcheckSuggestions',
+    async (newWord, userID) => {
+      const db = await getDb();
+      const words = db.collection(WORD_COLLECTION_NAME);
+      const result = words.find({userID});
+
+      const suggestions = [];
+      try {
+        for await (const word of result) {
+          const longestWord = word.English.split(' ').reduce((acc, w) =>
+              acc.length < w.length ? w : acc
+          , '');
+          if (levenshtein(longestWord, newWord) < 2) {
+            suggestions.push(word);
+          }
+        }
+        return suggestions;
+      } catch (err) {
+        return new Error(`[repo][getSpelcheckSuggestions] - ${err}`);
+      }
+    });
+
 module.exports = {
   ProgressOrder,
   Progress,
   addNewWord,
   getWordByID,
+  getWordByText,
   getRandomWordByUserIDForRevise,
   getRandomWordByUserIDForLearn,
+  getSpelcheckSuggestions,
   setWordProgress,
   setWordAsRevisedByWordID,
   setWordAsForgottenByWordID,

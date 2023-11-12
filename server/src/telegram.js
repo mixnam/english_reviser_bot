@@ -85,6 +85,8 @@ class Bot {
           this.#learnCommand.processCallback(query.message, data);
           return;
         default:
+          // deadcode
+          // enchancment add forceCallbackTransition
           forceTransition(this.#bot, query.message.chat.id, query.data);
       }
     });
