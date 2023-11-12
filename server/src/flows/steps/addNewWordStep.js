@@ -1,5 +1,5 @@
 const {Step} = require('./step');
-const {Progress} = require('../../repo/words');
+const {Progress, getSpelcheckSuggestions} = require('../../repo/words');
 
 const StepID = 'ADD_NEW_WORD';
 
@@ -7,6 +7,17 @@ const StepID = 'ADD_NEW_WORD';
  * AddNewWord
  */
 class AddNewWord extends Step {
+  spellcheckStepID;
+
+  /**
+   * @param {string} nextStepID
+   * @param {string} spellcheckStepID
+   */
+  constructor(nextStepID, spellcheckStepID) {
+    super(nextStepID);
+    this.spellcheckStepID = spellcheckStepID;
+  }
+
   // eslint-disable-next-line
   /**
    * @param {import("../../repo/users").User} user
@@ -34,10 +45,22 @@ class AddNewWord extends Step {
       'Progress': Progress.HaveProblems,
       'Last Revised': lastRevisedDate,
     };
+    let suggestions = await getSpelcheckSuggestions(userAnswer, user._id);
+    if (suggestions instanceof Error) {
+      console.error(suggestions);
+      suggestions = [];
+    }
+
     const newState = {
       ...user.state,
       newWord,
+      suggestions,
     };
+
+    if (suggestions.length > 0) {
+      return [newState, this.spellcheckStepID];
+    }
+
     return [newState, this.nextStepID];
   };
 }
