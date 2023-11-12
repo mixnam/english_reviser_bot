@@ -4,6 +4,7 @@ const {Command} = require('./command');
 const {getUserByChatID, setUserStepID} = require('../repo/users');
 const AddNewWord = require('../flows/steps/addNewWordStep');
 const {forceAction} = require('../flows/processor');
+const {getSpelcheckSuggestions} = require('../repo/words');
 
 
 /**
@@ -25,23 +26,14 @@ class TestDBCommand extends Command {
    * @param {TelegramBot.Message} msg
    */
   processMsg = async (msg) => {
-    const user = await getUserByChatID(msg.chat.id);
+    const user = await this.getSessionUser(msg);
     if (user instanceof Error) {
       console.log(user);
       return;
     }
-    if (user === null) {
-      console.error(`no user with chatID - ${msg.chat.id}`);
-      return;
-    }
 
-    const result = await setUserStepID(user._id, AddNewWord.StepID);
-    if (result !== null) {
-      console.error(result);
-      return;
-    }
-    user.stepID = AddNewWord.StepID;
-    forceAction(this.#bot, user);
+    const words = await getSpelcheckSuggestions('test', user._id);
+    console.log(words);
   };
 }
 
