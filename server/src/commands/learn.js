@@ -13,6 +13,7 @@ const {
 } = require('../render/renderWord');
 
 const LearnCallbackId = '[LEARN]';
+const StopLearningText = 'Stop learning';
 
 /**
  * LearnCommand
@@ -31,8 +32,9 @@ class LearnCommand extends Command {
 
   /**
    * @param {TelegramBot.Message} msg
+   * @param {number | undefined} wordCount
    */
-  async processMsg(msg) {
+  async processMsg(msg, wordCount) {
     const user = await this.getSessionUser(msg);
     if (user instanceof Error) {
       console.error(user);
@@ -43,7 +45,7 @@ class LearnCommand extends Command {
     if (word === null) {
       this.#bot.sendMessage(
           msg.chat.id,
-          'You have learned all your words 🎉',
+          'You have learned all your words for today 🎉',
       );
       return;
     }
@@ -64,6 +66,7 @@ class LearnCommand extends Command {
                   LearnCallbackId,
                   word._id,
                   'true',
+                  wordCount ?? 0,
                 ].join(','),
               },
               {
@@ -72,8 +75,18 @@ class LearnCommand extends Command {
                   LearnCallbackId,
                   word._id,
                   'false',
+                  wordCount ?? 0,
                 ].join(','),
               }],
+              [
+                {
+                  text: StopLearningText,
+                  callback_data: [
+                    LearnCallbackId,
+                    wordCount ?? 0,
+                  ].join(','),
+                },
+              ],
             ],
           },
         });
@@ -88,6 +101,22 @@ class LearnCommand extends Command {
     if (data instanceof Error) {
       console.error(data);
       return;
+    }
+
+    if (data.type === 'stop') {
+      this.#bot.deleteMessage(msg.chat.id, msg.message_id);
+      this.#bot.sendMessage(
+          msg.chat.id,
+          `You learned ${data.wordCount} today`,
+      );
+      return;
+    }
+
+    if (data.wordCount % 10 === 0) {
+      this.#bot.sendMessage(
+          msg.chat.id,
+          `You have done ${data.wordCount} words! Great result 🎉 `,
+      );
     }
 
     const word = await getWordByID(data.wordID);
@@ -121,13 +150,28 @@ class LearnCommand extends Command {
           chat_id: msg.chat.id,
         },
     );
+    this.processMsg(msg, data.wordCount + 1);
   };
 
   /**
    * @typedef CallbackData
+   * @type {StopCallbackData|LearnCallbackData}
+   */
+
+  /**
+   * @typedef StopCallbackData
    * @type {object}
+   * @property {'stop'} type
+   * @property {number} wordCount
+   */
+
+  /**
+   * @typedef LearnCallbackData
+   * @type {object}
+   * @property {'learn'} type
    * @property {string} wordID
    * @property {boolean} remember
+   * @property {number} wordCount
    */
 
   /**
@@ -136,13 +180,22 @@ class LearnCommand extends Command {
    */
   #parseCallbackData = (rawData) => {
     if (
-      rawData.length === 2 &&
+      rawData.length === 3 &&
     typeof rawData[0] === 'string' &&
-      (rawData[1] === 'true' || rawData[1] === 'false')
+      (rawData[1] === 'true' || rawData[1] === 'false') &&
+    typeof rawData[2] === 'string'
     ) {
       return {
+        type: 'learn',
         wordID: rawData[0],
         remember: rawData[1] === 'true',
+        wordCount: Number.parseInt(rawData[2]),
+      };
+    }
+    if (rawData.length === 1 && typeof rawData[0] === 'string') {
+      return {
+        type: 'stop',
+        wordCount: Number.parseInt(rawData[0]),
       };
     }
     return new Error(`can't parse callback_data: ${input}`);
