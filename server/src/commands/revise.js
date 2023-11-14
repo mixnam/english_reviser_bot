@@ -29,8 +29,9 @@ class ReviseCommand extends Command {
 
   /**
    * @param {TelegramBot.Message} msg
+   * @param {number | undefined} wordCount
    */
-  async processMsg(msg) {
+  async processMsg(msg, wordCount) {
     const user = await this.getSessionUser(msg);
     if (user instanceof Error) {
       console.error(user);
@@ -41,7 +42,7 @@ class ReviseCommand extends Command {
     if (word === null) {
       this.#bot.sendMessage(
           msg.chat.id,
-          'You have revised all your words 🎉',
+          'You have revised all your words for today 🎉',
       );
     }
 
@@ -54,11 +55,31 @@ class ReviseCommand extends Command {
             inline_keyboard: [
               [{
                 text: 'Remember ✅',
-                callback_data: `${ReviseCallbackId},${word._id},true`},
+                callback_data: [
+                  ReviseCallbackId,
+                  word._id,
+                  true,
+                  wordCount ?? 0,
+                ].join(','),
+              },
               {
                 text: 'Forgot ❌',
-                callback_data: `${ReviseCallbackId},${word._id},false`,
+                callback_data: [
+                  ReviseCallbackId,
+                  word._id,
+                  false,
+                  wordCount ?? 0,
+                ].join(','),
               }],
+              [
+                {
+                  text: 'Stop revising',
+                  callback_data: [
+                    ReviseCallbackId,
+                    wordCount ?? 0,
+                  ].join(','),
+                },
+              ],
             ],
           },
         });
@@ -73,6 +94,22 @@ class ReviseCommand extends Command {
     if (data instanceof Error) {
       console.error(data);
       return;
+    }
+
+    if (data.type === 'stop') {
+      this.#bot.deleteMessage(msg.chat.id, msg.message_id);
+      this.#bot.sendMessage(
+          msg.chat.id,
+          `You learned ${data.wordCount} today`,
+      );
+      return;
+    }
+
+    if (data.wordCount !== 0 && data.wordCount % 10 === 0) {
+      this.#bot.sendMessage(
+          msg.chat.id,
+          `You have done ${data.wordCount} words! Great result 🎉 `,
+      );
     }
 
     let status = '';
@@ -109,13 +146,28 @@ class ReviseCommand extends Command {
           message_id: msg.message_id,
           chat_id: msg.chat.id,
         });
+    this.processMsg(msg, data.wordCount + 1);
   };
 
   /**
    * @typedef CallbackData
+   * @type {StopCallbackData|ReviseCallbackData}
+   */
+
+  /**
+   * @typedef StopCallbackData
    * @type {object}
+   * @property {'stop'} type
+   * @property {number} wordCount
+   */
+
+  /**
+   * @typedef ReviseCallbackData
+   * @type {object}
+   * @property {'revise'} type
    * @property {string} wordID
    * @property {boolean} remember
+   * @property {number} wordCount
    */
 
   /**
@@ -124,15 +176,25 @@ class ReviseCommand extends Command {
    */
   #parseCallbackData = (rawData) => {
     if (
-      rawData.length === 2 &&
+      rawData.length === 3 &&
     typeof rawData[0] === 'string' &&
-      (rawData[1] === 'true' || rawData[1] === 'false')
+      (rawData[1] === 'true' || rawData[1] === 'false') &&
+        typeof rawData[2] === 'string'
     ) {
       return {
+        type: 'revise',
         wordID: rawData[0],
         remember: rawData[1] === 'true',
+        wordCount: Number.parseInt(rawData[2]),
       };
     }
+    if (rawData.length === 1 && typeof rawData[0] === 'string') {
+      return {
+        type: 'stop',
+        wordCount: Number.parseInt(rawData[0]),
+      };
+    }
+
     return new Error(`can't parse callback_data: ${input}`);
   };
 }
