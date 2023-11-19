@@ -3,7 +3,7 @@ This bot can help you learn and review English words\\.
 
 First, you can add a new word using the /add command\\.
 
-Then, with the /learn command, once a day, you should try to remember the word's translation\\. If you remember it, press UP; if not, press DOWN\\. The word is considered learned once it has gone through all the stages from bottom to top:
+Then, with the /learn command, once a day, you should try to remember the word's translations\\. If you remember it, press 'Up'; if not, press 'Down'\\. The word is considered learned once it has gone through all the stages from bottom to top:
     
     *Learned 🟢*
     *Active Learning 🔵*
