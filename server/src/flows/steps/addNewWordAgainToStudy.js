@@ -22,7 +22,7 @@ class AddNewWordAgainToStudy extends Step {
     const word = user.state.wordToStudyAgain;
 
     return [
-      `You've moved this word back to learning
+      `You've moved this word back to the learning list
 ${renderWordWithCustomStatus(
       word,
       mapWordProgressToStatus[word.Progress],

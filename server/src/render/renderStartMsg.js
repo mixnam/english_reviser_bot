@@ -7,8 +7,8 @@ const renderStartSuccess = () => `
 Hey!
 I will help you to study english words everyday!
 Here is what can I do:
-/revise - I will give you one random word you've added and want to repeat
-/learn - I will give you one random word you've added and want to learn
+/revise - Start a revising exercise 
+/learn - Start a learning exercise  
 /add - I help you to add new word you want to learn
 `;
 

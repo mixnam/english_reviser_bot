@@ -2,7 +2,7 @@ const {Step} = require('./step');
 const {Progress, setWordProgress, getWordByText} = require('../../repo/words');
 
 const StepID = 'ADD_NEW_WORD_SPELLCHECK';
-const ThisIsNewWord = 'No, I am adding a new word';
+const ThisIsNewWord = 'Continue';
 
 /**
  * AddNewWordSpellcheck
@@ -34,9 +34,10 @@ class AddNewWordSpellcheck extends Step {
     } = user.state;
 
     return [
-      `Your input \\- __${newWord.English}__
-There are already some similar words in your word list, do you forget it?
-Click on right word to move it to "Have Problems" state`, [
+      `You'are adding following word \\- __${newWord.English}__
+
+There are already some similar words in your word list. Did you forget about them? 
+Click on the correct word to move it to the 'Have Problems' state, or click 'Continue' if you are adding new word`, [
         ...(suggestions.map((suggestion) => [suggestion.English])),
         [ThisIsNewWord],
       ],

@@ -42,7 +42,8 @@ class ReviseCommand extends Command {
     if (word === null) {
       this.#bot.sendMessage(
           msg.chat.id,
-          'You have revised all your words for today 🎉',
+          `You've revised all your words for today 🎉
+Come back and repeat tomorrow!`,
       );
       return;
     }
@@ -101,7 +102,7 @@ class ReviseCommand extends Command {
       this.#bot.deleteMessage(msg.chat.id, msg.message_id);
       this.#bot.sendMessage(
           msg.chat.id,
-          `You revised ${data.wordCount} words today`,
+          `You've revised ${data.wordCount} words today`,
       );
       return;
     }
@@ -111,7 +112,7 @@ class ReviseCommand extends Command {
     if (wordCount !== 0 && wordCount % 10 === 0) {
       this.#bot.sendMessage(
           msg.chat.id,
-          `You have done ${wordCount} words! Great result 🎉 `,
+          `You've gone through ${wordCount} words! Great result 🎉 `,
       );
     }
 

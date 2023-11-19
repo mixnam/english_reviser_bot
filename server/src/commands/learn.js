@@ -45,7 +45,8 @@ class LearnCommand extends Command {
     if (word === null) {
       this.#bot.sendMessage(
           msg.chat.id,
-          'You have learned all your words for today 🎉',
+          `You've covered all the words designated for learning today 🎉
+Come back and repeat tomorrow!`,
       );
       return;
     }
@@ -61,7 +62,7 @@ class LearnCommand extends Command {
           reply_markup: {
             inline_keyboard: [
               [{
-                text: 'UP',
+                text: 'Up',
                 callback_data: [
                   LearnCallbackId,
                   word._id,
@@ -70,7 +71,7 @@ class LearnCommand extends Command {
                 ].join(','),
               },
               {
-                text: 'DOWN',
+                text: 'Down',
                 callback_data: [
                   LearnCallbackId,
                   word._id,
@@ -107,7 +108,7 @@ class LearnCommand extends Command {
       this.#bot.deleteMessage(msg.chat.id, msg.message_id);
       this.#bot.sendMessage(
           msg.chat.id,
-          `You learned ${data.wordCount} words today`,
+          `You've covered ${data.wordCount} words today`,
       );
       return;
     }
@@ -117,7 +118,7 @@ class LearnCommand extends Command {
     if (wordCount !== 0 && wordCount % 10 === 0) {
       this.#bot.sendMessage(
           msg.chat.id,
-          `You have done ${wordCount} words! Great result 🎉 `,
+          `You've gone through ${wordCount} words! Great result 🎉 `,
       );
     }
 
