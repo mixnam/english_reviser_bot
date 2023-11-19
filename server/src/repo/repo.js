@@ -19,6 +19,7 @@ const getClient = async () => {
       deprecationErrors: true,
     },
   });
+
   await global.client.connect();
   console.log('New connection is opened');
   return global.client;
