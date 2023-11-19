@@ -107,15 +107,17 @@ class LearnCommand extends Command {
       this.#bot.deleteMessage(msg.chat.id, msg.message_id);
       this.#bot.sendMessage(
           msg.chat.id,
-          `You learned ${data.wordCount} today`,
+          `You learned ${data.wordCount} words today`,
       );
       return;
     }
 
-    if (data.wordCount !== 0 && data.wordCount % 10 === 0) {
+    const wordCount = data.wordCount + 1;
+
+    if (wordCount !== 0 && wordCount % 10 === 0) {
       this.#bot.sendMessage(
           msg.chat.id,
-          `You have done ${data.wordCount} words! Great result 🎉 `,
+          `You have done ${wordCount} words! Great result 🎉 `,
       );
     }
 
@@ -150,7 +152,7 @@ class LearnCommand extends Command {
           chat_id: msg.chat.id,
         },
     );
-    this.processMsg(msg, data.wordCount + 1);
+    this.processMsg(msg, wordCount);
   };
 
   /**
