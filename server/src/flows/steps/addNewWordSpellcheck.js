@@ -34,9 +34,9 @@ class AddNewWordSpellcheck extends Step {
     } = user.state;
 
     return [
-      `You'are adding following word \\- __${newWord.English}__
+      `You're adding the following word \\- __${newWord.English}__
 
-There are already some similar words in your word list. Did you forget about them? 
+There are already some similar words in your word list\\. Did you forget about them? 
 Click on the correct word to move it to the 'Have Problems' state, or click 'Continue' if you are adding new word`, [
         ...(suggestions.map((suggestion) => [suggestion.English])),
         [ThisIsNewWord],

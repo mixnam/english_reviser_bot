@@ -242,13 +242,31 @@ const getSpelcheckSuggestions = executionTime(
       const words = db.collection(WORD_COLLECTION_NAME);
       const result = words.find({userID});
 
+      /**
+         * Let's just assume that the longest word in user input string
+         * is the word user want to add
+         *
+         * @param {string} word
+         * @return {string}
+         */
+      const cleanWord = (word) => word
+          .toLowerCase()
+          .trim()
+          .split(' ')
+          .reduce((acc, w) =>
+              acc.length < w.length ? w : acc
+          , '');
+
+      const newWordCleaned = cleanWord(newWord);
+
       const suggestions = [];
       try {
         for await (const word of result) {
-          const longestWord = word.English.split(' ').reduce((acc, w) =>
-              acc.length < w.length ? w : acc
-          , '');
-          if (levenshtein(longestWord, newWord) < 2) {
+          console.log(word);
+          if (
+            levenshtein(cleanWord(word.English), newWordCleaned) <
+              (newWordCleaned.length > 6 ? 2 : 1)
+          ) {
             suggestions.push(word);
           }
         }
