@@ -322,7 +322,6 @@ const getSpelcheckSuggestions = executionTime(
       const suggestions = [];
       try {
         for await (const word of result) {
-          console.log(word);
           if (
             levenshtein(cleanWord(word.English), newWordCleaned) <
               (newWordCleaned.length > 6 ? 2 : 1)
