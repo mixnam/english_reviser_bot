@@ -1,6 +1,7 @@
 const {Step} = require('./step');
 const {renderWordWithCustomStatus} = require('../../render/renderWord');
-const {addNewWord} = require('../../repo/words');
+const {addNewWord, setWordTelegramAudioID} = require('../../repo/words');
+const {TTSService} = require('../../tts/tts');
 
 const StepID = 'ADD_NEW_WORD_SUBBMIT';
 
@@ -8,25 +9,36 @@ const StepID = 'ADD_NEW_WORD_SUBBMIT';
  * AddNewWordSubbmit
  */
 class AddNewWordSubbmit extends Step {
-  // eslint-disable-next-line
   /**
-   * @param {import("../../repo/users").User} user
-   * @return {[
-   *    string,
-   *    import('node-telegram-bot-api').InlineKeyboardButton[][] | null,
-   * ]}
+   * @inheritdoc
    */
   makeAction = async (user) => {
+    /**
+     * @type {import('../../repo/words').Word}
+     */
     const {newWord} = user.state;
-    const result = await addNewWord(user._id, newWord);
-    if (result !== null) {
-      console.error(result);
+
+    const audio = await TTSService.getAudioForText(newWord.English);
+    if (audio instanceof Error) {
+      console.error(audio);
+    } else {
+      newWord.Audio = audio;
+    }
+
+    const newWordID = await addNewWord(user._id, newWord);
+    if (newWordID instanceof Error) {
+      console.error(newWordID);
       return;
     }
     return [
       `You just added new word 🎉: 
 ${renderWordWithCustomStatus(newWord)}`,
       null,
+      audio,
+      (fileID) => {
+        setWordTelegramAudioID(newWordID, fileID)
+            .catch((err) => console.log(err));
+      },
     ];
   };
 

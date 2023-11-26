@@ -1,3 +1,6 @@
+// eslint-disable-next-line
+const TelegramBot = require('node-telegram-bot-api');
+
 /**
  * Step
  */
@@ -22,8 +25,16 @@ class Step {
 
   // eslint-disable-next-line
   /**
+   * @callback onFileUploaded
+   * @param {string} fileID
+   *
    * @param {import("../../repo/users").User} user
-   * @return {string}
+   * @return {[
+   *    string,
+   *    TelegramBot.ReplyKeyboardMarkup,
+   *    Uint8Array,
+   *    onFileUploaded
+   * ]}
    */
   makeAction = async (user) => {
     throw new Error('makeAction is not implemented');
