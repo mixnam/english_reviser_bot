@@ -2,7 +2,7 @@ const dotenv = require('dotenv');
 const TelegramBot = require('node-telegram-bot-api');
 const {ReviseCommand, ReviseCallbackId} = require('./commands/revise.js');
 const {LearnCommand, LearnCallbackId} = require('./commands/learn.js');
-const {TestDBCommand} = require('./commands/testDB.js');
+const {TestCommand} = require('./commands/test.js');
 const {StartCommand} = require('./commands/start.js');
 const {forceTransition} = require('./flows/processor/index.js');
 const {AddCommand} = require('./commands/add.js');
@@ -15,7 +15,7 @@ class Bot {
   #bot;
   #reviseCommand;
   #learnCommand;
-  #testDBCommand;
+  #testCommand;
   #startCommand;
   #addCommand;
 
@@ -32,7 +32,7 @@ class Bot {
     this.#addCommand = new AddCommand(this.#bot);
 
 
-    this.#testDBCommand = new TestDBCommand(this.#bot);
+    this.#testCommand = new TestCommand(this.#bot);
 
     this.#setup();
   }
@@ -67,8 +67,8 @@ class Bot {
             );
           });
           return;
-        case '/testDB':
-          this.#protectedCommand(msg, this.#testDBCommand.processMsg);
+        case '/test':
+          this.#protectedCommand(msg, this.#testCommand.processMsg);
           return;
         default:
           forceTransition(this.#bot, msg.chat.id, msg.text);

@@ -6,6 +6,7 @@ const {
   ProgressOrder,
   getWordByID,
   setWordProgress,
+  setWordTelegramAudioID,
 } = require('../repo/words');
 const {
   renderWordWithCustomStatus,
@@ -51,46 +52,72 @@ Come back and repeat tomorrow!`,
       return;
     }
 
+    const text = renderWordWithCustomStatus(
+        word,
+        mapWordProgressToStatus[word.Progress],
+    );
+    const options = {
+      parse_mode: 'MarkdownV2',
+      reply_markup: {
+        inline_keyboard: [
+          [{
+            text: 'Up',
+            callback_data: [
+              LearnCallbackId,
+              word._id,
+              'true',
+              wordCount ?? 0,
+            ].join(','),
+          },
+          {
+            text: 'Down',
+            callback_data: [
+              LearnCallbackId,
+              word._id,
+              'false',
+              wordCount ?? 0,
+            ].join(','),
+          }],
+          [
+            {
+              text: StopLearningText,
+              callback_data: [
+                LearnCallbackId,
+                wordCount ?? 0,
+              ].join(','),
+            },
+          ],
+        ],
+      },
+    };
+
+    if (word.TelegramAudioID) {
+      this.#bot.sendVoice(
+          msg.chat.id, word.TelegramAudioID,
+          {
+            ...options,
+            caption: text,
+          });
+      return;
+    }
+
+    if (word.Audio) {
+      const sentMsg = await this.#bot.sendVoice(
+          msg.chat.id, word.Audio,
+          {
+            ...options,
+            caption: text,
+          });
+      setWordTelegramAudioID(word._id, sentMsg.voice.file_id)
+          .catch((err) => console.error(err));
+      return;
+    }
+
     this.#bot.sendMessage(
         msg.chat.id,
-        renderWordWithCustomStatus(
-            word,
-            mapWordProgressToStatus[word.Progress],
-        ),
-        {
-          parse_mode: 'MarkdownV2',
-          reply_markup: {
-            inline_keyboard: [
-              [{
-                text: 'Up',
-                callback_data: [
-                  LearnCallbackId,
-                  word._id,
-                  'true',
-                  wordCount ?? 0,
-                ].join(','),
-              },
-              {
-                text: 'Down',
-                callback_data: [
-                  LearnCallbackId,
-                  word._id,
-                  'false',
-                  wordCount ?? 0,
-                ].join(','),
-              }],
-              [
-                {
-                  text: StopLearningText,
-                  callback_data: [
-                    LearnCallbackId,
-                    wordCount ?? 0,
-                  ].join(','),
-                },
-              ],
-            ],
-          },
-        });
+        text,
+        options,
+    );
   };
 
   /**
@@ -145,14 +172,22 @@ Come back and repeat tomorrow!`,
       return;
     }
 
-    this.#bot.editMessageText(
-        renderWordWithCustomStatus(word, mapWordProgressToStatus[nextProgress]),
-        {
-          parse_mode: 'MarkdownV2',
-          message_id: msg.message_id,
-          chat_id: msg.chat.id,
-        },
+    const wordText = renderWordWithCustomStatus(
+        word,
+        mapWordProgressToStatus[nextProgress],
     );
+    const msgOptions = {
+      parse_mode: 'MarkdownV2',
+      message_id: msg.message_id,
+      chat_id: msg.chat.id,
+    };
+
+    if (msg.text) {
+      this.#bot.editMessageText(wordText, msgOptions);
+    } else if (msg.caption) {
+      this.#bot.editMessageCaption(wordText, msgOptions);
+    }
+
     this.processMsg(msg, wordCount);
   };
 

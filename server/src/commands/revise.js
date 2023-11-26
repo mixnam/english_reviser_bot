@@ -6,6 +6,7 @@ const {
   setWordAsRevisedByWordID,
   getWordByID,
   setWordAsForgottenByWordID,
+  setWordTelegramAudioID,
 } = require('../repo/words');
 const {renderWordWithCustomStatus} = require('../render/renderWord');
 
@@ -48,43 +49,69 @@ Come back and repeat tomorrow!`,
       return;
     }
 
+    const text = renderWordWithCustomStatus(word, QuestionMark);
+    const options = {
+      parse_mode: 'MarkdownV2',
+      reply_markup: {
+        inline_keyboard: [
+          [{
+            text: 'Remember ✅',
+            callback_data: [
+              ReviseCallbackId,
+              word._id,
+              true,
+              wordCount ?? 0,
+            ].join(','),
+          },
+          {
+            text: 'Forgot ❌',
+            callback_data: [
+              ReviseCallbackId,
+              word._id,
+              false,
+              wordCount ?? 0,
+            ].join(','),
+          }],
+          [
+            {
+              text: 'Stop revising',
+              callback_data: [
+                ReviseCallbackId,
+                wordCount ?? 0,
+              ].join(','),
+            },
+          ],
+        ],
+      },
+    };
+
+    if (word.TelegramAudioID) {
+      this.#bot.sendVoice(
+          msg.chat.id, word.TelegramAudioID,
+          {
+            ...options,
+            caption: text,
+          });
+      return;
+    }
+
+    if (word.Audio) {
+      const sentMsg = await this.#bot.sendVoice(
+          msg.chat.id, word.Audio,
+          {
+            ...options,
+            caption: text,
+          });
+      setWordTelegramAudioID(word._id, sentMsg.voice.file_id)
+          .catch((err) => console.error(err));
+      return;
+    }
+
     this.#bot.sendMessage(
         msg.chat.id,
-        renderWordWithCustomStatus(word, QuestionMark),
-        {
-          parse_mode: 'MarkdownV2',
-          reply_markup: {
-            inline_keyboard: [
-              [{
-                text: 'Remember ✅',
-                callback_data: [
-                  ReviseCallbackId,
-                  word._id,
-                  true,
-                  wordCount ?? 0,
-                ].join(','),
-              },
-              {
-                text: 'Forgot ❌',
-                callback_data: [
-                  ReviseCallbackId,
-                  word._id,
-                  false,
-                  wordCount ?? 0,
-                ].join(','),
-              }],
-              [
-                {
-                  text: 'Stop revising',
-                  callback_data: [
-                    ReviseCallbackId,
-                    wordCount ?? 0,
-                  ].join(','),
-                },
-              ],
-            ],
-          },
-        });
+        text,
+        options,
+    );
   };
 
   /**
@@ -143,13 +170,19 @@ Come back and repeat tomorrow!`,
       return;
     }
 
-    this.#bot.editMessageText(
-        renderWordWithCustomStatus(word, status),
-        {
-          parse_mode: 'MarkdownV2',
-          message_id: msg.message_id,
-          chat_id: msg.chat.id,
-        });
+    const text = renderWordWithCustomStatus(word, status);
+    const options = {
+      parse_mode: 'MarkdownV2',
+      message_id: msg.message_id,
+      chat_id: msg.chat.id,
+    };
+
+    if (msg.caption) {
+      this.#bot.editMessageCaption(text, options);
+    } else {
+      this.#bot.editMessageText(text, options);
+    }
+
     this.processMsg(msg, wordCount);
   };
 

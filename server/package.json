@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/text-to-speech": "^5.0.1",
     "@notionhq/client": "^2.2.13",
     "dotenv": "^16.3.1",
     "fastify": "^4.22.2",

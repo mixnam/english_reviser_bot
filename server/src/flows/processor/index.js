@@ -21,15 +21,35 @@ const forceAction = async (bot, user) => {
 
   // TODO: introduce FlowMap
   const step = AddNewWordFlow[stepID];
-  const [actionText, actionKeyboard] = await step.makeAction(user);
-  bot.sendMessage(user.chatID, actionText, {
-    parse_mode: 'MarkdownV2',
-    reply_markup: actionKeyboard !== null ? {
-      keyboard: actionKeyboard,
-    } : {
-      remove_keyboard: true,
-    },
-  });
+  const [
+    actionText,
+    actionKeyboard,
+    audio,
+    onFileUploaded,
+  ] = await step.makeAction(user);
+
+  let msg;
+  if (audio) {
+    msg = await bot.sendVoice(user.chatID, audio, {
+      caption: actionText,
+      parse_mode: 'MarkdownV2',
+      reply_markup: actionKeyboard !== null ? {
+        keyboard: actionKeyboard,
+      } : {
+        remove_keyboard: true,
+      },
+    });
+  } else {
+    msg = await bot.sendMessage(user.chatID, actionText, {
+      parse_mode: 'MarkdownV2',
+      reply_markup: actionKeyboard !== null ? {
+        keyboard: actionKeyboard,
+      } : {
+        remove_keyboard: true,
+      },
+    });
+  }
+  onFileUploaded?.(msg.voice.file_id);
 };
 
 // eslint-disable-next-line

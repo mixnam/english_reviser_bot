@@ -1,4 +1,5 @@
-const {ObjectId} = require('mongodb');
+// eslint-disable-next-line
+const {ObjectId, Binary} = require('mongodb');
 const {getDb} = require('./repo');
 const {executionTime} = require('../utils');
 const levenshtein = require('js-levenshtein');
@@ -30,13 +31,42 @@ const ProgressOrder = [
  * @property {string} Translation
  * @property {string|undefined} Examples
  * @property {Progress} Progress
+ * @property {Uint8Array|undefined} Audio
+ * @property {string|undefined} TelegramAudioID
  * @property {Date} 'Last Revised'
  */
 
 /**
+ * @typedef WordDTO
+ * @type {object}
+ * @property {string} _id
+ * @property {string} userID
+ * @property {string} English
+ * @property {string} Translation
+ * @property {string|undefined} Examples
+ * @property {Progress} Progress
+ * @property {Binary|undefined} Audio
+ * @property {string|undefined} TelegramAudioID
+ * @property {Date} 'Last Revised'
+ */
+
+/**
+ * @param {WordDTO} wordDto
+ * @return {Word}
+ */
+const mapWord = (wordDto) => {
+  return {
+    ...wordDto,
+    Audio: wordDto.Audio ?
+      Buffer.from(wordDto.Audio.toString('base64'), 'base64') :
+      undefined,
+  };
+};
+
+/**
  * @param {string} userID
  * @param {Word} word
- * @return {Promise<Error|null>}
+ * @return {Promise<Error|string>}
  */
 const addNewWord = executionTime(
     'addNewWord',
@@ -45,11 +75,11 @@ const addNewWord = executionTime(
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
-        await words.insertOne({
+        const inserted = await words.insertOne({
           userID,
           ...word,
         });
-        return null;
+        return inserted.insertedId;
       } catch (err) {
         return new Error(`[repo][addNewWord] - ${err}`);
       }
@@ -88,7 +118,7 @@ const getRandomWordByUserIDForRevise = executionTime(
       if (!(await result.hasNext())) {
         return null;
       }
-      return await result.next();
+      return mapWord(await result.next());
     });
 
 /**
@@ -132,7 +162,7 @@ const getRandomWordByUserIDForLearn = executionTime(
       if (!(await result.hasNext())) {
         return null;
       }
-      return await result.next();
+      return mapWord(await result.next());
     });
 
 /**
@@ -164,6 +194,32 @@ const setWordProgress = executionTime(
 
 /**
  * @param {string} wordID
+ * @param {string} audioID
+ * @return {Promise<Error|null>}
+ */
+const setWordTelegramAudioID = executionTime(
+    'setWordTelegramAudioID',
+    async (wordID, audioID) => {
+      const db = await getDb();
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      try {
+        await words.findOneAndUpdate(
+            {_id: new ObjectId(wordID)},
+            {
+              $set: {
+                'TelegramAudioID': audioID,
+              },
+            },
+        );
+        return null;
+      } catch (err) {
+        return new Error(`[repo][setWordTelegramAudioID] - ${err}`);
+      }
+    });
+
+/**
+ * @param {string} wordID
  * @return {Promis<Word|null|Error>}
  */
 const getWordByID = executionTime(
@@ -173,9 +229,9 @@ const getWordByID = executionTime(
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
-        return await words.findOne(
+        return mapWord(await words.findOne(
             {_id: new ObjectId(wordID)},
-        );
+        ));
       } catch (err) {
         return new Error(`[repo][getWordByID] - ${err}`);
       }
@@ -193,9 +249,9 @@ const getWordByText = executionTime(
 
       try {
         // enchancment add text index
-        return await words.findOne(
+        return mapWord(await words.findOne(
             {English: text},
-        );
+        ));
       } catch (err) {
         return new Error(`[repo][getWordByID] - ${err}`);
       }
@@ -233,14 +289,18 @@ const setWordAsForgottenByWordID = executionTime(
  * @param {string} word
  * @param {string} userID
  *
- * @return {Promise<Error|Array<Word>>}
+ * @return {Promise<Error|Array<{English: string}>>}
  */
 const getSpelcheckSuggestions = executionTime(
     'getSpelcheckSuggestions',
     async (newWord, userID) => {
       const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
-      const result = words.find({userID});
+      const result = words.find({userID}, {
+        projection: {
+          English: 1,
+        },
+      });
 
       /**
          * Let's just assume that the longest word in user input string
@@ -276,6 +336,7 @@ const getSpelcheckSuggestions = executionTime(
       }
     });
 
+
 module.exports = {
   ProgressOrder,
   Progress,
@@ -286,6 +347,7 @@ module.exports = {
   getRandomWordByUserIDForLearn,
   getSpelcheckSuggestions,
   setWordProgress,
+  setWordTelegramAudioID,
   setWordAsRevisedByWordID,
   setWordAsForgottenByWordID,
 };
