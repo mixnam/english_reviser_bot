@@ -2,6 +2,7 @@ const {Step} = require('./step');
 const {renderWordWithCustomStatus} = require('../../render/renderWord');
 const {addNewWord, setWordTelegramAudioID} = require('../../repo/words');
 const {TTSService} = require('../../tts/tts');
+const { renderYouJustAddedNewWord } = require('../../render/renderTextMsg');
 
 const StepID = 'ADD_NEW_WORD_SUBBMIT';
 
@@ -31,8 +32,7 @@ class AddNewWordSubbmit extends Step {
       return;
     }
     return [
-      `You just added new word 🎉: 
-${renderWordWithCustomStatus(newWord)}`,
+      renderYouJustAddedNewWord(newWord),
       null,
       audio,
       (fileID) => {

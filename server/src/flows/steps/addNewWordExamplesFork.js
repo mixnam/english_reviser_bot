@@ -1,8 +1,10 @@
+const { labelYes, labelNo } = require('../../render/renderLabel');
+const { renderDoYouWantToAddContext } = require('../../render/renderTextMsg');
 const {Step} = require('./step');
 
 const StepID = 'ADD_NEW_WORD_EXAMPLES_FORK';
-const YesAnswer = 'Yes';
-const NoAnswer = 'No';
+const YesAnswer = labelYes;
+const NoAnswer = labelNo;
 
 /**
  * AddNewWordExamplesFork
@@ -28,7 +30,7 @@ class AddNewWordExamplesFork extends Step {
    * ]}
    */
   makeAction = async () => {
-    return ['Do you want to add some context/examples to this word?', [[
+    return [renderDoYouWantToAddContext(), [[
       {
         text: YesAnswer,
       },

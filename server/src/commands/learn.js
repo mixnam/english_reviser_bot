@@ -12,9 +12,10 @@ const {
   renderWordWithCustomStatus,
   mapWordProgressToStatus,
 } = require('../render/renderWord');
+const { renderNoMoreWordsToLearnForToday, renderYouHaveCovered_N_Words, renderYouHaveGoneThrough_N_Words } = require('../render/renderTextMsg');
+const { labelUp, labelDown, labelStopLearning } = require('../render/renderLabel');
 
 const LearnCallbackId = '[LEARN]';
-const StopLearningText = 'Stop learning';
 
 /**
  * LearnCommand
@@ -46,8 +47,7 @@ class LearnCommand extends Command {
     if (word === null) {
       this.#bot.sendMessage(
           msg.chat.id,
-          `You've covered all the words designated for learning today 🎉
-Come back and repeat tomorrow!`,
+          renderNoMoreWordsToLearnForToday(),
       );
       return;
     }
@@ -61,7 +61,7 @@ Come back and repeat tomorrow!`,
       reply_markup: {
         inline_keyboard: [
           [{
-            text: 'Up',
+            text: labelUp,
             callback_data: [
               LearnCallbackId,
               word._id,
@@ -70,7 +70,7 @@ Come back and repeat tomorrow!`,
             ].join(','),
           },
           {
-            text: 'Down',
+            text: labelDown,
             callback_data: [
               LearnCallbackId,
               word._id,
@@ -80,7 +80,7 @@ Come back and repeat tomorrow!`,
           }],
           [
             {
-              text: StopLearningText,
+              text: labelStopLearning,
               callback_data: [
                 LearnCallbackId,
                 wordCount ?? 0,
@@ -135,7 +135,7 @@ Come back and repeat tomorrow!`,
       this.#bot.deleteMessage(msg.chat.id, msg.message_id);
       this.#bot.sendMessage(
           msg.chat.id,
-          `You've covered ${data.wordCount} words today`,
+          renderYouHaveCovered_N_Words(data.wordCount),
       );
       return;
     }
@@ -145,7 +145,7 @@ Come back and repeat tomorrow!`,
     if (wordCount !== 0 && wordCount % 10 === 0) {
       this.#bot.sendMessage(
           msg.chat.id,
-          `You've gone through ${wordCount} words! Great result 🎉 `,
+          renderYouHaveGoneThrough_N_Words(wordCount),
       );
     }
 

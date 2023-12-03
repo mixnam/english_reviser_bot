@@ -7,6 +7,7 @@ const {StartCommand} = require('./commands/start.js');
 const {forceTransition} = require('./flows/processor/index.js');
 const {AddCommand} = require('./commands/add.js');
 const {renderHelpMsg} = require('./render/renderHelpMsg.js');
+const { renderYouAreNotMyMaster } = require('./render/renderTextMsg.js');
 
 /**
  * Bot
@@ -111,7 +112,7 @@ class Bot {
     if (!this.#accessChecker(msg)) {
       this.#bot.sendMessage(
           msg.chat.id,
-          'You are not my master, I am not your slave',
+          renderYouAreNotMyMaster(),
       );
       return;
     }

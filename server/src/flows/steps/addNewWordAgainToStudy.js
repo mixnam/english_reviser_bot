@@ -3,6 +3,7 @@ const {
   renderWordWithCustomStatus,
   mapWordProgressToStatus,
 } = require('../../render/renderWord');
+const { renderYouHaveMovedThisWordBackToStady } = require('../../render/renderTextMsg');
 
 const StepID = 'ADD_NEW_WORD_AGAIN_TO_STUDY';
 
@@ -22,11 +23,7 @@ class AddNewWordAgainToStudy extends Step {
     const word = user.state.wordToStudyAgain;
 
     return [
-      `You've moved this word back to the learning list
-${renderWordWithCustomStatus(
-      word,
-      mapWordProgressToStatus[word.Progress],
-  )}`,
+      renderYouHaveMovedThisWordBackToStady(word),
       null,
     ];
   };

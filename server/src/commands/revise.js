@@ -9,9 +9,10 @@ const {
   setWordTelegramAudioID,
 } = require('../repo/words');
 const {renderWordWithCustomStatus} = require('../render/renderWord');
+const { renderNoMoreWordsToReviseForToday, renderYouHaveRevised_N_Words, renderYouHaveGoneThrough_N_Words } = require('../render/renderTextMsg');
+const { labelRemember, labelForgot, labelStopRevising, labelQuestionMark, labelRevised } = require('../render/renderLabel');
 
 const ReviseCallbackId = '[REVISE]';
-const QuestionMark = '❓';
 
 /**
  * ReviseCommand
@@ -43,19 +44,18 @@ class ReviseCommand extends Command {
     if (word === null) {
       this.#bot.sendMessage(
           msg.chat.id,
-          `You've revised all your words for today 🎉
-Come back and repeat tomorrow!`,
+          renderNoMoreWordsToReviseForToday(),
       );
       return;
     }
 
-    const text = renderWordWithCustomStatus(word, QuestionMark);
+    const text = renderWordWithCustomStatus(word, labelQuestionMark);
     const options = {
       parse_mode: 'MarkdownV2',
       reply_markup: {
         inline_keyboard: [
           [{
-            text: 'Remember ✅',
+            text: labelRemember,
             callback_data: [
               ReviseCallbackId,
               word._id,
@@ -64,7 +64,7 @@ Come back and repeat tomorrow!`,
             ].join(','),
           },
           {
-            text: 'Forgot ❌',
+            text: labelForgot,
             callback_data: [
               ReviseCallbackId,
               word._id,
@@ -74,7 +74,7 @@ Come back and repeat tomorrow!`,
           }],
           [
             {
-              text: 'Stop revising',
+              text: labelStopRevising,
               callback_data: [
                 ReviseCallbackId,
                 wordCount ?? 0,
@@ -129,7 +129,7 @@ Come back and repeat tomorrow!`,
       this.#bot.deleteMessage(msg.chat.id, msg.message_id);
       this.#bot.sendMessage(
           msg.chat.id,
-          `You've revised ${data.wordCount} words today`,
+          renderYouHaveRevised_N_Words(data.wordCount),
       );
       return;
     }
@@ -139,7 +139,7 @@ Come back and repeat tomorrow!`,
     if (wordCount !== 0 && wordCount % 10 === 0) {
       this.#bot.sendMessage(
           msg.chat.id,
-          `You've gone through ${wordCount} words! Great result 🎉 `,
+          renderYouHaveGoneThrough_N_Words(wordCount),
       );
     }
 
@@ -150,14 +150,14 @@ Come back and repeat tomorrow!`,
         console.error(res);
         return;
       }
-      status = '*Revised ✅*';
+      status = labelRevised;
     } else {
       const res = await setWordAsForgottenByWordID(data.wordID);
       if (res !== null) {
         console.error(res);
         return;
       }
-      status = '*Forgot ❌*';
+      status = `*${labelForgot}*`;
     }
 
     const word = await getWordByID(data.wordID);

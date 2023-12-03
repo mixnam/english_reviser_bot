@@ -1,3 +1,4 @@
+const { renderSendMeTranslationForThisWord } = require('../../render/renderTextMsg');
 const {Step} = require('./step');
 
 const StepID = 'ADD_NEW_WORD_TRANSLATIONS';
@@ -15,7 +16,7 @@ class AddNewWordTranslations extends Step {
    * ]}
    */
   makeAction = async () => {
-    return ['Send me translation for this word', null];
+    return [renderSendMeTranslationForThisWord(), null];
   };
 
   // eslint-disable-next-line

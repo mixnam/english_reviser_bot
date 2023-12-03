@@ -1,3 +1,4 @@
+const { renderSendMeContextForThisWord } = require('../../render/renderTextMsg');
 const {Step} = require('./step');
 
 const StepID = 'ADD_NEW_WORD_EXAMPLES';
@@ -15,7 +16,7 @@ class AddNewWordExamples extends Step {
    * ]}
    */
   makeAction = async () => {
-    return ['Send me a context/examples for this word', null];
+    return [renderSendMeContextForThisWord(), null];
   };
 
   // eslint-disable-next-line

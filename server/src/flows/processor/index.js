@@ -6,6 +6,7 @@ const {
   setUserStepID,
   setUserState,
 } = require('../../repo/users');
+const { renderNoIdea } = require("../../render/renderTextMsg");
 
 // eslint-disable-next-line
 /**
@@ -74,7 +75,7 @@ const forceTransition = async (bot, chatID, userAnswer) => {
     console.error('User has no active step');
     bot.sendMessage(
         chatID,
-        'Have no idea what you want from me',
+        renderNoIdea(),
     );
     return;
   }

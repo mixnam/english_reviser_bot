@@ -1,5 +1,6 @@
 const {Step} = require('./step');
 const {Progress, getSpelcheckSuggestions} = require('../../repo/words');
+const { renderSendMeWordToAdd } = require('../../render/renderTextMsg');
 
 const StepID = 'ADD_NEW_WORD';
 
@@ -27,7 +28,7 @@ class AddNewWord extends Step {
    * ]}
    */
   makeAction = async () => {
-    return ['Send me a word you want to add', null];
+    return [renderSendMeWordToAdd(), null];
   };
 
   // eslint-disable-next-line
