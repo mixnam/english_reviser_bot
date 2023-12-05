@@ -1,8 +1,7 @@
 const {Step} = require('./step');
-const {renderWordWithCustomStatus} = require('../../render/renderWord');
 const {addNewWord, setWordTelegramAudioID} = require('../../repo/words');
 const {TTSService} = require('../../tts/tts');
-const { renderYouJustAddedNewWord } = require('../../render/renderTextMsg');
+const {renderYouJustAddedNewWord} = require('../../render/renderTextMsg');
 
 const StepID = 'ADD_NEW_WORD_SUBBMIT';
 
@@ -11,25 +10,24 @@ const StepID = 'ADD_NEW_WORD_SUBBMIT';
  */
 class AddNewWordSubbmit extends Step {
   /**
-   * @inheritdoc
+   * @type {Step['makeAction']}
    */
   makeAction = async (user) => {
-    /**
-     * @type {import('../../repo/words').Word}
-     */
-    const {newWord} = user.state;
+    const newWord = /** @type {import('../../repo/words').Word} */ (user.state.newWord);
+    if (!newWord) {
+      return new Error('impossible state, no newWord');
+    }
 
     const audio = await TTSService.getAudioForText(newWord.English);
     if (audio instanceof Error) {
-      console.error(audio);
+      return audio;
     } else {
       newWord.Audio = audio;
     }
 
     const newWordID = await addNewWord(user._id, newWord);
     if (newWordID instanceof Error) {
-      console.error(newWordID);
-      return;
+      return newWordID;
     }
     return [
       renderYouJustAddedNewWord(newWord),
@@ -42,13 +40,10 @@ class AddNewWordSubbmit extends Step {
     ];
   };
 
-  // eslint-disable-next-line
   /**
-   * @param {string|null} userAnswer
-   * @param {import("../../repo/users").User} user
-   * @return {[Object, string]}
+   * @type {Step['makeTransition']}
    */
-  makeTransition = async (userAnswer, user) => {
+  makeTransition = async () => {
     return [null, this.nextStepID];
   };
 }

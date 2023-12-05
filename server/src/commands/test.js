@@ -1,10 +1,11 @@
 // eslint-disable-next-line
-const TelegramBot = require('node-telegram-bot-api');
+// @ts-nocheck 
+// const TelegramBot = require('node-telegram-bot-api');
 const {Command} = require('./command');
-const {getUserByChatID, setUserStepID} = require('../repo/users');
-const AddNewWord = require('../flows/steps/addNewWordStep');
-const {forceAction} = require('../flows/processor');
-const {getSpelcheckSuggestions} = require('../repo/words');
+// const {getUserByChatID, setUserStepID} = require('../repo/users');
+// const AddNewWord = require('../flows/steps/addNewWordStep');
+// const {forceAction} = require('../flows/processor');
+// const {getSpelcheckSuggestions} = require('../repo/words');
 const {TTSService} = require('../tts/tts');
 const {renderWordWithCustomStatus} = require('../render/renderWord');
 

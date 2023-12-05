@@ -13,28 +13,32 @@ class Step {
   constructor(nextStepID) {
     this.nextStepID = nextStepID;
   }
-  // eslint-disable-next-line
+
   /**
-   * @param {string|null} userAnswer
+   * @param {TelegramBot.Message} msg
    * @param {import("../../repo/users").User} user
-   * @return {[Object, string]}
+   * @return {Promise<[
+   *    import('../../repo/users').State | null,
+   *    string
+   * ]>}
    */
-  makeTransition = async (userAnswer, user) => {
+  makeTransition = async (msg, user) => {
     throw new Error('makeTransition is not implemented');
   };
 
-  // eslint-disable-next-line
   /**
    * @callback onFileUploaded
    * @param {string} fileID
-   *
+   */
+
+  /**
    * @param {import("../../repo/users").User} user
-   * @return {[
+   * @returns {Promise<[
    *    string,
-   *    TelegramBot.ReplyKeyboardMarkup,
-   *    Uint8Array,
-   *    onFileUploaded
-   * ]}
+   *    TelegramBot.ReplyKeyboardMarkup | null,
+   *    Uint8Array | null,
+   *    onFileUploaded | null
+   * ]|Error>}
    */
   makeAction = async (user) => {
     throw new Error('makeAction is not implemented');

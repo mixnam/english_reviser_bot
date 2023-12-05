@@ -6,7 +6,7 @@ const {
   setUserStepID,
   setUserState,
 } = require('../../repo/users');
-const { renderNoIdea } = require("../../render/renderTextMsg");
+const {renderNoIdea} = require('../../render/renderTextMsg');
 
 // eslint-disable-next-line
 /**
@@ -22,51 +22,57 @@ const forceAction = async (bot, user) => {
 
   // TODO: introduce FlowMap
   const step = AddNewWordFlow[stepID];
+  const result = await step.makeAction(user);
+  if (result instanceof Error) {
+    console.error(result);
+    return;
+  }
   const [
     actionText,
     actionKeyboard,
     audio,
     onFileUploaded,
-  ] = await step.makeAction(user);
+  ] = result;
 
   let msg;
   if (audio) {
-    msg = await bot.sendVoice(user.chatID, audio, {
+    msg = await bot.sendVoice(user.chatID, Buffer.from(audio), {
       caption: actionText,
       parse_mode: 'MarkdownV2',
-      reply_markup: actionKeyboard !== null ? {
-        keyboard: actionKeyboard,
-      } : {
-        remove_keyboard: true,
-      },
+      reply_markup: actionKeyboard !== null ?
+        actionKeyboard :
+       {
+         remove_keyboard: true,
+       },
     });
   } else {
     msg = await bot.sendMessage(user.chatID, actionText, {
       parse_mode: 'MarkdownV2',
-      reply_markup: actionKeyboard !== null ? {
-        keyboard: actionKeyboard,
-      } : {
-        remove_keyboard: true,
-      },
+      reply_markup: actionKeyboard !== null ?
+        actionKeyboard :
+        {
+          remove_keyboard: true,
+        },
     });
   }
-  onFileUploaded?.(msg.voice.file_id);
+  if (onFileUploaded && msg.voice) {
+    onFileUploaded(msg.voice.file_id);
+  }
 };
 
-// eslint-disable-next-line
 /**
  * @param {TelegramBot} bot
- * @param {string} chatID
- * @param {string} userAnswer
+ * @param {number} chatID
+ * @param {TelegramBot.Message} msg
  */
-const forceTransition = async (bot, chatID, userAnswer) => {
+const forceTransition = async (bot, chatID, msg) => {
   const user = await getUserByChatID(chatID);
   if (user instanceof Error) {
     console.log(user);
     return;
   }
   if (user === null) {
-    console.error(`no user with chatID - ${msg.chat.id}`);
+    console.error(`no user with chatID - ${chatID}`);
     return;
   }
 
@@ -82,7 +88,7 @@ const forceTransition = async (bot, chatID, userAnswer) => {
 
   // TODO: introduce FlowMap
   const step = AddNewWordFlow[stepID];
-  const [newState, newStepID] = await step.makeTransition(userAnswer, user);
+  const [newState, newStepID] = await step.makeTransition(msg, user);
 
   let result = await setUserStepID(user._id, newStepID);
   if (result !== null) {

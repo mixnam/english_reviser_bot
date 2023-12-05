@@ -9,8 +9,12 @@ const {
   setWordTelegramAudioID,
 } = require('../repo/words');
 const {renderWordWithCustomStatus} = require('../render/renderWord');
-const { renderNoMoreWordsToReviseForToday, renderYouHaveRevised_N_Words, renderYouHaveGoneThrough_N_Words } = require('../render/renderTextMsg');
-const { labelRemember, labelForgot, labelStopRevising, labelQuestionMark, labelRevised } = require('../render/renderLabel');
+const {
+  renderNoMoreWordsToReviseForToday,
+  renderYouHaveRevised_N_Words,
+  renderYouHaveGoneThrough_N_Words,
+} = require('../render/renderTextMsg');
+const {labelRemember, labelForgot, labelStopRevising, labelQuestionMark, labelRevised} = require('../render/renderLabel');
 
 const ReviseCallbackId = '[REVISE]';
 
@@ -30,8 +34,7 @@ class ReviseCommand extends Command {
   }
 
   /**
-   * @param {TelegramBot.Message} msg
-   * @param {number | undefined} wordCount
+   * @type {Command['processMsg']}
    */
   async processMsg(msg, wordCount) {
     const user = await this.getSessionUser(msg);
@@ -50,6 +53,9 @@ class ReviseCommand extends Command {
     }
 
     const text = renderWordWithCustomStatus(word, labelQuestionMark);
+    /**
+     * @type {TelegramBot.SendMessageOptions}
+     */
     const options = {
       parse_mode: 'MarkdownV2',
       reply_markup: {
@@ -102,8 +108,10 @@ class ReviseCommand extends Command {
             ...options,
             caption: text,
           });
-      setWordTelegramAudioID(word._id, sentMsg.voice.file_id)
-          .catch((err) => console.error(err));
+      if (sentMsg.voice) {
+        setWordTelegramAudioID(word._id, sentMsg.voice.file_id)
+            .catch((err) => console.error(err));
+      }
       return;
     }
 
@@ -115,8 +123,7 @@ class ReviseCommand extends Command {
   };
 
   /**
-   * @param {TelegramBot.Message} msg
-   * @param {Array<any>} rawData
+   * @type {Command['processCallback']}
    */
   async processCallback(msg, rawData) {
     const data = this.#parseCallbackData(rawData);
@@ -171,6 +178,9 @@ class ReviseCommand extends Command {
     }
 
     const text = renderWordWithCustomStatus(word, status);
+    /**
+     * @type{TelegramBot.EditMessageTextOptions}
+     */
     const options = {
       parse_mode: 'MarkdownV2',
       message_id: msg.message_id,
@@ -232,7 +242,7 @@ class ReviseCommand extends Command {
       };
     }
 
-    return new Error(`can't parse callback_data: ${input}`);
+    return new Error(`can't parse callback_data: ${rawData}`);
   };
 }
 

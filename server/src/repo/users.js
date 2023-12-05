@@ -4,7 +4,10 @@ const {ObjectId} = require('mongodb');
 
 /**
  * @typedef State
- * @type{null}
+ * @type {object}
+ * @property {Partial<import('./words').Word>} [newWord]
+ * @property {Array<Pick<import('./words').Word, 'English'>>} [suggestions]
+ * @property {import('./words').Word} wordToStudyAgain
  */
 
 /**
@@ -17,15 +20,15 @@ const {ObjectId} = require('mongodb');
  * @property {string|undefined} lastName
  * @property {State} state
  * @property {number|null} flowID
- * @property {number|null} stepID
+ * @property {string|null} stepID
  */
 
-/**
- * @param {User} user
- * @return {Promise<number|Error>}
- */
 const addNewUser = executionTime(
     'addNewUser',
+    /**
+     * @param {User} user
+     * @return {Promise<ObjectId|Error>}
+     */
     async (user) => {
       const db = await getDb();
       const users = db.collection('users');
@@ -41,7 +44,10 @@ const addNewUser = executionTime(
       }
 
       try {
-        const result = await users.insertOne(user);
+        const result = await users.insertOne({
+          ...user,
+          _id: new ObjectId(user._id),
+        });
         return result.insertedId;
       } catch (err) {
         return new Error(`[repo][addNewUser]: can't insert new user - ${err}`);

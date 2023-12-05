@@ -12,8 +12,12 @@ const {
   renderWordWithCustomStatus,
   mapWordProgressToStatus,
 } = require('../render/renderWord');
-const { renderNoMoreWordsToLearnForToday, renderYouHaveCovered_N_Words, renderYouHaveGoneThrough_N_Words } = require('../render/renderTextMsg');
-const { labelUp, labelDown, labelStopLearning } = require('../render/renderLabel');
+const {
+  renderNoMoreWordsToLearnForToday,
+  renderYouHaveCovered_N_Words,
+  renderYouHaveGoneThrough_N_Words,
+} = require('../render/renderTextMsg');
+const {labelUp, labelDown, labelStopLearning} = require('../render/renderLabel');
 
 const LearnCallbackId = '[LEARN]';
 
@@ -33,8 +37,7 @@ class LearnCommand extends Command {
   }
 
   /**
-   * @param {TelegramBot.Message} msg
-   * @param {number | undefined} wordCount
+   * @type {Command['processMsg']}
    */
   async processMsg(msg, wordCount) {
     const user = await this.getSessionUser(msg);
@@ -56,6 +59,9 @@ class LearnCommand extends Command {
         word,
         mapWordProgressToStatus[word.Progress],
     );
+    /**
+     * @type {TelegramBot.SendMessageOptions}
+     */
     const options = {
       parse_mode: 'MarkdownV2',
       reply_markup: {
@@ -108,8 +114,10 @@ class LearnCommand extends Command {
             ...options,
             caption: text,
           });
-      setWordTelegramAudioID(word._id, sentMsg.voice.file_id)
-          .catch((err) => console.error(err));
+      if (sentMsg.voice) {
+        setWordTelegramAudioID(word._id, sentMsg.voice.file_id)
+            .catch((err) => console.error(err));
+      }
       return;
     }
 
@@ -121,8 +129,7 @@ class LearnCommand extends Command {
   };
 
   /**
-   * @param {TelegramBot.Message} msg
-   * @param {Array<any>} rawData
+   * @type {Command['processCallback']}
    */
   async processCallback(msg, rawData) {
     const data = this.#parseCallbackData(rawData);
@@ -176,6 +183,9 @@ class LearnCommand extends Command {
         word,
         mapWordProgressToStatus[nextProgress],
     );
+    /**
+     * @type {TelegramBot.EditMessageTextOptions}
+     */
     const msgOptions = {
       parse_mode: 'MarkdownV2',
       message_id: msg.message_id,
@@ -236,7 +246,7 @@ class LearnCommand extends Command {
         wordCount: Number.parseInt(rawData[0]),
       };
     }
-    return new Error(`can't parse callback_data: ${input}`);
+    return new Error(`can't parse callback_data: ${rawData}`);
   };
 }
 

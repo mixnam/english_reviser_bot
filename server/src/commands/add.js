@@ -22,7 +22,7 @@ class AddCommand extends Command {
   }
 
   /**
-   * @param {TelegramBot.Message} msg
+   * @type {Command['processMsg']}
    */
   processMsg = async (msg) => {
     const user = await this.getSessionUser(msg);

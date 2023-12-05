@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-const {ObjectId, Binary} = require('mongodb');
+const {ObjectId, Binary, AggregationCursor, FindCursor} = require('mongodb');
 const {getDb} = require('./repo');
 const {executionTime} = require('../utils');
 const levenshtein = require('js-levenshtein');
@@ -30,23 +30,25 @@ const ProgressOrder = [
  * @property {string} English
  * @property {string} Translation
  * @property {string|undefined} Examples
- * @property {Progress} Progress
+ * @property {string} Progress
  * @property {Uint8Array|undefined} Audio
  * @property {string|undefined} TelegramAudioID
+ * @ts-ignore
  * @property {Date} 'Last Revised'
  */
 
 /**
  * @typedef WordDTO
  * @type {object}
- * @property {string} _id
+ * @property {ObjectId} _id
  * @property {string} userID
  * @property {string} English
  * @property {string} Translation
  * @property {string|undefined} Examples
- * @property {Progress} Progress
+ * @property {string} Progress
  * @property {Binary|undefined} Audio
  * @property {string|undefined} TelegramAudioID
+ * @ts-ignore
  * @property {Date} 'Last Revised'
  */
 
@@ -57,47 +59,52 @@ const ProgressOrder = [
 const mapWord = (wordDto) => {
   return {
     ...wordDto,
+    _id: wordDto._id.toString(),
     Audio: wordDto.Audio ?
       Buffer.from(wordDto.Audio.toString('base64'), 'base64') :
       undefined,
   };
 };
 
-/**
- * @param {string} userID
- * @param {Word} word
- * @return {Promise<Error|string>}
- */
 const addNewWord = executionTime(
     'addNewWord',
+    /**
+     * @param {string} userID
+     * @param {Word} word
+     * @return {Promise<Error|string>}
+     */
     async (userID, word) => {
       const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
         const inserted = await words.insertOne({
-          userID,
           ...word,
+          _id: new ObjectId(word._id),
+          userID,
         });
-        return inserted.insertedId;
+        return inserted.insertedId.toString();
       } catch (err) {
         return new Error(`[repo][addNewWord] - ${err}`);
       }
     });
 
 
-/**
- * @param {string} userID
- * @return {Promise<(Word|null)>}
- */
 const getRandomWordByUserIDForRevise = executionTime(
     'getRandomWordByUserIDForRevise',
+    /**
+     * @param {string} userID
+     * @return {Promise<(Word|null)>}
+     */
     async (userID) => {
       const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
 
       const lastRevisedThreshhold = new Date();
       lastRevisedThreshhold.setDate(lastRevisedThreshhold.getDate() - 14);
+      /**
+       * @type {AggregationCursor<WordDTO>}
+       */
       const result = words.aggregate([
         {
           $match: {
@@ -115,18 +122,17 @@ const getRandomWordByUserIDForRevise = executionTime(
         },
       ]);
 
-      if (!(await result.hasNext())) {
-        return null;
-      }
-      return mapWord(await result.next());
+      const wordDto = await result.next();
+
+      return wordDto ? mapWord(wordDto) : null;
     });
 
-/**
- * @param {string} userID
- * @return {Promise<(Word|null)>}
- */
 const getRandomWordByUserIDForLearn = executionTime(
     'getRandomWordByUserIDForLearn',
+    /**
+     * @param {string} userID
+     * @return {Promise<(Word|null)>}
+     */
     async (userID) => {
       const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
@@ -135,6 +141,9 @@ const getRandomWordByUserIDForLearn = executionTime(
       const lastRevisedThreshhold = new Date();
       lastRevisedThreshhold.setHours(0, 0, 0, 0);
 
+      /**
+       * @type {AggregationCursor<WordDTO>}
+       */
       const result = words.aggregate([
         {
           $match: {
@@ -159,19 +168,18 @@ const getRandomWordByUserIDForLearn = executionTime(
         },
       ]);
 
-      if (!(await result.hasNext())) {
-        return null;
-      }
-      return mapWord(await result.next());
+      const wordDto = await result.next();
+
+      return wordDto ? mapWord(wordDto) : null;
     });
 
-/**
- * @param {string} wordID
- * @param {Progress} progress
- * @return {Promise<Error|null>}
- */
 const setWordProgress = executionTime(
     'setWordProgress',
+    /**
+     * @param {string} wordID
+     * @param {Progress} progress
+     * @return {Promise<Error|null>}
+     */
     async (wordID, progress) => {
       const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
@@ -192,13 +200,13 @@ const setWordProgress = executionTime(
       }
     });
 
-/**
- * @param {string} wordID
- * @param {string} audioID
- * @return {Promise<Error|null>}
- */
 const setWordTelegramAudioID = executionTime(
     'setWordTelegramAudioID',
+    /**
+     * @param {string} wordID
+     * @param {string} audioID
+     * @return {Promise<Error|null>}
+     */
     async (wordID, audioID) => {
       const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
@@ -218,51 +226,55 @@ const setWordTelegramAudioID = executionTime(
       }
     });
 
-/**
- * @param {string} wordID
- * @return {Promis<Word|null|Error>}
- */
 const getWordByID = executionTime(
     'getWordByID',
+    /**
+     * @param {string} wordID
+     * @return {Promise<Word|null|Error>}
+     */
     async (wordID) => {
       const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
-        return mapWord(await words.findOne(
-            {_id: new ObjectId(wordID)},
-        ));
+        /**
+         * hack, to map to WordDTO
+         * @type {any}
+         */
+        const wordDto = await words.findOne({
+          _id: new ObjectId(wordID),
+        });
+        return wordDto ? mapWord(wordDto) : null;
       } catch (err) {
         return new Error(`[repo][getWordByID] - ${err}`);
       }
     });
 
-/**
- * @param {string} text
- * @return {Promis<Word|null|Error>}
- */
 const getWordByText = executionTime(
     'getWordByText',
+    /**
+     * @param {string} text
+     * @return {Promise<Word|null|Error>}
+     */
     async (text) => {
       const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
         // enchancment add text index
-        return mapWord(await words.findOne(
-            {English: text},
-        ));
+        const wordDto = /** @type {WordDTO} */ (await words.findOne({English: text}));
+        return wordDto ? mapWord(wordDto) : null;
       } catch (err) {
         return new Error(`[repo][getWordByID] - ${err}`);
       }
     });
 
-/**
- * @param {string} wordID
- * @return {Promis<Error|null>}
- */
 const setWordAsRevisedByWordID = executionTime(
     'setWordAsRevisedByWordID',
+    /**
+     * @param {string} wordID
+     * @return {Promise<Error|null>}
+     */
     async (wordID) => {
       const result = await setWordProgress(wordID, Progress.Learned);
       if (result !== null) {
@@ -271,31 +283,38 @@ const setWordAsRevisedByWordID = executionTime(
       return null;
     });
 
-/**
- * @param {string} wordID
- * @return {Promis<Error|null>}
- */
 const setWordAsForgottenByWordID = executionTime(
     'setWordAsForgottenByWordID',
+    /**
+     * @param {string} wordID
+     * @return {Promise<Error|null>}
+     */
     async (wordID) => {
       const result = await setWordProgress(wordID, Progress.HaveProblems);
       if (result !== null) {
-        return new Error(`[repo][setWordAsForgottenByWordID] - ${err}`);
+        return new Error(`[repo][setWordAsForgottenByWordID] - ${result}`);
       }
       return null;
     });
 
 /**
- * @param {string} word
+ * @param {string} newWord
  * @param {string} userID
  *
  * @return {Promise<Error|Array<{English: string}>>}
  */
 const getSpelcheckSuggestions = executionTime(
     'getSpelcheckSuggestions',
+    /**
+     * @param {string} newWord
+     * @param {string} userID
+     *
+     * @return {Promise<Error|Array<{English: string}>>}
+     */
     async (newWord, userID) => {
       const db = await getDb();
       const words = db.collection(WORD_COLLECTION_NAME);
+
       const result = words.find({userID}, {
         projection: {
           English: 1,
@@ -319,6 +338,9 @@ const getSpelcheckSuggestions = executionTime(
 
       const newWordCleaned = cleanWord(newWord);
 
+      /**
+       * @type {Array<{English: string}>}
+       */
       const suggestions = [];
       try {
         for await (const word of result) {
@@ -326,7 +348,9 @@ const getSpelcheckSuggestions = executionTime(
             levenshtein(cleanWord(word.English), newWordCleaned) <
               (newWordCleaned.length > 6 ? 2 : 1)
           ) {
-            suggestions.push(word);
+            suggestions.push(
+                /** @type {{English: string}} */(/** @type {unknown}*/ (word)),
+            );
           }
         }
         return suggestions;

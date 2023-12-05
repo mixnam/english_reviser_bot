@@ -1,7 +1,7 @@
 const {Step} = require('./step');
 const {Progress, setWordProgress, getWordByText} = require('../../repo/words');
-const { renderYouAreAddingExistingWord } = require('../../render/renderTextMsg');
-const { labelContinue } = require('../../render/renderLabel');
+const {renderYouAreAddingExistingWord} = require('../../render/renderTextMsg');
+const {labelContinue} = require('../../render/renderLabel');
 
 const StepID = 'ADD_NEW_WORD_SPELLCHECK';
 const ThisIsNewWord = labelContinue;
@@ -21,13 +21,8 @@ class AddNewWordSpellcheck extends Step {
     this.wordToStudyAgainStepID = wordToStudyAgainStepID;
   }
 
-  // eslint-disable-next-line
   /**
-   * @param {import("../../repo/users").User} user
-   * @return {[
-   *    string,
-   *    import('node-telegram-bot-api').InlineKeyboardButton[][] | null
-   * ]}
+   * @type {Step['makeAction']}
    */
   makeAction = async (user) => {
     const {
@@ -36,26 +31,35 @@ class AddNewWordSpellcheck extends Step {
     } = user.state;
 
     return [
-      renderYouAreAddingExistingWord(newWord), [
-        ...(suggestions.map((suggestion) => [suggestion.English])),
-        [ThisIsNewWord],
-      ],
+      renderYouAreAddingExistingWord(newWord?.English ?? ''),
+      {
+        keyboard: [
+          ...(suggestions
+              ?.map((suggestion) => [{
+                text: suggestion.English,
+              }]) ?? []),
+          [{text: ThisIsNewWord}],
+        ],
+      },
+      null,
+      null,
     ];
   };
 
-  // eslint-disable-next-line
   /**
-   * @param {string|null} userAnswer
-   * @param {import("../../repo/users").User} user
-   * @return {[Object, string]}
+   * @type {Step['makeTransition']}
    */
-  makeTransition = async (userAnswer, user) => {
-    if (userAnswer === ThisIsNewWord) {
+  makeTransition = async (msg, user) => {
+    if (!msg.text) {
+      // TODO throw Error
+      return [null, StepID];
+    }
+
+    if (msg.text === ThisIsNewWord) {
       return [user.state, this.nextStepID];
     }
 
-
-    const word = await getWordByText(userAnswer);
+    const word = await getWordByText(msg.text);
     if (word instanceof Error) {
       console.error(word);
       return;

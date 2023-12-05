@@ -7,7 +7,7 @@ const {StartCommand} = require('./commands/start.js');
 const {forceTransition} = require('./flows/processor/index.js');
 const {AddCommand} = require('./commands/add.js');
 const {renderHelpMsg} = require('./render/renderHelpMsg.js');
-const { renderYouAreNotMyMaster } = require('./render/renderTextMsg.js');
+const {renderYouAreNotMyMaster} = require('./render/renderTextMsg.js');
 
 /**
  * Bot
@@ -24,6 +24,9 @@ class Bot {
    * Bot constructor
    */
   constructor() {
+    if (!process.env.TELEGRAM_BOT_API_KEY) {
+      throw new Error('TELEGRAM_BOT_API_KEY is not specified');
+    }
     this.#bot = new TelegramBot(
         process.env.TELEGRAM_BOT_API_KEY,
     );
@@ -72,12 +75,25 @@ class Bot {
           this.#protectedCommand(msg, this.#testCommand.processMsg);
           return;
         default:
-          forceTransition(this.#bot, msg.chat.id, msg.text);
+          forceTransition(this.#bot, msg.chat.id, msg);
       }
     });
 
     this.#bot.on('callback_query', async (query) => {
-      const [callbakId, data] = this.#parseCallbackData(query.data);
+      if (!query.data) {
+        console.error('No data in callback_query');
+        return;
+      }
+      if (!query.message) {
+        console.error('No message in callback_query');
+        return;
+      }
+      const callbackData = this.#parseCallbackData(query.data);
+      if (callbackData instanceof Error) {
+        console.error(callbackData);
+        return;
+      }
+      const [callbakId, data] = callbackData;
       switch (callbakId) {
         case ReviseCallbackId:
           this.#reviseCommand.processCallback(query.message, data);
@@ -88,7 +104,7 @@ class Bot {
         default:
           // deadcode
           // enchancment add forceCallbackTransition
-          forceTransition(this.#bot, query.message.chat.id, query.data);
+          forceTransition(this.#bot, query.message.chat.id, query.message);
       }
     });
   };

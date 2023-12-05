@@ -1,5 +1,5 @@
-const { labelYes, labelNo } = require('../../render/renderLabel');
-const { renderDoYouWantToAddContext } = require('../../render/renderTextMsg');
+const {labelYes, labelNo} = require('../../render/renderLabel');
+const {renderDoYouWantToAddContext} = require('../../render/renderTextMsg');
 const {Step} = require('./step');
 
 const StepID = 'ADD_NEW_WORD_EXAMPLES_FORK';
@@ -21,33 +21,32 @@ class AddNewWordExamplesFork extends Step {
     this.noStepID = noStepID;
   }
 
-  // eslint-disable-next-line
   /**
-   * @param {import("../../repo/users").User} user
-   * @return {[
-   *    string,
-   *    import('node-telegram-bot-api').InlineKeyboardButton[][] | null
-   * ]}
+   * @type {Step['makeAction']}
    */
   makeAction = async () => {
-    return [renderDoYouWantToAddContext(), [[
+    return [
+      renderDoYouWantToAddContext(),
       {
-        text: YesAnswer,
+        keyboard: [[
+          {
+            text: YesAnswer,
+          },
+          {
+            text: NoAnswer,
+          },
+        ]],
       },
-      {
-        text: NoAnswer,
-      },
-    ]]];
+      null,
+      null,
+    ];
   };
 
-  // eslint-disable-next-line
   /**
-   * @param {string|null} userAnswer
-   * @param {import("../../repo/users").User} user
-   * @return {[Object, string]}
+   * @type {Step['makeTransition']}
    */
   makeTransition = async (userAnswer, user) => {
-    switch (userAnswer) {
+    switch (userAnswer.text) {
       case YesAnswer:
         return [user.state, this.nextStepID];
       case NoAnswer:

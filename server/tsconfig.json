@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "checkJs": true,
+    "noImplicitAny": false,
+    "noEmit": true,
+    "lib": ["ESNext"],
+    "module": "Node16",
+    "outDir": "silences wrong TS error, we don't compile, we only typecheck",
+    "rootDir": ".",
+    "skipLibCheck": true,
+    "target": "ESNext"
+  },
+  "include": ["src/**/*.js"]
+}

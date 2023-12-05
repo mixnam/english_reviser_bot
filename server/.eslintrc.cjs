@@ -21,5 +21,8 @@ module.exports = {
     'sourceType': 'module',
   },
   'rules': {
+    'valid-jsdoc': 0,
+    'max-len': 0,
+    'camelcase': 0,
   },
 };
