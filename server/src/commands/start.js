@@ -24,10 +24,8 @@ class StartCommand extends Command {
     this.#bot = bot;
   }
 
-  // eslint-disable-next-line
   /**
-   * @param {TelegramBot.Message} msg
-   * @param {import('../repo/users').User} user
+   * @type {Command['processMsg']}
    */
   async processMsg(msg) {
     const newUserID = await addNewUser({

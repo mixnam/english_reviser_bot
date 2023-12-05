@@ -6,7 +6,6 @@ const {addNewUser, getUserByChatID} = require('../repo/users');
  * Basic interface for bot command
  */
 class Command {
-  // eslint-disable-next-line
   /**
    * @param {TelegramBot.Message} msg
    * @return {Promise<import('../repo/users').User|Error>}
@@ -30,23 +29,26 @@ class Command {
       if (newUserID instanceof Error) {
         return newUserID;
       }
-      user._id = result;
+      user._id = newUserID;
     }
     return user;
   };
+
   /**
    * @param {TelegramBot.Message} msg
+   * @param {number} [wordCount]
    */
-  async processMsg(msg) {
+  async processMsg(msg, wordCount) {
     throw new Error(`processMsg method is not implemented - ${msg}`);
   };
 
   /**
-   * @param {TelegramBot.CallbackQuery} query
+   * @param {TelegramBot.Message} msg
+   * @param {Array<any>} rawData
    */
-  async processCallback(query) {
+  async processCallback(msg, rawData) {
     throw new Error(
-        `processCallback method is not implemented - ${query}`,
+        `processCallback method is not implemented - ${msg}`,
     );
   };
 }

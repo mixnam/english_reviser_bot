@@ -1,4 +1,4 @@
-const { renderSendMeContextForThisWord } = require('../../render/renderTextMsg');
+const {renderSendMeContextForThisWord} = require('../../render/renderTextMsg');
 const {Step} = require('./step');
 
 const StepID = 'ADD_NEW_WORD_EXAMPLES';
@@ -7,27 +7,28 @@ const StepID = 'ADD_NEW_WORD_EXAMPLES';
  * AddNewWordExamples
  */
 class AddNewWordExamples extends Step {
-  // eslint-disable-next-line
   /**
-   * @param {import("../../repo/users").User} user
-   * @return {[
-   *    string,
-   *    import('node-telegram-bot-api').InlineKeyboardButton[][] | null
-   * ]}
+   * @type {Step['makeAction']}
    */
   makeAction = async () => {
-    return [renderSendMeContextForThisWord(), null];
+    return [
+      renderSendMeContextForThisWord(),
+      null,
+      null,
+      null,
+    ];
   };
 
-  // eslint-disable-next-line
   /**
-   * @param {string|null} userAnswer
-   * @param {import("../../repo/users").User} user
-   * @return {[Object, string]}
+   * @type {Step['makeTransition']}
    */
   makeTransition = async (userAnswer, user) => {
     const {newWord} = user.state;
-    newWord.Examples = userAnswer;
+    if (!newWord) {
+      // TODO throw Error
+      return [null, StepID];
+    }
+    newWord.Examples = userAnswer.text;
     return [user.state, this.nextStepID];
   };
 }

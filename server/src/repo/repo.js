@@ -7,6 +7,9 @@ global.client = null;
  * @return {Promise<MongoClient>}
  */
 const getClient = async () => {
+  if (!process.env.MONGODB_URI) {
+    throw new Error('There is not env MONGODB_URI');
+  }
   if (global.client) {
     console.log('Using existing client');
     return global.client;

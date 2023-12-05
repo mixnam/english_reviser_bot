@@ -11,8 +11,8 @@ const mapWordProgressToStatus = {
 
 // eslint-disable-next-line
 /**
-   * @param {import('../repo/words').Word} word
-   * @param {string|undefined} status
+   * @param {Pick<import('../repo/words').Word, 'English' | 'Translation' | 'Examples'>} word
+   * @param {string} [status]
    * @return {string}
    */
 const renderWordWithCustomStatus = (word, status) => {

@@ -1,6 +1,6 @@
 const {Step} = require('./step');
 const {Progress, getSpelcheckSuggestions} = require('../../repo/words');
-const { renderSendMeWordToAdd } = require('../../render/renderTextMsg');
+const {renderSendMeWordToAdd} = require('../../render/renderTextMsg');
 
 const StepID = 'ADD_NEW_WORD';
 
@@ -19,34 +19,36 @@ class AddNewWord extends Step {
     this.spellcheckStepID = spellcheckStepID;
   }
 
-  // eslint-disable-next-line
   /**
-   * @param {import("../../repo/users").User} user
-   * @return {[
-   *    string,
-   *    import('node-telegram-bot-api').InlineKeyboardButton[][] | null
-   * ]}
+   * @type {Step['makeAction']}
    */
   makeAction = async () => {
-    return [renderSendMeWordToAdd(), null];
+    return [renderSendMeWordToAdd(), null, null, null];
   };
 
-  // eslint-disable-next-line
   /**
-   * @param {string|null} userAnswer
-   * @param {import("../../repo/users").User} user
-   * @return {[Object, string]}
+   * @type {Step['makeTransition']}
    */
-  makeTransition = async (userAnswer, user) => {
+  makeTransition = async (msg, user) => {
+    const {text} = msg;
+    if (!text) {
+      // TODO
+      return [null, StepID];
+    }
+
     const lastRevisedDate = new Date();
     lastRevisedDate.setDate(lastRevisedDate.getDate() - 14);
 
+    /**
+     * @type {Partial<import('../../repo/words').Word>}
+     */
     const newWord = {
-      'English': userAnswer,
+      'English': text,
       'Progress': Progress.HaveProblems,
+      // @ts-ignore
       'Last Revised': lastRevisedDate,
     };
-    let suggestions = await getSpelcheckSuggestions(userAnswer, user._id);
+    let suggestions = await getSpelcheckSuggestions(text, user._id);
     if (suggestions instanceof Error) {
       console.error(suggestions);
       suggestions = [];
