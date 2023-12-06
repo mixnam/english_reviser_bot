@@ -65,15 +65,13 @@ let instance;
 /**
  * [tech-debt] - remove singleton, support proper DI
  *
- * @return {TTSService}
+ * @returns {TTSService}
  */
 const getInstance = () => {
-  if (!process.env.LANGUAGE_CODE ) {
-    throw new Error('LANGUAGE_CODE env is not specified');
+  if (!process.env.LANGUAGE_CODE || !process.env.VOICE_NAME) {
+    return;
   }
-  if (!process.env.VOICE_NAME) {
-    throw new Error('VOICE_NAME env is not specified');
-  }
+
   if (!instance) {
     instance = new TTSService(
         process.env.LANGUAGE_CODE,
