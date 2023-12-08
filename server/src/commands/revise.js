@@ -91,6 +91,10 @@ class ReviseCommand extends Command {
       },
     };
 
+    if (word.TelegramPictureID) {
+      await this.#bot.sendPhoto(msg.chat.id, word.TelegramPictureID);
+    }
+
     if (word.TelegramAudioID) {
       this.#bot.sendVoice(
           msg.chat.id, word.TelegramAudioID,

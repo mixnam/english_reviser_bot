@@ -48,6 +48,6 @@ const languageTokenMap = {
 /**
  * @type {LanguageTranslations}
  */
-const translations = languageTokenMap[process.env.LANGUAGE_CODE.startsWith('pt') ? 'pt' : 'en'];
+const translations = languageTokenMap[process.env.LANGUAGE_CODE?.startsWith('pt') ? 'pt' : 'en'];
 
 module.exports = translations;
