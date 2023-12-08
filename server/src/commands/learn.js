@@ -109,7 +109,7 @@ class LearnCommand extends Command {
 
     if (word.Audio) {
       const sentMsg = await this.#bot.sendVoice(
-          msg.chat.id, word.Audio,
+          msg.chat.id, Buffer.from(word.Audio),
           {
             ...options,
             caption: text,

@@ -11,7 +11,7 @@ class AddNewWordTranslations extends Step {
    * @type {Step['makeAction']}
    */
   makeAction = async () => {
-    return [renderSendMeTranslationForThisWord(), null, null, null];
+    return [renderSendMeTranslationForThisWord(), null, null, null, null];
   };
 
   /**

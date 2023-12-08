@@ -1,15 +1,15 @@
 const {labelYes, labelNo} = require('../../render/renderLabel');
-const {renderDoYouWantToAddContext} = require('../../render/renderTextMsg');
+const {renderDoYouWantToAddPicture} = require('../../render/renderTextMsg');
 const {Step} = require('./step');
 
-const StepID = 'ADD_NEW_WORD_EXAMPLES_FORK';
+const StepID = 'ADD_NEW_WORD_PICTURE_FORK';
 const YesAnswer = labelYes;
 const NoAnswer = labelNo;
 
 /**
- * AddNewWordExamplesFork
+ * AddNewWordPictureFork
  */
-class AddNewWordExamplesFork extends Step {
+class AddNewWordPictureFork extends Step {
   noStepID;
 
   /**
@@ -26,7 +26,7 @@ class AddNewWordExamplesFork extends Step {
    */
   makeAction = async () => {
     return [
-      renderDoYouWantToAddContext(),
+      renderDoYouWantToAddPicture(),
       {
         keyboard: [[
           {
@@ -59,6 +59,6 @@ class AddNewWordExamplesFork extends Step {
 }
 
 module.exports = {
-  AddNewWordExamplesFork,
+  AddNewWordPictureFork,
   StepID,
 };

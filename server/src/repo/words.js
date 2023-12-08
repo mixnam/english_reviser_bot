@@ -29,10 +29,12 @@ const ProgressOrder = [
  * @property {string} userID
  * @property {string} English
  * @property {string} Translation
- * @property {string|undefined} Examples
+ * @property {string} [Examples]
  * @property {string} Progress
- * @property {Uint8Array|undefined} Audio
- * @property {string|undefined} TelegramAudioID
+ * @property {Uint8Array} [Audio]
+ * @property {string} [TelegramAudioID]
+ * @property {string} [TelegramPictureID]
+ * @property {string} [PictureFileName]
  * @ts-ignore
  * @property {Date} 'Last Revised'
  */
@@ -48,6 +50,8 @@ const ProgressOrder = [
  * @property {string} Progress
  * @property {Binary|undefined} Audio
  * @property {string|undefined} TelegramAudioID
+ * @property {string} [TelegramPictureID]
+ * @property {string} [PictureFileName]
  * @ts-ignore
  * @property {Date} 'Last Revised'
  */
@@ -177,7 +181,7 @@ const setWordProgress = executionTime(
     'setWordProgress',
     /**
      * @param {string} wordID
-     * @param {Progress} progress
+     * @param {string} progress
      * @return {Promise<Error|null>}
      */
     async (wordID, progress) => {
@@ -225,6 +229,59 @@ const setWordTelegramAudioID = executionTime(
         return new Error(`[repo][setWordTelegramAudioID] - ${err}`);
       }
     });
+
+const setWordTelegramPictureID = executionTime(
+    'setWordPicture',
+    /**
+     * @param {string} wordID
+     * @param {string} telegramPictureID
+     * @return {Promise<Error|null>}
+     */
+    async (wordID, telegramPictureID) => {
+      const db = await getDb();
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      try {
+        await words.findOneAndUpdate(
+            {_id: new ObjectId(wordID)},
+            {
+              $set: {
+                'TelegramPictureID': telegramPictureID,
+              },
+            },
+        );
+        return null;
+      } catch (err) {
+        return new Error(`[repo][setWordTelegramPictureID] - ${err}`);
+      }
+    });
+
+const setWordPictureName = executionTime(
+    'setWordPictureName',
+    /**
+     * @param {string} wordID
+     * @param {string} pictureName
+     * @return {Promise<Error|null>}
+     */
+    async (wordID, pictureName) => {
+      const db = await getDb();
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      try {
+        await words.findOneAndUpdate(
+            {_id: new ObjectId(wordID)},
+            {
+              $set: {
+                'PictureFileName': pictureName,
+              },
+            },
+        );
+        return null;
+      } catch (err) {
+        return new Error(`[repo][setWordPictureName] - ${err}`);
+      }
+    });
+
 
 const getWordByID = executionTime(
     'getWordByID',
@@ -373,4 +430,6 @@ module.exports = {
   setWordTelegramAudioID,
   setWordAsRevisedByWordID,
   setWordAsForgottenByWordID,
+  setWordTelegramPictureID,
+  setWordPictureName,
 };

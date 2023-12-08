@@ -29,6 +29,7 @@ class AddNewWordSubbmit extends Step {
     if (newWordID instanceof Error) {
       return newWordID;
     }
+
     return [
       renderYouJustAddedNewWord(newWord),
       null,
@@ -37,6 +38,7 @@ class AddNewWordSubbmit extends Step {
         setWordTelegramAudioID(newWordID, fileID)
             .catch((err) => console.log(err));
       },
+      newWord.TelegramPictureID ?? null,
     ];
   };
 

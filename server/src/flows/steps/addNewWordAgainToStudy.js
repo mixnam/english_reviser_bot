@@ -18,6 +18,7 @@ class AddNewWordAgainToStudy extends Step {
       null,
       null,
       null,
+      null,
     ];
   };
 

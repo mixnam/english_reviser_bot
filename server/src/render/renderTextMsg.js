@@ -2,6 +2,7 @@ const {
   renderWordWithCustomStatus,
   mapWordProgressToStatus,
 } = require('./renderWord');
+const {escapeMarkdown} = require('telegram-escape');
 
 /**
  * @returns string
@@ -41,7 +42,12 @@ const renderNoIdea = () => 'Have no idea what you want from me';
 /**
  * @returns string
  */
-const renderSendMeContextForThisWord = () => 'Send me a context/examples for this word';
+const renderSendMeContextForThisWord = () => escapeMarkdown('Send me a context (e.g. meaning, usage, etc.) for this word');
+
+/**
+ * @returns string
+ */
+const renderSendMePictureForThisWord = () => 'Send me a picture for this word';
 
 /**
  * @returns string
@@ -68,7 +74,12 @@ ${renderWordWithCustomStatus(word, mapWordProgressToStatus[word.Progress])}`;
 /**
  * @returns string
  */
-const renderDoYouWantToAddContext = () => 'Do you want to add some context/examples to this word?';
+const renderDoYouWantToAddContext = () => escapeMarkdown('Do you want to add some context (e.g. meaning, usage, etc.) to this word?');
+
+/**
+ * @returns string
+ */
+const renderDoYouWantToAddPicture = () => 'Do you want to add any picture to this word?';
 
 /**
  * @param {string} word
@@ -101,5 +112,7 @@ module.exports = {
   renderYouAreNotMyMaster,
   renderYouHaveRevised_N_Words,
   renderYouJustAddedNewWord,
+  renderDoYouWantToAddPicture,
+  renderSendMePictureForThisWord,
 };
 

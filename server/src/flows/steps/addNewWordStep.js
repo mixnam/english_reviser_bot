@@ -23,7 +23,7 @@ class AddNewWord extends Step {
    * @type {Step['makeAction']}
    */
   makeAction = async () => {
-    return [renderSendMeWordToAdd(), null, null, null];
+    return [renderSendMeWordToAdd(), null, null, null, null];
   };
 
   /**
