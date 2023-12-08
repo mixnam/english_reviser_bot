@@ -26,7 +26,7 @@ Afterward, you can revise and check your learned words using the /revise command
   },
   pt: {
     renderHelpMsg: () => `
-Este bot pode ajudá-lo a aprender e revisar palavras em inglês\\.
+Este bot pode ajudá\\-lo a aprender e revisar palavras em inglês\\.
 
 Primeiro, você pode adicionar uma nova palavra usando o comando /add\\.
 
@@ -38,7 +38,7 @@ Em seguida, com o comando /learn, uma vez por dia, você deve tentar lembrar as 
     *Precisa Prestar Atenção 🟠*
     *Apresenta Problemas 🔴*
     
-Depois, você pode revisar e verificar suas palavras aprendidas usando o comando /revise\\. Se você não se lembrar de uma palavra, pode marcá-la como esquecida, e ela retornará à etapa mais inferior de aprendizado\\.
+Depois, você pode revisar e verificar suas palavras aprendidas usando o comando /revise\\. Se você não se lembrar de uma palavra, pode marcá\\-la como esquecida, e ela retornará à etapa mais inferior de aprendizado\\.
 `,
   },
 };
