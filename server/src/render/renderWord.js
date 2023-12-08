@@ -39,7 +39,7 @@ const languageTokenMap = {
   },
 };
 
-const languageToken = process.env.LANGUAGE.startsWith('pt') ? 'pt' : 'en';
+const languageToken = process.env.LANGUAGE_CODE.startsWith('pt') ? 'pt' : 'en';
 
 const {
   learned,
