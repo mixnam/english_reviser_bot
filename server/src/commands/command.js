@@ -11,12 +11,15 @@ class Command {
    * @return {Promise<import('../repo/users').User|Error>}
    */
   getSessionUser = async (msg) => {
-    let user = await getUserByChatID(msg.chat.id);
+    const user = await getUserByChatID(msg.chat.id);
     if (user instanceof Error) {
       return user;
     }
     if (user === null) {
-      user = {
+      /**
+       * @type {Omit<import('../repo/users').User, '_id'>}
+       */
+      const newUser = {
         chatID: msg.chat.id,
         username: msg.chat.username,
         firstName: msg.chat.first_name,
@@ -25,11 +28,14 @@ class Command {
         flowID: null,
         stepID: null,
       };
-      const newUserID = await addNewUser(user);
+      const newUserID = await addNewUser(newUser);
       if (newUserID instanceof Error) {
         return newUserID;
       }
-      user._id = newUserID;
+      return {
+        _id: newUserID,
+        ...newUser,
+      };
     }
     return user;
   };

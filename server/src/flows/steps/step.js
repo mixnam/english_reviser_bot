@@ -17,12 +17,13 @@ class Step {
   /**
    * @param {TelegramBot.Message} msg
    * @param {import("../../repo/users").User} user
+   * @param {TelegramBot} bot - DO NOT INJECT BOT LIKE THIS
    * @return {Promise<[
    *    import('../../repo/users').State | null,
    *    string
    * ]>}
    */
-  makeTransition = async (msg, user) => {
+  makeTransition = async (msg, user, bot) => {
     throw new Error('makeTransition is not implemented');
   };
 
@@ -37,7 +38,8 @@ class Step {
    *    string,
    *    TelegramBot.ReplyKeyboardMarkup | null,
    *    Uint8Array | null,
-   *    onFileUploaded | null
+   *    onFileUploaded | null,
+   *    string | null
    * ]|Error>}
    */
   makeAction = async (user) => {

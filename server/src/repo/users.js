@@ -26,8 +26,8 @@ const {ObjectId} = require('mongodb');
 const addNewUser = executionTime(
     'addNewUser',
     /**
-     * @param {User} user
-     * @return {Promise<ObjectId|Error>}
+     * @param {Omit<User, '_id'>} user
+     * @return {Promise<string|Error>}
      */
     async (user) => {
       const db = await getDb();
@@ -44,27 +44,24 @@ const addNewUser = executionTime(
       }
 
       try {
-        const result = await users.insertOne({
-          ...user,
-          _id: new ObjectId(user._id),
-        });
-        return result.insertedId;
+        const result = await users.insertOne(user);
+        return /** @type {string} */ (/** @type {unknown} */ (result.insertedId));
       } catch (err) {
         return new Error(`[repo][addNewUser]: can't insert new user - ${err}`);
       }
     });
 
-/**
- * @param {number|string} chatID
- * @returns {string}
- */
 const getUserByChatID = executionTime(
     'getUserByChatID',
+    /**
+     * @param {number|string} chatID
+     * @returns {Promise<User|Error>}
+     */
     async (chatID) => {
       const db = await getDb();
       const users = db.collection('users');
       try {
-        const user = await users.findOne({chatID: chatID});
+        const user = /** @type{User} */ (/** @type {unknown} */ (await users.findOne({chatID: chatID})));
         return user;
       } catch (err) {
         return new Error(

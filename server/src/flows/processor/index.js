@@ -32,11 +32,15 @@ const forceAction = async (bot, user) => {
     actionKeyboard,
     audio,
     onFileUploaded,
+    telegramPictureId,
   ] = result;
 
-  let msg;
-  if (audio) {
-    msg = await bot.sendVoice(user.chatID, Buffer.from(audio), {
+  const sendPhotoPromise = telegramPictureId ?
+        bot.sendPhoto(user.chatID, telegramPictureId) :
+        Promise.resolve();
+
+  const sendMsgPromise = audio ?
+    bot.sendVoice(user.chatID, Buffer.from(audio), {
       caption: actionText,
       parse_mode: 'MarkdownV2',
       reply_markup: actionKeyboard !== null ?
@@ -44,9 +48,8 @@ const forceAction = async (bot, user) => {
        {
          remove_keyboard: true,
        },
-    });
-  } else {
-    msg = await bot.sendMessage(user.chatID, actionText, {
+    }) :
+    bot.sendMessage(user.chatID, actionText, {
       parse_mode: 'MarkdownV2',
       reply_markup: actionKeyboard !== null ?
         actionKeyboard :
@@ -54,7 +57,9 @@ const forceAction = async (bot, user) => {
           remove_keyboard: true,
         },
     });
-  }
+
+  const msg = await sendPhotoPromise.then(() => sendMsgPromise);
+
   if (onFileUploaded && msg.voice) {
     onFileUploaded(msg.voice.file_id);
   }
@@ -88,7 +93,7 @@ const forceTransition = async (bot, chatID, msg) => {
 
   // TODO: introduce FlowMap
   const step = AddNewWordFlow[stepID];
-  const [newState, newStepID] = await step.makeTransition(msg, user);
+  const [newState, newStepID] = await step.makeTransition(msg, user, bot);
 
   let result = await setUserStepID(user._id, newStepID);
   if (result !== null) {

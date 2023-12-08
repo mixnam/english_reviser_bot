@@ -16,6 +16,7 @@ class AddNewWordExamples extends Step {
       null,
       null,
       null,
+      null,
     ];
   };
 

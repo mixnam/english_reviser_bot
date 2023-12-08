@@ -26,6 +26,14 @@ const {
   StepID: AddNewWordAgainToStudyStepID,
   AddNewWordAgainToStudy,
 } = require('./steps/addNewWordAgainToStudy');
+const {
+  StepID: AddNewWordPictureForkStepID,
+  AddNewWordPictureFork,
+} = require('./steps/addNewWordPictureFork');
+const {
+  StepID: AddNewWordPictureStepID,
+  AddNewWordPicture,
+} = require('./steps/addNewWordPicture');
 // eslint-disable-next-line
 const {Step} = require('./steps/step');
 
@@ -37,13 +45,13 @@ const AddNewWordFlow = {
       AddNewWordTranslationsStepID,
       AddNewWordSpellcheckStepID,
   ),
-  [AddNewWordExamplesStepID]: new AddNewWordExamples(AddNewWordSubbmitStepID),
+  [AddNewWordExamplesStepID]: new AddNewWordExamples(AddNewWordPictureForkStepID),
   [AddNewWordTranslationsStepID]:
     new AddNewWordTranslations(AddNewWordExamplesForkStepID),
   [AddNewWordExamplesForkStepID]:
     new AddNewWordExamplesFork(
         AddNewWordExamplesStepID,
-        AddNewWordSubbmitStepID,
+        AddNewWordPictureForkStepID,
     ),
   [AddNewWordSpellcheckStepID]: new AddNewWordSpellcheck(
       AddNewWordTranslationsStepID,
@@ -51,6 +59,11 @@ const AddNewWordFlow = {
   ),
   [AddNewWordSubbmitStepID]: new AddNewWordSubbmit(null),
   [AddNewWordAgainToStudyStepID]: new AddNewWordAgainToStudy(null),
+  [AddNewWordPictureForkStepID]: new AddNewWordPictureFork(
+      AddNewWordPictureStepID,
+      AddNewWordSubbmitStepID,
+  ),
+  [AddNewWordPictureStepID]: new AddNewWordPicture(AddNewWordSubbmitStepID),
 };
 
 module.exports = {

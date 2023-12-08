@@ -68,14 +68,10 @@ let instance;
  * @returns {TTSService}
  */
 const getInstance = () => {
-  if (!process.env.LANGUAGE_CODE || !process.env.VOICE_NAME) {
-    return;
-  }
-
   if (!instance) {
     instance = new TTSService(
-        process.env.LANGUAGE_CODE,
-        process.env.VOICE_NAME,
+        process.env.LANGUAGE_CODE ?? 'en-US',
+        process.env.VOICE_NAME ?? 'en-US-Wavenet-B',
     );
   }
   return instance;

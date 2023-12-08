@@ -43,6 +43,7 @@ class AddNewWordSpellcheck extends Step {
       },
       null,
       null,
+      null,
     ];
   };
 
