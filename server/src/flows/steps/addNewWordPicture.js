@@ -48,10 +48,8 @@ class AddNewWordPicture extends Step {
 
 
     try {
-      await uploadPicture(
+      uploadPicture(
           bot.getFileStream(picture.file_id),
-      ).then((fileName) =>
-        setWordPictureName(newWord._id, fileName),
       );
     } catch (err) {
       console.error(err);
