@@ -19,6 +19,11 @@ class Bot {
   #testCommand;
   #startCommand;
   #addCommand;
+  /**
+   * @type {Object.<string, () => void>}
+   */
+  #updateResolverMap;
+
 
   /**
    * Bot constructor
@@ -38,6 +43,8 @@ class Bot {
 
     this.#testCommand = new TestCommand(this.#bot);
 
+    this.#updateResolverMap = {};
+
     this.#setup();
   }
 
@@ -45,38 +52,42 @@ class Bot {
     this.#bot.on('message', async (msg) => {
       switch (msg.text) {
         case '/start':
-          this.#startCommand.processMsg(msg);
-          return;
+          await this.#startCommand.processMsg(msg);
+          break;
         case '/help':
-          this.#bot.sendMessage(
+          await this.#bot.sendMessage(
               msg.chat.id,
               renderHelpMsg(), {
                 parse_mode: 'MarkdownV2',
               });
-          return;
+          break;
         case '/revise':
-          this.#reviseCommand.processMsg(msg);
-          return;
+          await this.#reviseCommand.processMsg(msg);
+          break;
         case '/learn':
-          this.#learnCommand.processMsg(msg);
-          return;
+          await this.#learnCommand.processMsg(msg);
+          break;
         case '/add':
-          this.#addCommand.processMsg(msg);
-          return;
+          await this.#addCommand.processMsg(msg);
+          break;
         case '/ping':
-          this.#protectedCommand(msg, () => {
-            this.#bot.sendMessage(
+          await this.#protectedCommand(msg, async () => {
+            return this.#bot.sendMessage(
                 msg.chat.id,
                 `Pong: ${new Date()}`,
             );
           });
-          return;
+          break;
         case '/test':
-          this.#protectedCommand(msg, this.#testCommand.processMsg);
-          return;
+          await this.#protectedCommand(msg, this.#testCommand.processMsg);
+          break;
         default:
-          forceTransition(this.#bot, msg.chat.id, msg);
+          await forceTransition(this.#bot, msg.chat.id, msg);
       }
+
+      const msgResolver = this.#updateResolverMap[msg.message_id];
+      delete this.#updateResolverMap[msg.message_id];
+      msgResolver();
     });
 
     this.#bot.on('callback_query', async (query) => {
@@ -96,16 +107,20 @@ class Bot {
       const [callbakId, data] = callbackData;
       switch (callbakId) {
         case ReviseCallbackId:
-          this.#reviseCommand.processCallback(query.message, data);
-          return;
+          await this.#reviseCommand.processCallback(query.message, data);
+          break;
         case LearnCallbackId:
-          this.#learnCommand.processCallback(query.message, data);
-          return;
+          await this.#learnCommand.processCallback(query.message, data);
+          break;
         default:
           // deadcode
           // enchancment add forceCallbackTransition
           forceTransition(this.#bot, query.message.chat.id, query.message);
       }
+
+      const msgResolver = this.#updateResolverMap[query.id];
+      delete this.#updateResolverMap[query.id];
+      msgResolver();
     });
   };
 
@@ -121,18 +136,19 @@ class Bot {
   };
 
   /**
+   * @template {Function} T
    * @param {TelegramBot.Message} msg
-   * @param {Function} fn
+   * @param {T} fn
+   * @returns {Promise<any>}
    */
-  #protectedCommand = (msg, fn) => {
+  #protectedCommand = async (msg, fn) => {
     if (!this.#accessChecker(msg)) {
-      this.#bot.sendMessage(
+      return this.#bot.sendMessage(
           msg.chat.id,
           renderYouAreNotMyMaster(),
       );
-      return;
     }
-    fn(msg);
+    return fn(msg);
   };
 
   /**
@@ -149,9 +165,20 @@ class Bot {
 
   /**
    * @param {TelegramBot.Update} update
+   *
+   * @returns {Promise<null>}
    */
   handleRequest = (update) => {
+    const id = update.message?.message_id ?? update.callback_query?.id;
+    let resolve;
+    const status = new Promise((res) => {
+      resolve = res;
+    });
+    this.#updateResolverMap[id] = resolve;
+
     this.#bot.processUpdate(update);
+
+    return status;
   };
 
   startPolling = () => {

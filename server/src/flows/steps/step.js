@@ -30,6 +30,8 @@ class Step {
   /**
    * @callback onFileUploaded
    * @param {string} fileID
+   *
+   * @returns {Promise<null>}
    */
 
   /**

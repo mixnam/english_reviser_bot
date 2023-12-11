@@ -34,10 +34,10 @@ class AddNewWordSubbmit extends Step {
       renderYouJustAddedNewWord(newWord),
       null,
       audio,
-      (fileID) => {
+      async (fileID) =>
         setWordTelegramAudioID(newWordID, fileID)
-            .catch((err) => console.log(err));
-      },
+            .then(() => null)
+            .catch((err) => console.error(err)),
       newWord.TelegramPictureID ?? null,
     ];
   };

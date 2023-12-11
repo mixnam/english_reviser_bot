@@ -12,6 +12,8 @@ const {renderNoIdea} = require('../../render/renderTextMsg');
 /**
  * @param {TelegramBot} bot
  * @param {import("../../repo/users").User} user
+ *
+ * @returns {Promise<null>}
  */
 const forceAction = async (bot, user) => {
   const {stepID} = user;
@@ -58,10 +60,10 @@ const forceAction = async (bot, user) => {
         },
     });
 
-  const msg = await sendPhotoPromise.then(() => sendMsgPromise);
+  const msg = await (sendPhotoPromise.then(() => sendMsgPromise));
 
   if (onFileUploaded && msg.voice) {
-    onFileUploaded(msg.voice.file_id);
+    await onFileUploaded(msg.voice.file_id);
   }
 };
 
@@ -69,6 +71,8 @@ const forceAction = async (bot, user) => {
  * @param {TelegramBot} bot
  * @param {number} chatID
  * @param {TelegramBot.Message} msg
+ *
+ * @returns {Promise<null>}
  */
 const forceTransition = async (bot, chatID, msg) => {
   const user = await getUserByChatID(chatID);
@@ -107,7 +111,7 @@ const forceTransition = async (bot, chatID, msg) => {
   }
   user.state = newState;
   user.stepID = newStepID;
-  forceAction(bot, user);
+  return forceAction(bot, user);
 };
 
 module.exports = {

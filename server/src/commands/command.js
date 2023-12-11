@@ -43,6 +43,8 @@ class Command {
   /**
    * @param {TelegramBot.Message} msg
    * @param {number} [wordCount]
+   *
+   * @returns {Promise<null>}
    */
   async processMsg(msg, wordCount) {
     throw new Error(`processMsg method is not implemented - ${msg}`);
@@ -51,6 +53,8 @@ class Command {
   /**
    * @param {TelegramBot.Message} msg
    * @param {Array<any>} rawData
+   *
+   * @returns {Promise<null>}
    */
   async processCallback(msg, rawData) {
     throw new Error(
