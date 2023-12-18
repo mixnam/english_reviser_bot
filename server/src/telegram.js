@@ -87,7 +87,7 @@ class Bot {
 
       const msgResolver = this.#updateResolverMap[msg.message_id];
       delete this.#updateResolverMap[msg.message_id];
-      msgResolver();
+      msgResolver?.();
     });
 
     this.#bot.on('callback_query', async (query) => {
@@ -120,7 +120,7 @@ class Bot {
 
       const msgResolver = this.#updateResolverMap[query.id];
       delete this.#updateResolverMap[query.id];
-      msgResolver();
+      msgResolver?.();
     });
   };
 
