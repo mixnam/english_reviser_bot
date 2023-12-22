@@ -4,14 +4,15 @@ const {MongoClient, ServerApiVersion, Db} = require('mongodb');
 global.client = null;
 
 /**
+ * @param {import('./utils').Logger} logger
  * @return {Promise<MongoClient>}
  */
-const getClient = async () => {
+const getClient = async (logger) => {
   if (!process.env.MONGODB_URI) {
     throw new Error('There is not env MONGODB_URI');
   }
   if (global.client) {
-    console.log('Using existing client');
+    logger.info('Using existing client');
     return global.client;
   }
 
@@ -24,15 +25,16 @@ const getClient = async () => {
   });
 
   await global.client.connect();
-  console.log('New connection is opened');
+  logger.info('New connection is opened');
   return global.client;
 };
 
 /**
+ * @param {import('./utils').Logger} logger
  * @return {Promise<Db>}
  */
-const getDb = async () => {
-  const client = await getClient();
+const getDb = async (logger) => {
+  const client = await getClient(logger);
   return client.db(process.env.MONGODB_DB);
 };
 

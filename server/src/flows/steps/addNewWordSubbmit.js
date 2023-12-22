@@ -12,7 +12,7 @@ class AddNewWordSubbmit extends Step {
   /**
    * @type {Step['makeAction']}
    */
-  makeAction = async (user) => {
+  makeAction = async (user, logger) => {
     const newWord = /** @type {import('../../repo/words').Word} */ (user.state.newWord);
     if (!newWord) {
       return new Error('impossible state, no newWord');
@@ -25,7 +25,7 @@ class AddNewWordSubbmit extends Step {
       newWord.Audio = audio;
     }
 
-    const newWordID = await addNewWord(user._id, newWord);
+    const newWordID = await addNewWord(user._id, newWord, logger);
     if (newWordID instanceof Error) {
       return newWordID;
     }
@@ -35,9 +35,9 @@ class AddNewWordSubbmit extends Step {
       null,
       audio,
       async (fileID) =>
-        setWordTelegramAudioID(newWordID, fileID)
+        setWordTelegramAudioID(newWordID, fileID, logger)
             .then(() => null)
-            .catch((err) => console.error(err)),
+            .catch((err) => logger.error(err)),
       newWord.TelegramPictureID ?? null,
     ];
   };

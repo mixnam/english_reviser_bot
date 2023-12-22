@@ -50,7 +50,7 @@ class AddNewWordSpellcheck extends Step {
   /**
    * @type {Step['makeTransition']}
    */
-  makeTransition = async (msg, user) => {
+  makeTransition = async (msg, user, _bot, logger) => {
     if (!msg.text) {
       // TODO throw Error
       return [null, StepID];
@@ -60,15 +60,15 @@ class AddNewWordSpellcheck extends Step {
       return [user.state, this.nextStepID];
     }
 
-    const word = await getWordByText(msg.text);
+    const word = await getWordByText(msg.text, logger);
     if (word instanceof Error) {
-      console.error(word);
+      logger.error(word);
       return;
     }
 
-    const result = setWordProgress(word._id, Progress.HaveProblems);
+    const result = setWordProgress(word._id, Progress.HaveProblems, logger);
     if (result instanceof Error) {
-      console.error(result);
+      logger.error(result);
       return;
     }
     const newState = {

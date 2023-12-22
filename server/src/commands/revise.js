@@ -27,9 +27,10 @@ class ReviseCommand extends Command {
   /**
    * ReviseCommand constructor
    * @param {TelegramBot} bot
+   * @param {import('./command').Logger} logger
    */
-  constructor(bot) {
-    super();
+  constructor(bot, logger) {
+    super(logger.child({command: 'ReviseCommand'}));
     this.#bot = bot;
   }
 
@@ -37,13 +38,15 @@ class ReviseCommand extends Command {
    * @type {Command['processMsg']}
    */
   async processMsg(msg, wordCount) {
+    const ctx = {chatID: msg.chat.id};
     const user = await this.getSessionUser(msg);
     if (user instanceof Error) {
-      console.error(user);
+      this.logger.error(user);
       return;
     }
+    ctx.userID = user._id;
 
-    const word = await getRandomWordByUserIDForRevise(user._id);
+    const word = await getRandomWordByUserIDForRevise(user._id, this.logger.child(ctx));
     if (word === null) {
       this.#bot.sendMessage(
           msg.chat.id,
@@ -113,8 +116,8 @@ class ReviseCommand extends Command {
             caption: text,
           });
       if (sentMsg.voice) {
-        setWordTelegramAudioID(word._id, sentMsg.voice.file_id)
-            .catch((err) => console.error(err));
+        setWordTelegramAudioID(word._id, sentMsg.voice.file_id, this.logger.child(ctx))
+            .catch((err) => this.logger.error(ctx, err));
       }
       return;
     }
@@ -130,9 +133,10 @@ class ReviseCommand extends Command {
    * @type {Command['processCallback']}
    */
   async processCallback(msg, rawData) {
+    const ctx = {chatID: msg.chat.id};
     const data = this.#parseCallbackData(rawData);
     if (data instanceof Error) {
-      console.error(data);
+      this.logger.error(ctx, data);
       return;
     }
 
@@ -156,28 +160,28 @@ class ReviseCommand extends Command {
 
     let status = '';
     if (data.remember) {
-      const res = await setWordAsRevisedByWordID(data.wordID);
+      const res = await setWordAsRevisedByWordID(data.wordID, this.logger.child(ctx));
       if (res !== null) {
-        console.error(res);
+        this.logger.error(ctx, res);
         return;
       }
       status = labelRevised;
     } else {
-      const res = await setWordAsForgottenByWordID(data.wordID);
+      const res = await setWordAsForgottenByWordID(data.wordID, this.logger.child(ctx));
       if (res !== null) {
-        console.error(res);
+        this.logger.error(ctx, res);
         return;
       }
       status = `*${labelForgot}*`;
     }
 
-    const word = await getWordByID(data.wordID);
+    const word = await getWordByID(data.wordID, this.logger.child(ctx));
     if (word instanceof Error) {
-      console.error(word);
+      this.logger.error(ctx, word);
       return;
     }
     if (word === null) {
-      console.error(`can\'t find word by ID - ${data.wordID}`);
+      this.logger.error(ctx, `can\'t find word by ID - ${data.wordID}`);
       return;
     }
 

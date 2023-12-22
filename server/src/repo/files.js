@@ -1,15 +1,16 @@
 const {getDb} = require('./repo');
-const {executionTime} = require('../utils');
+const {executionTime} = require('./utils');
 const {GridFSBucket, ObjectId} = require('mongodb');
 
 const uploadPicture = executionTime('uploadPicture',
     /**
      * @param {import('node:stream').Readable} fileStream
+     * @param {import('./utils').Logger} logger
      *
      * @returns {Promise<string>}
      */
-    async (fileStream) => {
-      const db = await getDb();
+    async (fileStream, logger) => {
+      const db = await getDb(logger);
       const bucket = new GridFSBucket(db, {bucketName: 'images'});
       const fileName = new ObjectId().toString();
       const writableStream = bucket.openUploadStream(fileName);
@@ -26,10 +27,12 @@ const uploadPicture = executionTime('uploadPicture',
 const downloadPictrure = executionTime('downloadPictrure',
     /**
      * @param {string} fileName
+     * @param {import('./utils').Logger} logger
+     *
      * @returns {Promise<import('node:stream').Readable>}
      */
-    async (fileName) => {
-      const db = await getDb();
+    async (fileName, logger) => {
+      const db = await getDb(logger);
       const bucket = new GridFSBucket(db, {bucketName: 'images'});
 
       return bucket.openDownloadStreamByName(fileName);

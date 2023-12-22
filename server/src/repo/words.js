@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 const {ObjectId, Binary, AggregationCursor, FindCursor} = require('mongodb');
 const {getDb} = require('./repo');
-const {executionTime} = require('../utils');
+const {executionTime} = require('./utils');
 const levenshtein = require('js-levenshtein');
 
 const WORD_COLLECTION_NAME = 'english_words';
@@ -75,10 +75,11 @@ const addNewWord = executionTime(
     /**
      * @param {string} userID
      * @param {Word} word
+     * @param {import('./utils').Logger} logger
      * @return {Promise<Error|string>}
      */
-    async (userID, word) => {
-      const db = await getDb();
+    async (userID, word, logger) => {
+      const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
@@ -98,10 +99,11 @@ const getRandomWordByUserIDForRevise = executionTime(
     'getRandomWordByUserIDForRevise',
     /**
      * @param {string} userID
+     * @param {import('./utils').Logger} logger
      * @return {Promise<(Word|null)>}
      */
-    async (userID) => {
-      const db = await getDb();
+    async (userID, logger) => {
+      const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
       const lastRevisedThreshhold = new Date();
@@ -135,10 +137,11 @@ const getRandomWordByUserIDForLearn = executionTime(
     'getRandomWordByUserIDForLearn',
     /**
      * @param {string} userID
+     * @param {import('./utils').Logger} logger
      * @return {Promise<(Word|null)>}
      */
-    async (userID) => {
-      const db = await getDb();
+    async (userID, logger) => {
+      const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
       // Every yesterday word
@@ -182,10 +185,11 @@ const setWordProgress = executionTime(
     /**
      * @param {string} wordID
      * @param {string} progress
+     * @param {import('./utils').Logger} logger
      * @return {Promise<Error|null>}
      */
-    async (wordID, progress) => {
-      const db = await getDb();
+    async (wordID, progress, logger) => {
+      const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
@@ -209,10 +213,11 @@ const setWordTelegramAudioID = executionTime(
     /**
      * @param {string} wordID
      * @param {string} audioID
+     * @param {import('./utils').Logger} logger
      * @return {Promise<Error|null>}
      */
-    async (wordID, audioID) => {
-      const db = await getDb();
+    async (wordID, audioID, logger) => {
+      const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
@@ -235,10 +240,11 @@ const setWordTelegramPictureID = executionTime(
     /**
      * @param {string} wordID
      * @param {string} telegramPictureID
+     * @param {import('./utils').Logger} logger
      * @return {Promise<Error|null>}
      */
-    async (wordID, telegramPictureID) => {
-      const db = await getDb();
+    async (wordID, telegramPictureID, logger) => {
+      const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
@@ -261,10 +267,11 @@ const setWordPictureName = executionTime(
     /**
      * @param {string} wordID
      * @param {string} pictureName
+     * @param {import('./utils').Logger} logger
      * @return {Promise<Error|null>}
      */
-    async (wordID, pictureName) => {
-      const db = await getDb();
+    async (wordID, pictureName, logger) => {
+      const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
@@ -287,10 +294,11 @@ const getWordByID = executionTime(
     'getWordByID',
     /**
      * @param {string} wordID
+     * @param {import('./utils').Logger} logger
      * @return {Promise<Word|null|Error>}
      */
-    async (wordID) => {
-      const db = await getDb();
+    async (wordID, logger) => {
+      const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
@@ -311,10 +319,11 @@ const getWordByText = executionTime(
     'getWordByText',
     /**
      * @param {string} text
+     * @param {import('./utils').Logger} logger
      * @return {Promise<Word|null|Error>}
      */
-    async (text) => {
-      const db = await getDb();
+    async (text, logger) => {
+      const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
@@ -330,10 +339,11 @@ const setWordAsRevisedByWordID = executionTime(
     'setWordAsRevisedByWordID',
     /**
      * @param {string} wordID
+     * @param {import('./utils').Logger} logger
      * @return {Promise<Error|null>}
      */
-    async (wordID) => {
-      const result = await setWordProgress(wordID, Progress.Learned);
+    async (wordID, logger) => {
+      const result = await setWordProgress(wordID, Progress.Learned, logger);
       if (result !== null) {
         return new Error(`[repo][setWordAsRevisedByWordID] - ${result}`);
       }
@@ -344,10 +354,11 @@ const setWordAsForgottenByWordID = executionTime(
     'setWordAsForgottenByWordID',
     /**
      * @param {string} wordID
+     * @param {import('./utils').Logger} logger
      * @return {Promise<Error|null>}
      */
-    async (wordID) => {
-      const result = await setWordProgress(wordID, Progress.HaveProblems);
+    async (wordID, logger) => {
+      const result = await setWordProgress(wordID, Progress.HaveProblems, logger);
       if (result !== null) {
         return new Error(`[repo][setWordAsForgottenByWordID] - ${result}`);
       }
@@ -365,11 +376,12 @@ const getSpelcheckSuggestions = executionTime(
     /**
      * @param {string} newWord
      * @param {string} userID
+     * @param {import('./utils').Logger} logger
      *
      * @return {Promise<Error|Array<{English: string}>>}
      */
-    async (newWord, userID) => {
-      const db = await getDb();
+    async (newWord, userID, logger) => {
+      const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
       const result = words.find({userID}, {

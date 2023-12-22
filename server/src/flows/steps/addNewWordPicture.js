@@ -24,14 +24,14 @@ class AddNewWordPicture extends Step {
   /**
    * @type {Step['makeTransition']}
    */
-  makeTransition = async (msg, user, bot) => {
+  makeTransition = async (msg, user, bot, logger) => {
     const {newWord} = user.state;
     if (!newWord) {
       // TODO throw Error
       return [user.state, StepID];
     }
     if (!msg.photo) {
-      console.error('User didn\'t send no photo');
+      logger.error('User didn\'t send no photo');
       return [user.state, StepID];
     }
     /**
@@ -49,10 +49,11 @@ class AddNewWordPicture extends Step {
     try {
       const fileName = await uploadPicture(
           bot.getFileStream(picture.file_id),
+          logger,
       );
       newWord.PictureFileName = fileName;
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       return [user.state, StepID];
     }
 

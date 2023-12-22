@@ -2,6 +2,25 @@
 const TelegramBot = require('node-telegram-bot-api');
 
 /**
+ * @typedef LogFn
+ * @type {{
+ *  (ctx: Object, msg: string) : void;
+ *  (ctx: Object, error: Error) : void;
+ *  (msg: string) : void
+ *  (error: Error) : void
+ * }}
+ */
+
+/**
+ * @typedef Logger
+ * @type {Object}
+ * @property {LogFn} info
+ * @property {LogFn} debug
+ * @property {LogFn} error
+ * @property {(props: Object) => Logger} child
+ */
+
+/**
  * Step
  */
 class Step {
@@ -18,12 +37,13 @@ class Step {
    * @param {TelegramBot.Message} msg
    * @param {import("../../repo/users").User} user
    * @param {TelegramBot} bot - DO NOT INJECT BOT LIKE THIS
+   * @param {Logger} logger
    * @return {Promise<[
    *    import('../../repo/users').State | null,
    *    string
    * ]>}
    */
-  makeTransition = async (msg, user, bot) => {
+  makeTransition = async (msg, user, bot, logger) => {
     throw new Error('makeTransition is not implemented');
   };
 
@@ -36,6 +56,7 @@ class Step {
 
   /**
    * @param {import("../../repo/users").User} user
+   * @param {Logger} logger
    * @returns {Promise<[
    *    string,
    *    TelegramBot.ReplyKeyboardMarkup | null,
@@ -44,7 +65,7 @@ class Step {
    *    string | null
    * ]|Error>}
    */
-  makeAction = async (user) => {
+  makeAction = async (user, logger) => {
     throw new Error('makeAction is not implemented');
   };
 }
