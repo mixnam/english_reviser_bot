@@ -3,15 +3,48 @@ const TelegramBot = require('node-telegram-bot-api');
 const {addNewUser, getUserByChatID} = require('../repo/users');
 
 /**
+ * @typedef LogFn
+ * @type {{
+ *  (ctx: Object, msg: string) : void;
+ *  (ctx: Object, error: Error) : void;
+ *  (msg: string) : void
+ *  (error: Error) : void
+ * }}
+ */
+
+/**
+ * @typedef Logger
+ * @type {Object}
+ * @property {LogFn} info
+ * @property {LogFn} debug
+ * @property {LogFn} error
+ * @property {(props: Object) => Logger} child
+ */
+
+
+/**
  * Basic interface for bot command
  */
 class Command {
+  /**
+   * @type {Logger}
+   */
+  logger;
+
+  /**
+     * @param {Logger} logger
+     */
+  constructor(logger) {
+    this.logger = logger;
+  }
+
   /**
    * @param {TelegramBot.Message} msg
    * @return {Promise<import('../repo/users').User|Error>}
    */
   getSessionUser = async (msg) => {
-    const user = await getUserByChatID(msg.chat.id);
+    const ctx = {chatID: msg.chat.id};
+    const user = await getUserByChatID(msg.chat.id, this.logger.child(ctx));
     if (user instanceof Error) {
       return user;
     }
@@ -28,7 +61,7 @@ class Command {
         flowID: null,
         stepID: null,
       };
-      const newUserID = await addNewUser(newUser);
+      const newUserID = await addNewUser(newUser, this.logger.child(ctx));
       if (newUserID instanceof Error) {
         return newUserID;
       }

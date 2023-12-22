@@ -4,7 +4,7 @@
   "description": "revise words server API",
   "main": "index.js",
   "scripts": {
-    "telegram": "node src/telegram.js --dev",
+    "telegram": "node src/telegram.js --dev | pino-pretty",
     "webhook:off": "node ./scripts/removeWebhook.js",
     "webhook:on": "node ./scripts/setWebhook.js",
     "check-types": "tsc"
@@ -20,12 +20,14 @@
     "js-levenshtein": "^1.1.6",
     "mongodb": "^6.2.0",
     "node-telegram-bot-api": "^0.63.0",
+    "pino": "^8.17.1",
     "telegram-escape": "^1.1.1"
   },
   "devDependencies": {
     "@types/node-telegram-bot-api": "^0.63.3",
     "eslint": "^8.48.0",
     "eslint-config-google": "^0.14.0",
+    "pino-pretty": "^10.3.0",
     "typescript": "^5.3.2"
   }
 }

@@ -18,9 +18,10 @@ class StartCommand extends Command {
   /**
    * StartCommand constructor
    * @param {TelegramBot} bot
+   * @param {import('./command').Logger} logger
    */
-  constructor(bot) {
-    super();
+  constructor(bot, logger) {
+    super(logger.child({command: 'StartCommand'}));
     this.#bot = bot;
   }
 
@@ -28,6 +29,7 @@ class StartCommand extends Command {
    * @type {Command['processMsg']}
    */
   async processMsg(msg) {
+    const ctx = {chatID: msg.chat.id};
     const newUserID = await addNewUser({
       chatID: msg.chat.id,
       username: msg.chat.username,
@@ -36,10 +38,10 @@ class StartCommand extends Command {
       state: null,
       flowID: null,
       stepID: null,
-    });
+    }, this.logger.child(ctx));
 
     if (newUserID instanceof Error) {
-      console.error(newUserID);
+      this.logger.error(ctx, newUserID);
       this.#bot.sendMessage(msg.chat.id, renderStartError());
       return;
     }

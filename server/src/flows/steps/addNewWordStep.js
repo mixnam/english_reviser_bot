@@ -29,7 +29,7 @@ class AddNewWord extends Step {
   /**
    * @type {Step['makeTransition']}
    */
-  makeTransition = async (msg, user) => {
+  makeTransition = async (msg, user, _bot, logger) => {
     const {text} = msg;
     if (!text) {
       // TODO
@@ -48,9 +48,9 @@ class AddNewWord extends Step {
       // @ts-ignore
       'Last Revised': lastRevisedDate,
     };
-    let suggestions = await getSpelcheckSuggestions(text, user._id);
+    let suggestions = await getSpelcheckSuggestions(text, user._id, logger);
     if (suggestions instanceof Error) {
-      console.error(suggestions);
+      logger.error(suggestions);
       suggestions = [];
     }
 

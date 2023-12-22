@@ -1,5 +1,5 @@
 const {getDb} = require('./repo');
-const {executionTime} = require('../utils');
+const {executionTime} = require('./utils');
 const {ObjectId} = require('mongodb');
 
 /**
@@ -27,13 +27,14 @@ const addNewUser = executionTime(
     'addNewUser',
     /**
      * @param {Omit<User, '_id'>} user
+     * @param {import('./utils').Logger} logger
      * @return {Promise<string|Error>}
      */
-    async (user) => {
-      const db = await getDb();
+    async (user, logger) => {
+      const db = await getDb(logger);
       const users = db.collection('users');
 
-      const result = await getUserByChatID(user.chatID);
+      const result = await getUserByChatID(user.chatID, logger);
       if (result instanceof Error) {
         return new Error(
             `[repo][addNewUser]: cant't verify if user exists - ${result}`,
@@ -55,10 +56,11 @@ const getUserByChatID = executionTime(
     'getUserByChatID',
     /**
      * @param {number|string} chatID
+     * @param {import('./utils').Logger} logger
      * @returns {Promise<User|Error>}
      */
-    async (chatID) => {
-      const db = await getDb();
+    async (chatID, logger) => {
+      const db = await getDb(logger);
       const users = db.collection('users');
       try {
         const user = /** @type{User} */ (/** @type {unknown} */ (await users.findOne({chatID: chatID})));
@@ -70,15 +72,16 @@ const getUserByChatID = executionTime(
       }
     });
 
-/**
- * @param {string} userID
- * @param {Object} state
- * @return {Promise<Error|null>}
- */
 const setUserState = executionTime(
     'setUserState',
-    async (userID, state) => {
-      const db = await getDb();
+    /**
+     * @param {string} userID
+     * @param {Object} state
+     * @param {import('./utils').Logger} logger
+     * @return {Promise<Error|null>}
+     */
+    async (userID, state, logger) => {
+      const db = await getDb(logger);
       const users = db.collection('users');
 
       try {
@@ -97,15 +100,16 @@ const setUserState = executionTime(
       }
     });
 
-/**
- * @param {string} userID
- * @param {Object} stepID
- * @return {Promise<Error|null>}
- */
 const setUserStepID = executionTime(
     'setUserStepID',
-    async (userID, stepID) => {
-      const db = await getDb();
+    /**
+     * @param {string} userID
+     * @param {Object} stepID
+     * @param {import('./utils').Logger} logger
+     * @return {Promise<Error|null>}
+     */
+    async (userID, stepID, logger) => {
+      const db = await getDb(logger);
       const users = db.collection('users');
 
       try {

@@ -8,6 +8,7 @@ const {forceTransition} = require('./flows/processor/index.js');
 const {AddCommand} = require('./commands/add.js');
 const {renderHelpMsg} = require('./render/renderHelpMsg.js');
 const {renderYouAreNotMyMaster} = require('./render/renderTextMsg.js');
+const {pino}= require('pino');
 
 /**
  * Bot
@@ -23,6 +24,7 @@ class Bot {
    * @type {Object.<string, () => void>}
    */
   #updateResolverMap;
+  #logger;
 
 
   /**
@@ -35,11 +37,12 @@ class Bot {
     this.#bot = new TelegramBot(
         process.env.TELEGRAM_BOT_API_KEY,
     );
-    this.#reviseCommand = new ReviseCommand(this.#bot);
-    this.#learnCommand = new LearnCommand(this.#bot);
-    this.#startCommand = new StartCommand(this.#bot);
-    this.#addCommand = new AddCommand(this.#bot);
+    this.#logger = pino();
 
+    this.#reviseCommand = new ReviseCommand(this.#bot, this.#logger);
+    this.#learnCommand = new LearnCommand(this.#bot, this.#logger);
+    this.#startCommand = new StartCommand(this.#bot, this.#logger);
+    this.#addCommand = new AddCommand(this.#bot, this.#logger);
 
     this.#testCommand = new TestCommand(this.#bot);
 
@@ -82,7 +85,7 @@ class Bot {
           await this.#protectedCommand(msg, this.#testCommand.processMsg);
           break;
         default:
-          await forceTransition(this.#bot, msg.chat.id, msg);
+          await forceTransition(this.#bot, msg.chat.id, msg, this.#logger.child({chatID: msg.chat.id}));
       }
 
       const msgResolver = this.#updateResolverMap[msg.message_id];
@@ -92,16 +95,16 @@ class Bot {
 
     this.#bot.on('callback_query', async (query) => {
       if (!query.data) {
-        console.error('No data in callback_query');
+        this.#logger.error('No data in callback_query');
         return;
       }
       if (!query.message) {
-        console.error('No message in callback_query');
+        this.#logger.error('No message in callback_query');
         return;
       }
       const callbackData = this.#parseCallbackData(query.data);
       if (callbackData instanceof Error) {
-        console.error(callbackData);
+        this.#logger.error(callbackData);
         return;
       }
       const [callbakId, data] = callbackData;
@@ -115,7 +118,7 @@ class Bot {
         default:
           // deadcode
           // enchancment add forceCallbackTransition
-          forceTransition(this.#bot, query.message.chat.id, query.message);
+          forceTransition(this.#bot, query.message.chat.id, query.message, this.#logger);
       }
 
       const msgResolver = this.#updateResolverMap[query.id];

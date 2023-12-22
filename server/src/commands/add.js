@@ -15,9 +15,10 @@ class AddCommand extends Command {
   /**
    * AddCommand constructor
    * @param {TelegramBot} bot
+   * @param {import('./command').Logger} logger
    */
-  constructor(bot) {
-    super();
+  constructor(bot, logger) {
+    super(logger.child({command: 'AddCommand'}));
     this.#bot = bot;
   }
 
@@ -25,19 +26,21 @@ class AddCommand extends Command {
    * @type {Command['processMsg']}
    */
   processMsg = async (msg) => {
+    const ctx = {chatID: msg.chat.id};
     const user = await this.getSessionUser(msg);
     if (user instanceof Error) {
-      console.error(user);
+      this.logger.error(ctx, user);
       return;
     }
+    ctx.userID = user._id;
 
-    const result = await setUserStepID(user._id, AddNewWord.StepID);
+    const result = await setUserStepID(user._id, AddNewWord.StepID, this.logger.child(ctx));
     if (result !== null) {
-      console.error(result);
+      this.logger.error(ctx, result);
       return;
     }
     user.stepID = AddNewWord.StepID;
-    forceAction(this.#bot, user);
+    forceAction(this.#bot, user, this.logger.child(ctx));
   };
 }
 
