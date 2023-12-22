@@ -127,7 +127,7 @@ const forceTransition = async (bot, chatID, msg, logger) => {
   // TODO: introduce FlowMap
   const step = AddNewWordFlow[stepID];
   const [newState, newStepID] = await step.makeTransition(msg, user, bot, logger.child(ctx));
-  logger.info({...ctx, newStepID, newState}, 'Success transition');
+  logger.info({...ctx, newState}, `Success transition from ${user.stepID} to ${newStepID}`);
 
   let result = await setUserStepID(user._id, newStepID, logger.child(ctx));
   if (result !== null) {

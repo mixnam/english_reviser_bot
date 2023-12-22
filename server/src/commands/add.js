@@ -40,7 +40,7 @@ class AddCommand extends Command {
       return;
     }
     user.stepID = AddNewWord.StepID;
-    forceAction(this.#bot, user, this.logger.child(ctx));
+    return forceAction(this.#bot, user, this.logger.child(ctx));
   };
 }
 
