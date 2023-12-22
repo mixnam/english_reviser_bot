@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 const {ObjectId, Binary, AggregationCursor, FindCursor} = require('mongodb');
 const {getDb} = require('./repo');
-const {executionTime} = require('./utils');
+const {executionTime, minusDaysFromNow} = require('./utils');
 const levenshtein = require('js-levenshtein');
 
 const WORD_COLLECTION_NAME = 'english_words';
@@ -21,6 +21,17 @@ const ProgressOrder = [
   Progress.ActiveLearning,
   Progress.Learned,
 ];
+
+/**
+ * @type {Record<Progress[keyof Progress], number>}
+ */
+const ProgressTimeSpace = {
+  [Progress.HaveProblems]: 0,
+  [Progress.HaveToPayAttention]: 1,
+  [Progress.NeedToRepeat]: 3,
+  [Progress.ActiveLearning]: 9,
+  [Progress.Learned]: 27,
+};
 
 /**
  * @typedef Word
@@ -106,8 +117,6 @@ const getRandomWordByUserIDForRevise = executionTime(
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
-      const lastRevisedThreshhold = new Date();
-      lastRevisedThreshhold.setDate(lastRevisedThreshhold.getDate() - 14);
       /**
        * @type {AggregationCursor<WordDTO>}
        */
@@ -117,7 +126,7 @@ const getRandomWordByUserIDForRevise = executionTime(
             userID,
             'Progress': Progress.Learned,
             'Last Revised': {
-              $lt: lastRevisedThreshhold,
+              $lt: minusDaysFromNow(ProgressTimeSpace[Progress.Learned]),
             },
           },
         },
@@ -144,28 +153,42 @@ const getRandomWordByUserIDForLearn = executionTime(
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
-      // Every yesterday word
-      const lastRevisedThreshhold = new Date();
-      lastRevisedThreshhold.setHours(0, 0, 0, 0);
-
       /**
        * @type {AggregationCursor<WordDTO>}
        */
       const result = words.aggregate([
         {
           $match: {
-            userID,
-            'Progress': {
-              $in: [
-                Progress.HaveProblems,
-                Progress.NeedToRepeat,
-                Progress.ActiveLearning,
-                Progress.HaveToPayAttention,
-              ],
-            },
-            'Last Revised': {
-              $lt: lastRevisedThreshhold,
-            },
+            $or: [
+              {
+                userID,
+                'Progress': Progress.HaveProblems,
+                'Last Revised': {
+                  $lt: minusDaysFromNow(ProgressTimeSpace[Progress.HaveProblems]),
+                },
+              },
+              {
+                userID,
+                'Progress': Progress.HaveToPayAttention,
+                'Last Revised': {
+                  $lt: minusDaysFromNow(ProgressTimeSpace[Progress.HaveToPayAttention]),
+                },
+              },
+              {
+                userID,
+                'Progress': Progress.NeedToRepeat,
+                'Last Revised': {
+                  $lt: minusDaysFromNow(ProgressTimeSpace[Progress.NeedToRepeat]),
+                },
+              },
+              {
+                userID,
+                'Progress': Progress.ActiveLearning,
+                'Last Revised': {
+                  $lt: minusDaysFromNow(ProgressTimeSpace[Progress.ActiveLearning]),
+                },
+              },
+            ],
           },
         },
         {

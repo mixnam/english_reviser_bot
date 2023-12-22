@@ -8,7 +8,7 @@ const {Progress} = require('../repo/words');
  * @property {string} needToRepeat - Translation for 'Need to repeat'.
  * @property {string} haveToPayAttention - Translation for 'Have to pay attention'.
  * @property {string} haveProblems - Translation for 'Have problems'.
- * @property {string} englishLabel - Translation for the label 'English'.
+ * @property {string} wordLabel - Translation for the label 'Word'.
  * @property {string} examplesLabel - Translation for the label 'Examples'.
  * @property {string} translationLabel - Translation for the label 'Translation'.
  */
@@ -23,7 +23,7 @@ const languageTokenMap = {
     needToRepeat: '*Need to repeat 🟡*',
     haveToPayAttention: '*Have to pay attention 🟠*',
     haveProblems: '*Have problems 🔴*',
-    englishLabel: 'English',
+    wordLabel: 'Word',
     examplesLabel: 'Examples',
     translationLabel: 'Translation',
   },
@@ -33,7 +33,7 @@ const languageTokenMap = {
     needToRepeat: '*Necessita Repetição 🟡*',
     haveToPayAttention: '*Precisa Prestar Atenção 🟠*',
     haveProblems: '*Apresenta Problemas 🔴*',
-    englishLabel: 'Inglês',
+    wordLabel: 'Palavra',
     examplesLabel: 'Exemplos',
     translationLabel: 'Tradução',
   },
@@ -69,7 +69,7 @@ const renderWordWithCustomStatus = (word, status) => {
   const examples = word.Examples ? escapeMarkdown(word.Examples) : null;
 
   return `
-*${languageTokenMap[languageToken].englishLabel}:*
+*${languageTokenMap[languageToken].wordLabel}:*
 ${english} ${status ? `\\- ${status}` : ''}
 ${examples ? `
 *${languageTokenMap[languageToken].examplesLabel}:*

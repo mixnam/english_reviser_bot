@@ -33,6 +33,18 @@ const executionTime = (name, fn) => async (...args) => {
   return result;
 };
 
+/**
+ * @param {number} days
+ * @returns {Date}
+ */
+const minusDaysFromNow = (days) => {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  now.setDate(now.getDate() - days);
+  return now;
+};
+
 module.exports = {
   executionTime,
+  minusDaysFromNow,
 };
