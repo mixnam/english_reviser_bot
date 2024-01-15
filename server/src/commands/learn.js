@@ -58,6 +58,16 @@ class LearnCommand extends Command {
       return;
     }
 
+    /**
+     * @type {Partial<import('../repo/words').Word>}
+     */
+    const wordToEdit = {
+      _id: word._id,
+      English: word.English,
+      Examples: word.Examples,
+      Translation: word.Translation,
+    };
+
     const text = renderWordWithCustomStatus(
         word,
         mapWordProgressToStatus[word.Progress],
@@ -87,6 +97,14 @@ class LearnCommand extends Command {
               wordCount ?? 0,
             ].join(','),
           }],
+          [
+            {
+              text: 'Edit word',
+              web_app: {
+                url: 'https://fleet-bird-intent.ngrok-free.app/edit-word?word=' + btoa(JSON.stringify(wordToEdit)),
+              },
+            },
+          ],
           [
             {
               text: labelStopLearning,
