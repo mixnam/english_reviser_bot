@@ -19,7 +19,7 @@ const i18n = {
 export default defineConfig(({mode}) => ({
   base: './',
   define: {
-      i18n: i18n[mode]
+      i18n: i18n[mode === 'dev' ? 'en' : mode]
   },
   build: {
       outDir: `./dist/${mode}`,
