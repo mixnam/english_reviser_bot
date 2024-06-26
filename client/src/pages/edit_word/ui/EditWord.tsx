@@ -31,12 +31,12 @@ export const EditWord = () => {
         <List>
           <Input 
             name='english' 
-            header='english' 
+            header={i18n.word}
             defaultValue={word.English}
             />
-          <Input name='translation' header='translation' defaultValue={word.Translation}/>
-          <Input name='examples' header='examples' defaultValue={word.Examples} />
-          <Button type='submit'>Save</Button>
+          <Input name='translation' header={i18n.translation} defaultValue={word.Translation}/>
+          <Input name='examples' header={i18n.examples} defaultValue={word.Examples} />
+          <Button type='submit'>{i18n.save}</Button>
         </List>
       </form>
     ) 
