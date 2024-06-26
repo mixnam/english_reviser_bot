@@ -4,7 +4,7 @@ import App from './App.tsx'
 import './index.css'
 
 import WebApp from '@twa-dev/sdk'
-import { BrowserRouter } from 'react-router-dom'
+import { HashRouter } from 'react-router-dom'
 import {QueryClientProvider, QueryClient} from '@tanstack/react-query'
 
 WebApp.ready()
@@ -12,10 +12,10 @@ const queryClient = new QueryClient()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <App />
+    <HashRouter>
+      <QueryClientProvider client={queryClient}>
+        <App />
       </QueryClientProvider>
-    </BrowserRouter>
+    </HashRouter>
   </React.StrictMode>,
 )

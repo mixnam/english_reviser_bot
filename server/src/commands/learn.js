@@ -101,7 +101,7 @@ class LearnCommand extends Command {
             {
               text: 'Edit word',
               web_app: {
-                url: 'https://fleet-bird-intent.ngrok-free.app/edit-word?word=' + btoa(JSON.stringify(wordToEdit)),
+                url: process.env.TMA_URL + '#/edit-word?word=' + btoa(JSON.stringify(wordToEdit)),
               },
             },
           ],

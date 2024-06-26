@@ -1,7 +1,7 @@
 import {useMutation } from '@tanstack/react-query'
 import { EditableWord } from '../model'
+import {API_BASE_URL} from '../../../config'
 
-const API_BASE_URL = ''
 
 export const useSaveWordMutation = () => {
     return useMutation({
