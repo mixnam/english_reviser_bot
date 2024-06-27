@@ -1,3 +1,7 @@
+const {getUserByChatID} = require('../repo/users');
+const {updateWord} = require('../repo/words');
+const {TTSService} = require('../tts/tts');
+
 const {verifyTelegramWebAppData} = require('./verify');
 const fastify = require('fastify');
 const dotenv = require('dotenv');
@@ -17,7 +21,6 @@ server.register(fastifyCors, {
 
 server.addHook('preHandler', async (request, reply) => {
   try {
-    server.log.warn(request.headers);
     const telegramInitData = request.headers['telegram-init-data'];
     if (!telegramInitData) {
       throw new Error('no right header');
@@ -36,8 +39,38 @@ server.get('/ping', (_req, res) => {
   res.send({msg: 'pong'});
 });
 
-server.post('/word/:id', (req, res) => {
-  // TODO update word in db
+server.post('/chat/:chat_id/word/:word_id', async (req, res) => {
+  const user = await getUserByChatID(Number.parseInt(req.params.chat_id), server.log);
+  if (user instanceof Error) {
+    server.log.error(user);
+    res.code(403).send({message: 'Not authorized'});
+    return;
+  }
+
+  const word = JSON.parse(req.body);
+
+  const audio = await TTSService.getAudioForText(word.English);
+
+  if (audio instanceof Error) {
+    server.log.error(audio);
+    res.code(500).send({message: 'Can not handle it'});
+    return;
+  } else {
+    word.Audio = audio;
+  }
+
+  const result = await updateWord(
+      user._id,
+      word,
+      server.log,
+  );
+
+  if (result instanceof Error) {
+    server.log.error(user);
+    res.code(403).send({message: result.message});
+    return;
+  }
+
   res.status(200);
   res.send();
 });

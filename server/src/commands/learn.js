@@ -101,8 +101,18 @@ class LearnCommand extends Command {
             {
               text: 'Edit word',
               web_app: {
-                url: process.env.TMA_URL + '#/edit-word?word=' + btoa(JSON.stringify(wordToEdit)),
+                url: process.env.TMA_URL + '#/edit-word?word=' + btoa(
+                    encodeURIComponent(JSON.stringify(wordToEdit)),
+                ) + '&chat_id=' + msg.chat.id,
               },
+            },
+            {
+              text: 'Refresh',
+              callback_data: [
+                LearnCallbackId,
+                'refresh',
+                word._id,
+              ].join(','),
             },
           ],
           [
@@ -122,8 +132,12 @@ class LearnCommand extends Command {
       await this.#bot.sendPhoto(msg.chat.id, word.TelegramPictureID);
     }
 
+    /**
+       * @type {import('node-telegram-bot-api').Message}
+       */
+    let sentMsg;
     if (word.TelegramAudioID) {
-      this.#bot.sendVoice(
+      sentMsg = await this.#bot.sendVoice(
           msg.chat.id, word.TelegramAudioID,
           {
             ...options,
@@ -133,7 +147,7 @@ class LearnCommand extends Command {
     }
 
     if (word.Audio) {
-      const sentMsg = await this.#bot.sendVoice(
+      sentMsg = await this.#bot.sendVoice(
           msg.chat.id, Buffer.from(word.Audio),
           {
             ...options,
@@ -170,6 +184,116 @@ class LearnCommand extends Command {
           msg.chat.id,
           renderYouHaveCovered_N_Words(data.wordCount),
       );
+      return;
+    }
+
+    if (data.type === 'refresh') {
+      const word = await getWordByID(data.wordID, this.logger.child(ctx));
+      if (word instanceof Error) {
+        this.logger.error(ctx, word);
+        return;
+      }
+
+      /**
+     * @type {Partial<import('../repo/words').Word>}
+     */
+      const wordToEdit = {
+        _id: word._id,
+        English: word.English,
+        Examples: word.Examples,
+        Translation: word.Translation,
+      };
+
+      const currentProgressIdx = ProgressOrder.findIndex(
+          (i) => i === word.Progress,
+      );
+
+      /**
+       * @type {TelegramBot.EditMessageTextOptions}
+       */
+      const msgOptions = {
+        parse_mode: 'MarkdownV2',
+        message_id: msg.message_id,
+        chat_id: msg.chat.id,
+        reply_markup: msg.reply_markup,
+      };
+
+      const wordText = renderWordWithCustomStatus(
+          word,
+          mapWordProgressToStatus[ProgressOrder[currentProgressIdx]],
+      );
+
+      if (msg.text && !word.Audio) {
+        this.#bot.editMessageText(wordText, msgOptions);
+      } else if (msg.caption) {
+        /**
+         * @type {TelegramBot.SendMessageOptions}
+         */
+        const options = {
+          parse_mode: 'MarkdownV2',
+          reply_markup: {
+            inline_keyboard: [
+              [{
+                text: labelUp,
+                callback_data: [
+                  LearnCallbackId,
+                  word._id,
+                  'true',
+                  0,
+                ].join(','),
+              },
+              {
+                text: labelDown,
+                callback_data: [
+                  LearnCallbackId,
+                  word._id,
+                  'false',
+                  0,
+                ].join(','),
+              }],
+              [
+                {
+                  text: 'Edit word',
+                  web_app: {
+                    url: process.env.TMA_URL + '#/edit-word?word=' + btoa(
+                        JSON.stringify(wordToEdit),
+                    ) + '&chat_id=' + msg.chat.id,
+                  },
+                },
+                {
+                  text: 'Refresh',
+                  callback_data: [
+                    LearnCallbackId,
+                    'refresh',
+                    word._id,
+                  ].join(','),
+                },
+              ],
+              [
+                {
+                  text: labelStopLearning,
+                  callback_data: [
+                    LearnCallbackId,
+                    0,
+                  ].join(','),
+                },
+              ],
+            ],
+          },
+        };
+
+        await this.#bot.deleteMessage(msg.chat.id, msg.message_id);
+        const sentMsg = await this.#bot.sendVoice(
+            msg.chat.id, Buffer.from(word.Audio),
+            {
+              ...options,
+              caption: wordText,
+            });
+        if (sentMsg.voice) {
+          setWordTelegramAudioID(word._id, sentMsg.voice.file_id, this.logger.child(ctx))
+              .catch((err) => this.logger.error(ctx, err));
+        }
+      }
       return;
     }
 
@@ -229,7 +353,7 @@ class LearnCommand extends Command {
 
   /**
    * @typedef CallbackData
-   * @type {StopCallbackData|LearnCallbackData}
+   * @type {StopCallbackData|LearnCallbackData|RefreshCallback}
    */
 
   /**
@@ -237,6 +361,13 @@ class LearnCommand extends Command {
    * @type {object}
    * @property {'stop'} type
    * @property {number} wordCount
+   */
+
+  /**
+   * @typedef RefreshCallback
+   * @type {object}
+   * @property {'refresh'} type
+   * @property {string} wordID
    */
 
   /**
@@ -264,6 +395,12 @@ class LearnCommand extends Command {
         wordID: rawData[0],
         remember: rawData[1] === 'true',
         wordCount: Number.parseInt(rawData[2]),
+      };
+    }
+    if (rawData.length === 2 && rawData[0] === 'refresh') {
+      return {
+        type: 'refresh',
+        wordID: rawData[1],
       };
     }
     if (rawData.length === 1 && typeof rawData[0] === 'string') {

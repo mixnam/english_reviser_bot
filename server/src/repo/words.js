@@ -81,6 +81,36 @@ const mapWord = (wordDto) => {
   };
 };
 
+const updateWord = executionTime('updateWord',
+    /**
+     * @param {string} userID
+     * @param {Word} word
+     * @param {import('./utils').Logger} logger
+     * @return {Promise<Error|null>}
+     */
+    async (userID, word, logger) => {
+      const db = await getDb(logger);
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      try {
+        await words.updateOne({
+          _id: new ObjectId(word._id),
+          userID: userID,
+        }, {
+          $set: {
+            English: word.English,
+            Translation: word.Translation,
+            Examples: word.Examples,
+            Audio: word.Audio,
+            TelegramAudioID: undefined,
+          },
+        });
+        return null;
+      } catch (err) {
+        return new Error(`[repo][updateWord] - ${err}`);
+      }
+    });
+
 const addNewWord = executionTime(
     'addNewWord',
     /**
@@ -467,4 +497,5 @@ module.exports = {
   setWordAsForgottenByWordID,
   setWordTelegramPictureID,
   setWordPictureName,
+  updateWord,
 };

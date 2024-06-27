@@ -1,13 +1,15 @@
 import {useSearchParams} from 'react-router-dom'
-import {List, Input, Button} from '@telegram-apps/telegram-ui'
+import {List, Button, Textarea} from '@telegram-apps/telegram-ui'
 import { EditableWord } from '../model'
 import { useSaveWordMutation } from '../api/saveWord'
 import React from 'react'
+import WebApp from '@twa-dev/sdk'
 
 export const EditWord = () => {
     const [searchParams]= useSearchParams()
     const wordParam = searchParams.get('word')
-    const word: EditableWord = wordParam ? JSON.parse(atob(wordParam)) : {}
+    const chatIDParam = searchParams.get('chat_id')
+    const word: EditableWord = wordParam ? JSON.parse(decodeURIComponent(atob(wordParam))) : {}
 
     const saveWordMutation = useSaveWordMutation() 
 
@@ -18,10 +20,17 @@ export const EditWord = () => {
         const examplesValue = (e.currentTarget.elements.namedItem('examples') as HTMLInputElement).value
 
         saveWordMutation.mutate({
-            id: word.id,
-            English: englishValue,
-            Translation: translationValue,
-            Examples: examplesValue
+            chatID: chatIDParam ?? '',
+            word: {
+                _id: word._id,
+                English: englishValue,
+                Translation: translationValue,
+                Examples: examplesValue
+            }
+        }, {
+            onSuccess: () => {
+                WebApp.close()
+            }
         })
     }
 
@@ -29,14 +38,14 @@ export const EditWord = () => {
     return (
       <form onSubmit={onSubmit}>
         <List>
-          <Input 
+          <Textarea
             name='english' 
             header={i18n.word}
             defaultValue={word.English}
             />
-          <Input name='translation' header={i18n.translation} defaultValue={word.Translation}/>
-          <Input name='examples' header={i18n.examples} defaultValue={word.Examples} />
-          <Button type='submit'>{i18n.save}</Button>
+          <Textarea name='translation' header={i18n.translation} defaultValue={word.Translation}/>
+          <Textarea name='examples' header={i18n.examples} defaultValue={word.Examples} />
+          <Button type='submit' loading={saveWordMutation.isPending}>{i18n.save}</Button>
         </List>
       </form>
     ) 
