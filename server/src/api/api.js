@@ -48,7 +48,8 @@ server.post('/chat/:chat_id/word/:word_id', async (req, res) => {
   }
   server.log.warn({msg: 'Got the user', user});
 
-  const word = JSON.parse(req.body);
+  server.log.warn({msg: 'Body', body: req.body});
+  const word = typeof req.body === 'object' ? req.body : JSON.parse(req.body);
   server.log.warn({msg: 'Parsed the word', word});
 
   const audio = await TTSService.getAudioForText(word.English);
