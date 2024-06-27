@@ -256,7 +256,7 @@ class LearnCommand extends Command {
                   text: 'Edit word',
                   web_app: {
                     url: process.env.TMA_URL + '#/edit-word?word=' + btoa(
-                        JSON.stringify(wordToEdit),
+                        encodeURIComponent(JSON.stringify(wordToEdit)),
                     ) + '&chat_id=' + msg.chat.id,
                   },
                 },
