@@ -6,8 +6,14 @@ import WebApp from '@twa-dev/sdk'
 
 export const useSaveWordMutation = () => {
     return useMutation({
-        mutationFn: (word: EditableWord) => {
-            return fetch(`${API_BASE_URL}/word/${word.id}`, {
+        mutationFn: ({
+            chatID,
+            word
+        }: {
+            chatID: string,
+            word: EditableWord
+        }) => {
+            return fetch(`${API_BASE_URL}/chat/${chatID}/word/${word._id}`, {
                 method: 'POST',
                 headers: {
                     'Telegram-Init-Data': WebApp.initData

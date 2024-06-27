@@ -1,5 +1,5 @@
 export type EditableWord = {
-    id: string,
+    _id: string,
     English?: string,
     Translation?: string,
     Examples?: string
