@@ -16,6 +16,7 @@ export const useSaveWordMutation = () => {
             return fetch(`${API_BASE_URL}/chat/${chatID}/word/${word._id}`, {
                 method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     'Telegram-Init-Data': WebApp.initData
                 },
                 body: JSON.stringify(word)

@@ -46,10 +46,13 @@ server.post('/chat/:chat_id/word/:word_id', async (req, res) => {
     res.code(403).send({message: 'Not authorized'});
     return;
   }
+  server.log.warn({msg: 'Got the user', user});
 
   const word = JSON.parse(req.body);
+  server.log.warn({msg: 'Parsed the word', word});
 
   const audio = await TTSService.getAudioForText(word.English);
+  server.log.warn({msg: 'Got audio'});
 
   if (audio instanceof Error) {
     server.log.error(audio);
@@ -64,6 +67,7 @@ server.post('/chat/:chat_id/word/:word_id', async (req, res) => {
       word,
       server.log,
   );
+  server.log.warn('Updated the word', result);
 
   if (result instanceof Error) {
     server.log.error(user);
