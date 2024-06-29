@@ -9,6 +9,7 @@ export const EditWord = () => {
     const [searchParams]= useSearchParams()
     const wordParam = searchParams.get('word')
     const chatIDParam = searchParams.get('chat_id')
+    const messageIDParam = searchParams.get('message_id')
     const word: EditableWord = wordParam ? JSON.parse(decodeURIComponent(atob(wordParam))) : {}
 
     const saveWordMutation = useSaveWordMutation() 
@@ -21,6 +22,7 @@ export const EditWord = () => {
 
         saveWordMutation.mutate({
             chatID: chatIDParam ?? '',
+            messageID: messageIDParam ?? '',
             word: {
                 _id: word._id,
                 English: englishValue,
