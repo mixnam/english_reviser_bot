@@ -58,6 +58,16 @@ class LearnCommand extends Command {
       return;
     }
 
+    await this.sendLearnWordMessage(msg.chat.id, word, wordCount);
+  };
+
+  /**
+   * @param {number} chatID
+   * @param {import('../repo/words').Word} word
+   * @param {number} [wordCount]
+   */
+  sendLearnWordMessage = async (chatID, word, wordCount) => {
+    const ctx = {chatID};
     /**
      * @type {Partial<import('../repo/words').Word>}
      */
@@ -80,33 +90,33 @@ class LearnCommand extends Command {
     };
 
     if (word.TelegramPictureID) {
-      await this.#bot.sendPhoto(msg.chat.id, word.TelegramPictureID);
+      await this.#bot.sendPhoto(chatID, word.TelegramPictureID);
     }
 
-    if (!(Boolean(word.Audio) || Boolean(word.TelegramAudioID))) {
-      // if there is no audio at all, just send text msg and that's it
-      await this.#bot.sendMessage(
-          msg.chat.id,
-          text,
-          options,
-      );
-      return;
-    }
 
     /**
      * @type {import('node-telegram-bot-api').Message}
      */
     let sentMsg;
-    if (word.TelegramAudioID) {
+    if (!(Boolean(word.Audio) || Boolean(word.TelegramAudioID))) {
+      // if there is no audio at all, just send text msg and that's it
+      sentMsg = await this.#bot.sendMessage(
+          chatID,
+          text,
+          options,
+      );
+    } else if (word.TelegramAudioID) {
       sentMsg = await this.#bot.sendVoice(
-          msg.chat.id, word.TelegramAudioID,
+          chatID,
+          word.TelegramAudioID,
           {
             ...options,
             caption: text,
           });
     } else if (word.Audio) {
       sentMsg = await this.#bot.sendVoice(
-          msg.chat.id, Buffer.from(word.Audio),
+          chatID,
+          Buffer.from(word.Audio),
           {
             ...options,
             caption: text,
@@ -117,7 +127,7 @@ class LearnCommand extends Command {
       }
     }
 
-    this.#bot.editMessageReplyMarkup({
+    await this.#bot.editMessageReplyMarkup({
       inline_keyboard: [
         [{
           text: labelUp,
@@ -145,7 +155,7 @@ class LearnCommand extends Command {
                 '#/edit-word?word=' + btoa(
                   encodeURIComponent(JSON.stringify(wordToEdit)),
               ) +
-                '&chat_id=' + msg.chat.id +
+                '&chat_id=' + chatID +
                 '&message_id=' + sentMsg.message_id,
             },
           },

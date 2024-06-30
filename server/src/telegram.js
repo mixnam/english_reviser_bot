@@ -6,6 +6,7 @@ const {TestCommand} = require('./commands/test.js');
 const {StartCommand} = require('./commands/start.js');
 const {forceTransition} = require('./flows/processor/index.js');
 const {AddCommand} = require('./commands/add.js');
+const {EditWordCommand} = require('./webAppCommands/editWord.js');
 const {renderHelpMsg} = require('./render/renderHelpMsg.js');
 const {renderYouAreNotMyMaster} = require('./render/renderTextMsg.js');
 const {pino}= require('pino');
@@ -20,6 +21,7 @@ class Bot {
   #testCommand;
   #startCommand;
   #addCommand;
+  #editLearnWordWebAppCommand;
   /**
    * @type {Object.<string, () => void>}
    */
@@ -45,6 +47,12 @@ class Bot {
     this.#addCommand = new AddCommand(this.#bot, this.#logger);
 
     this.#testCommand = new TestCommand(this.#bot);
+
+    this.#editLearnWordWebAppCommand = new EditWordCommand(
+        this.#bot,
+        this.#logger.child({command: 'EditWordCommand'}),
+        this.#learnCommand.sendLearnWordMessage,
+    );
 
     this.#updateResolverMap = {};
 
@@ -167,6 +175,24 @@ class Bot {
   };
 
   /**
+   * @typedef WebAppMsg
+   * @type {import('./webAppCommands/editWord').EditWordMsg}
+   */
+
+  /**
+   * @param {WebAppMsg} msg
+   * @return {Promise<null|Error>}
+   */
+  handleWebAppMessage = async (msg) => {
+    switch (msg.type) {
+      case 'edit_word_msg':
+        return this.#editLearnWordWebAppCommand.processMsg(msg);
+      default:
+        return null;
+    }
+  };
+
+  /**
    * @param {TelegramBot.Update} update
    *
    * @returns {Promise<null>}
@@ -193,7 +219,7 @@ module.exports = {
   Bot,
 };
 
-if (process.argv[2] === '--dev') {
+if (require.main === module && process.argv[2] === '--dev') {
   dotenv.config({path: '.env.dev', debug: true});
   const bot = new Bot();
   bot.startPolling();
