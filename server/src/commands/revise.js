@@ -55,7 +55,28 @@ class ReviseCommand extends Command {
       return;
     }
 
+    this.sendWord(msg.chat.id, word, wordCount);
+  };
+
+  /**
+   * @param {number} chatID
+   * @param {import('../repo/words').Word} word
+   * @param {number} [wordCount]
+   */
+  sendWord = async (chatID, word, wordCount) => {
+    const ctx = {chatID};
+
     const text = renderWordWithCustomStatus(word, labelQuestionMark);
+    /**
+     * @type {Partial<import('../repo/words').Word>}
+     */
+    const wordToEdit = {
+      _id: word._id,
+      English: word.English,
+      Examples: word.Examples,
+      Translation: word.Translation,
+    };
+
     /**
      * @type {TelegramBot.SendMessageOptions}
      */
@@ -83,6 +104,19 @@ class ReviseCommand extends Command {
           }],
           [
             {
+              text: 'Edit word',
+              web_app: {
+                url: process.env.TMA_URL +
+                '#/edit-word?word=' + btoa(
+                    encodeURIComponent(JSON.stringify(wordToEdit)),
+                ) +
+                '&chat_id=' + chatID +
+                '&message_id=' + sentMsg.message_id,
+              },
+            },
+          ],
+          [
+            {
               text: labelStopRevising,
               callback_data: [
                 ReviseCallbackId,
@@ -95,12 +129,12 @@ class ReviseCommand extends Command {
     };
 
     if (word.TelegramPictureID) {
-      await this.#bot.sendPhoto(msg.chat.id, word.TelegramPictureID);
+      await this.#bot.sendPhoto(chatID, word.TelegramPictureID);
     }
 
     if (word.TelegramAudioID) {
       this.#bot.sendVoice(
-          msg.chat.id, word.TelegramAudioID,
+          chatID, word.TelegramAudioID,
           {
             ...options,
             caption: text,
@@ -110,7 +144,7 @@ class ReviseCommand extends Command {
 
     if (word.Audio) {
       const sentMsg = await this.#bot.sendVoice(
-          msg.chat.id, Buffer.from(word.Audio),
+          chatID, Buffer.from(word.Audio),
           {
             ...options,
             caption: text,
@@ -123,7 +157,7 @@ class ReviseCommand extends Command {
     }
 
     this.#bot.sendMessage(
-        msg.chat.id,
+        chatID,
         text,
         options,
     );

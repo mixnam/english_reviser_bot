@@ -1,2 +1,3 @@
 *.service-account.json
 pt_deploy/
+.DS_Store

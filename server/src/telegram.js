@@ -22,6 +22,7 @@ class Bot {
   #startCommand;
   #addCommand;
   #editLearnWordWebAppCommand;
+  #editReviseWordWebAppCommand;
   /**
    * @type {Object.<string, () => void>}
    */
@@ -52,6 +53,13 @@ class Bot {
         this.#bot,
         this.#logger.child({command: 'EditWordCommand'}),
         this.#learnCommand.sendLearnWordMessage,
+    );
+
+    // Not used for now
+    this.#editReviseWordWebAppCommand = new EditWordCommand(
+        this.#bot,
+        this.#logger.child({command: 'EditWordCommand'}),
+        this.#reviseCommand.sendWord,
     );
 
     this.#updateResolverMap = {};
