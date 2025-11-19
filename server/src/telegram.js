@@ -1,4 +1,3 @@
-const dotenv = require('dotenv');
 const TelegramBot = require('node-telegram-bot-api');
 const {ReviseCommand, ReviseCallbackId} = require('./commands/revise.js');
 const {LearnCommand, LearnCallbackId} = require('./commands/learn.js');
@@ -40,7 +39,7 @@ class Bot {
     this.#bot = new TelegramBot(
         process.env.TELEGRAM_BOT_API_KEY,
     );
-    this.#logger = pino();
+    this.#logger = pino({level: process.env.PINO_LOG_LEVEL || 'info'});
 
     this.#reviseCommand = new ReviseCommand(this.#bot, this.#logger);
     this.#learnCommand = new LearnCommand(this.#bot, this.#logger);
@@ -226,9 +225,3 @@ class Bot {
 module.exports = {
   Bot,
 };
-
-if (require.main === module && process.argv[2] === '--dev') {
-  dotenv.config({path: '.env.dev', debug: true});
-  const bot = new Bot();
-  bot.startPolling();
-}

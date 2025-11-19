@@ -4,7 +4,7 @@
   "description": "revise words server API",
   "main": "index.js",
   "scripts": {
-    "telegram": "node src/telegram.js --dev | pino-pretty",
+    "telegram": "node dev.js | pino-pretty",
     "api": "node src/api/api.js --dev",
     "webhook:off": "node ./scripts/removeWebhook.js",
     "webhook:on": "node ./scripts/setWebhook.js",
@@ -22,6 +22,7 @@
     "js-levenshtein": "^1.1.6",
     "mongodb": "^6.2.0",
     "node-telegram-bot-api": "^0.63.0",
+    "openai": "^4",
     "pino": "^8.17.1",
     "telegram-escape": "^1.1.1"
   },

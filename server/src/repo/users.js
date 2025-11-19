@@ -7,6 +7,7 @@ const {ObjectId} = require('mongodb');
  * @type {object}
  * @property {Partial<import('./words').Word>} [newWord]
  * @property {Array<Pick<import('./words').Word, 'English'>>} [suggestions]
+ * @property {string} [suggestedExample]
  * @property {import('./words').Word} wordToStudyAgain
  */
 

@@ -16,6 +16,7 @@ const {escapeMarkdown} = require('telegram-escape');
  * @property {() => string} renderYouAreNotMyMaster - Translation for 'You are not my master, I am not your slave'.
  * @property {(word: import("../repo/words").Word) => string} renderYouHaveMovedThisWordBackToStady - Translation for 'You have moved this word back to the learning list'.
  * @property {() => string} renderDoYouWantToAddContext - Translation for 'Do you want to add some context (e.g., meaning, usage, etc.) to this word?'.
+ * @property {(example: string) => string} renderSuggestedExampleQuestion - Translation for 'Use suggested example?' message.
  * @property {() => string} renderDoYouWantToAddPicture - Translation for 'Do you want to add any picture to this word?'.
  * @property {(word: string) => string} renderYouAreAddingExistingWord - Translation for 'You are adding the following word'.
  * @property {(word: import("../repo/words").Word) => string} renderYouJustAddedNewWord - Translation for 'You just added new word'.
@@ -41,6 +42,7 @@ Come back and repeat tomorrow!`,
     renderYouAreNotMyMaster: () => 'You are not my master, I am not your slave',
     renderYouHaveMovedThisWordBackToStady: (word) => `You've moved this word back to the learning list\n${renderWordWithCustomStatus(word, mapWordProgressToStatus[word.Progress])}`,
     renderDoYouWantToAddContext: () => escapeMarkdown('Do you want to add some context (e.g. meaning, usage, etc.) to this word?'),
+    renderSuggestedExampleQuestion: (example) => `I can suggest this example sentence:\n"${escapeMarkdown(example)}"\nDo you want to use it? Tap 'Yes' to keep it or 'No' to write your own example`,
     renderDoYouWantToAddPicture: () => 'Do you want to add any picture to this word?',
     renderYouAreAddingExistingWord: (word) => `You're adding the following word \\- __${word}__\nThere are already some similar words in your word list\\. Did you forget about them? \nClick on the correct word to move it to the 'Have Problems' state, or click 'Continue' if you are adding new word`,
     renderYouJustAddedNewWord: (word) => `You just added new word 🎉: \n${renderWordWithCustomStatus(word)}`,
@@ -61,6 +63,7 @@ Volte e repita amanhã!`,
     renderYouAreNotMyMaster: () => 'Não é meu mestre, não sou seu escravo',
     renderYouHaveMovedThisWordBackToStady: (word) => `Moveu esta palavra de volta para a lista de aprendizado\n${renderWordWithCustomStatus(word, mapWordProgressToStatus[word.Progress])}`,
     renderDoYouWantToAddContext: () => escapeMarkdown('Quer adicionar algum contexto (por exemplo, significado, uso, etc.) a esta palavra?'),
+    renderSuggestedExampleQuestion: (example) => `Posso sugerir esta frase de exemplo:\n"${escapeMarkdown(example)}"\nQuer usá\\-la? Toque em 'Sim' para aceitá\\-la ou em 'Não' para escrever seu próprio exemplo`,
     renderDoYouWantToAddPicture: () => 'Quer adicionar alguma imagem a esta palavra?',
     renderYouAreAddingExistingWord: (word) => `Está adicionando a seguinte palavra \\- __${word}__\nJá existem palavras semelhantes em sua lista de palavras\\. Esqueceu delas? \nClique na palavra correta para movê\\-la para o estado 'Tem Problemas', ou clique em 'Continuar' se estiver adicionando uma nova palavra`,
     renderYouJustAddedNewWord: (word) => `Acabou de adicionar uma nova palavra 🎉: \n${renderWordWithCustomStatus(word)}`,
