@@ -120,6 +120,9 @@ class LearnCommand extends Command {
           {
             ...options,
             caption: text,
+          }, {
+            filename: 'example.ogg',
+            contentType: 'audio/ogg',
           });
       if (sentMsg.voice) {
         setWordTelegramAudioID(word._id, sentMsg.voice.file_id, this.logger.child(ctx))

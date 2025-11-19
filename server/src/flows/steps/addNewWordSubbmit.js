@@ -1,6 +1,6 @@
 const {Step} = require('./step');
 const {addNewWord, setWordTelegramAudioID} = require('../../repo/words');
-const {TTSService} = require('../../tts/tts');
+const {TTSService} = require('../../tts/openaiTts');
 const {renderYouJustAddedNewWord} = require('../../render/renderTextMsg');
 
 const StepID = 'ADD_NEW_WORD_SUBBMIT';
@@ -18,7 +18,11 @@ class AddNewWordSubbmit extends Step {
       return new Error('impossible state, no newWord');
     }
 
-    const audio = await TTSService.getAudioForText(newWord.English);
+    const ttsText = newWord.Examples?.trim().length > 0 ?
+      newWord.Examples :
+      newWord.English;
+
+    const audio = await TTSService.getAudioForText(ttsText);
     if (audio instanceof Error) {
       return audio;
     } else {

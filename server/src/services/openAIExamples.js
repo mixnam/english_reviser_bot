@@ -1,4 +1,4 @@
-const OpenAI = require('openai');
+const {OpenAI} = require('openai');
 
 /**
  * Small helper around OpenAI chat completions to get a single example sentence

@@ -70,6 +70,9 @@ const forceAction = async (bot, user, logger) => {
        {
          remove_keyboard: true,
        },
+    }, {
+      filename: 'example.ogg',
+      contentType: 'audio/ogg',
     }) :
     bot.sendMessage(user.chatID, actionText, {
       parse_mode: 'MarkdownV2',

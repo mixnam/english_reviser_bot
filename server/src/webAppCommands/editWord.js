@@ -1,6 +1,6 @@
 const {updateWord} = require('../repo/words');
 
-const {TTSService} = require('../tts/tts');
+const {TTSService} = require('../tts/openaiTts');
 
 const {WebAppCommand} = require('./webAppCommand');
 
