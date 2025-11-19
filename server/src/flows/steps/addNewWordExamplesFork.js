@@ -42,6 +42,7 @@ class AddNewWordExamplesFork extends Step {
       const aiExample = await OpenAIExamplesService.generateExampleSentence(
           newWord.English,
           newWord.Translation,
+          process.env.LANGUAGE_CODE,
           logger,
       );
       if (aiExample instanceof Error) {

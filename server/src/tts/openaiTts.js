@@ -8,18 +8,33 @@ class OpenAITTSService {
   #model;
   #voiceName;
   #format;
+  #languageCode;
 
   /**
    * @param {string|undefined} apiKey
    * @param {string|undefined} model
    * @param {string|undefined} voiceName
    * @param {import("openai/resources/audio/speech").SpeechCreateParams["response_format"]} format
+   * @param {string|undefined} languageCode
    */
-  constructor(apiKey, model, voiceName, format) {
+  constructor(apiKey, model, voiceName, format, languageCode) {
     this.#model = model ?? 'gpt-4o-mini-tts';
-    this.#voiceName = voiceName ?? 'alloy';
+    this.#languageCode = languageCode ?? 'en';
+    this.#voiceName = voiceName ?? this.#resolveDefaultVoice();
     this.#format = format ?? 'opus';
     this.#client = apiKey ? new OpenAI({apiKey}) : null;
+  }
+
+  /**
+   * Pick a default voice based on language when explicit override not provided.
+   * @return {string}
+   */
+  #resolveDefaultVoice() {
+    const language = this.#languageCode.toLowerCase();
+    if (language.startsWith('pt')) {
+      return 'luna'; // European Portuguese voice
+    }
+    return 'alloy';
   }
 
   /**
@@ -62,6 +77,7 @@ const getInstance = () => {
         process.env.OPENAI_TTS_VOICE,
         // @ts-ignore
         process.env.OPENAI_TTS_FORMAT,
+        process.env.LANGUAGE_CODE,
     );
   }
   return instance;

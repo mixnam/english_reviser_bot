@@ -46,7 +46,7 @@ class Bot {
     this.#startCommand = new StartCommand(this.#bot, this.#logger);
     this.#addCommand = new AddCommand(this.#bot, this.#logger);
 
-    this.#testCommand = new TestCommand(this.#bot);
+    this.#testCommand = new TestCommand(this.#bot, this.#logger);
 
     this.#editLearnWordWebAppCommand = new EditWordCommand(
         this.#bot,
