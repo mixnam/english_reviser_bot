@@ -83,10 +83,16 @@ const forceAction = async (bot, user, logger) => {
         },
     });
 
-  const msg = await (sendPhotoPromise.then(() => sendMsgPromise));
+  try {
+    await sendPhotoPromise;
+    const msg = await sendMsgPromise;
 
-  if (onFileUploaded && msg.voice) {
-    await onFileUploaded(msg.voice.file_id);
+    if (onFileUploaded && msg.voice) {
+      await onFileUploaded(msg.voice.file_id);
+    }
+  } catch (err) {
+    logger.error(ctx, err);
+    return;
   }
 };
 
