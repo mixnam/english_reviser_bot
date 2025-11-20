@@ -9,6 +9,7 @@ class OpenAITTSService {
   #voiceName;
   #format;
   #languageCode;
+  #instructions;
 
   /**
    * @param {string|undefined} apiKey
@@ -16,12 +17,14 @@ class OpenAITTSService {
    * @param {string|undefined} voiceName
    * @param {import("openai/resources/audio/speech").SpeechCreateParams["response_format"]} format
    * @param {string|undefined} languageCode
+   * @param {string|undefined} instructions
    */
-  constructor(apiKey, model, voiceName, format, languageCode) {
+  constructor(apiKey, model, voiceName, format, languageCode, instructions) {
     this.#model = model ?? 'gpt-4o-mini-tts';
     this.#languageCode = languageCode ?? 'en';
     this.#voiceName = voiceName ?? this.#resolveDefaultVoice();
     this.#format = format ?? 'opus';
+    this.#instructions = instructions ?? this.#resolveDefaultInstructions();
     this.#client = apiKey ? new OpenAI({apiKey}) : null;
   }
 
@@ -32,9 +35,23 @@ class OpenAITTSService {
   #resolveDefaultVoice() {
     const language = this.#languageCode.toLowerCase();
     if (language.startsWith('pt')) {
-      return 'luna'; // European Portuguese voice
+      return 'alloy'; // Base timbre still works, accent handled via instructions.
     }
     return 'alloy';
+  }
+
+  /**
+   * Provide accent/style instructions when OpenAI voice presets are too generic.
+   * @return {string|undefined}
+   */
+  #resolveDefaultInstructions() {
+    const language = this.#languageCode?.toLowerCase();
+    if (!language) return undefined;
+
+    if (language === 'pt-pt' || language === 'pt') {
+      return 'Speak in native European Portuguese (Portugal) accent. Not Brazilian. Speak a bit slower than a regular native speaker';
+    }
+    return undefined;
   }
 
   /**
@@ -47,12 +64,18 @@ class OpenAITTSService {
     }
 
     try {
-      const speech = await this.#client.audio.speech.create({
+      const payload = {
         model: this.#model,
         voice: this.#voiceName,
         input: text,
         response_format: this.#format,
-      });
+      };
+
+      if (this.#instructions) {
+        payload.instructions = this.#instructions;
+      }
+
+      const speech = await this.#client.audio.speech.create(payload);
 
       const buffer = Buffer.from(await speech.arrayBuffer());
       return buffer;
@@ -78,6 +101,7 @@ const getInstance = () => {
         // @ts-ignore
         process.env.OPENAI_TTS_FORMAT,
         process.env.LANGUAGE_CODE,
+        process.env.OPENAI_TTS_INSTRUCTIONS,
     );
   }
   return instance;
