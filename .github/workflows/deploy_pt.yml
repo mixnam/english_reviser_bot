@@ -5,6 +5,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 env:
   DEPLOY_DIR: pt_deploy
@@ -16,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4      
+        uses: actions/checkout@v4
 
       - id: auth
         uses: google-github-actions/auth@v3
