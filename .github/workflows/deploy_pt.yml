@@ -38,12 +38,11 @@ jobs:
         working-directory: ${{ env.DEPLOY_DIR }}
         env:
           FUNCTION_NAME: ${{ env.FUNCTION_NAME }}
-          DEPLOY_DIR: ${{ env.DEPLOY_DIR }} 
         run: >
           gcloud functions deploy "${FUNCTION_NAME}"
           --gen2
           --runtime=nodejs20
           --region=europe-west1
-          --source=./${DEPLOY_DIR}
+          --source=.
           --entry-point=telegram
           --trigger-http
