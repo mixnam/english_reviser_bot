@@ -1,0 +1,17 @@
+{
+  "name": "pt_deploy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "deploy:bot": "gcloud functions deploy nodejs-http-function --gen2 --runtime=nodejs20  --region=europe-west1 --source=. --entry-point=telegram --trigger-http --env-vars-file .env.yaml",
+    "deploy:api": "gcloud functions deploy api --gen2 --runtime=nodejs20  --region=europe-west1 --source=. --entry-point=api --trigger-http --env-vars-file .env.yaml",
+    "sync": "rm -r ./server && cp -r ../../server ./server"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.3.0",
+    "server": "file:server"
+  }
+}

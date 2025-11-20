@@ -1,0 +1,50 @@
+name: Deploy Telegram Bot Function
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DEPLOY_DIR: pt_deploy
+  FUNCTION_NAME: nodejs-http-function
+
+jobs:
+  deploy-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4      
+
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }} 
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Use gcloud
+        run: "gcloud info"
+
+      # - name: Sync API server into deploy package
+      #   run: |
+      #     rm -rf "${DEPLOY_DIR}/server"
+      #     cp -R server "${DEPLOY_DIR}/server"
+      #
+      # - name: Deploy telegram bot function
+      #   working-directory: ${{ env.DEPLOY_DIR }}
+      #   env:
+      #     FUNCTION_NAME: ${{ env.FUNCTION_NAME }}
+      #   run: >
+      #     gcloud functions deploy "${FUNCTION_NAME}"
+      #     --gen2
+      #     --runtime=nodejs20
+      #     --region=europe-west1
+      #     --source=.
+      #     --entry-point=telegram
+      #     --trigger-http
+      #     --env-vars-file .env.yaml
