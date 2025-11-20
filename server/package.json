@@ -1,5 +1,5 @@
 {
-  "name": "server",
+  "name": "@mike/server",
   "version": "1.0.0",
   "description": "revise words server API",
   "main": "index.js",
