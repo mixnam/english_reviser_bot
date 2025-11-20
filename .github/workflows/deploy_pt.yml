@@ -1,4 +1,4 @@
-name: Deploy Telegram Bot Function
+name: Deploy Telegram Bot Function [PT]
 
 on:
   workflow_dispatch:
