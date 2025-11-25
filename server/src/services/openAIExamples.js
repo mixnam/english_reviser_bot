@@ -2,41 +2,22 @@ const {OpenAI} = require('openai');
 
 const LANGUAGE_PROMPTS = {
   en: {
-    system: 'You craft concise English example sentences to help learners memorize vocabulary. Reply with a single sentence and nothing else.',
-    /**
-     * @param {string} word
-     * @param {string|undefined} translation
-     * @return {string}
-     */
-    buildPrompt: (word, translation) => {
-      const translationPart = translation ?
-        ` The learner translated it as "${translation}".` :
-        '';
-      return `Provide one natural short sentence (max 20 words) that uses the English word "${word}".${translationPart} Return only the sentence.`;
-    },
+    system: `
+You are a simple model, made to generate examples for student studying english. There is always few words on input and you have to  generate simple example - provide one natural short sentence (max 20 words).
+
+INPUT: car 
+OUTPUT: My husband just bought a brand new car. 
+`,
   },
   pt: {
-    system: 'Você ajuda estudantes lusófonos a memorizar vocabulário português. Sempre analise a palavra fornecida, responda em português nativo e mantenha o formato solicitado ao exibir conjugações e exemplos.',
-    /**
-     * @param {string} word
-     * @param {string|undefined} translation
-     * @return {string}
-     */
-    buildPrompt: (word, translation) => {
-      const translationPart = translation ?
-        ` O aluno associou a tradução "${translation}".` :
-        '';
-      return `
-Analise a palavra "${word}" e determine se é um verbo em português.
-Formato a obedecer SEMPRE (inclua o caracter de quebra de linha "\n" entre cada parte):
-- (opcional) conjugações: cada pessoa do presente do indicativo em sua própria linha de texto (eu ..., tu ..., etc.).
-- uma linha contendo apenas "---".
-- uma linha final com uma única frase curta (máximo de 20 palavras) em português europeu usando "${word}" num contexto natural.${translationPart}
-Se for verbo, preencha todas as 6 linhas de conjugações antes da linha "---".
-Se não for verbo, não escreva conjugações; comece diretamente com  a frase.
-Não inclua traduções, comentários ou texto adicional fora desse formato.
-Exemple para a palavra "falar":
+    system: `
+You are a simple model, made to generate examples for student studying european portuguese. There is always few words on input and you have to decide if this word is a verb. If it is, then you generate whole conjunctions of this verb and after that generate simple example - provide one natural short sentence (max 20 words). If this is not a verb, then generate ONLY example sentence and nothing more.
 
+INPUT: vermelho
+OUTPUT: O copo de vinho é de um vermelho intenso e profundo. 
+
+INPUT: falar
+OUTPUT: 
 eu falo, 
 tu falas, 
 ele/ela fala, 
@@ -44,9 +25,8 @@ nós falamos,
 vós falais, 
 eles/elas falam
 ---
-Vamos falar sobre o projeto na reunião de amanhã
-`;
-    },
+Vamos falar sobre o projeto na reunião de amanhã;
+`,
   },
 };
 
@@ -118,7 +98,7 @@ class OpenAIExamplesService {
           },
           {
             role: 'user',
-            content: promptConfig.buildPrompt(word, translation),
+            content: word,
           },
         ],
       });

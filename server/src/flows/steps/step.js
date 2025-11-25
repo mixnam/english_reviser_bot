@@ -59,7 +59,7 @@ class Step {
    * @param {Logger} logger
    * @returns {Promise<[
    *    string,
-   *    TelegramBot.ReplyKeyboardMarkup | null,
+   *    (chatID: number | string) => TelegramBot.ReplyKeyboardMarkup | TelegramBot.InlineKeyboardMarkup | null,
    *    Uint8Array | null,
    *    onFileUploaded | null,
    *    string | null

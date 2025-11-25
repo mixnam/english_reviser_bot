@@ -23,7 +23,20 @@ class AddNewWord extends Step {
    * @type {Step['makeAction']}
    */
   makeAction = async () => {
-    return [renderSendMeWordToAdd(), null, null, null, null];
+    return [renderSendMeWordToAdd(), (chatID) => ({
+      inline_keyboard: [
+        [
+          {
+            text: 'Add word',
+            web_app: {
+              url: process.env.TMA_URL +
+                '#/add-word?&chat_id=' + chatID,
+            },
+          },
+        ],
+      ],
+    }),
+    null, null, null];
   };
 
   /**

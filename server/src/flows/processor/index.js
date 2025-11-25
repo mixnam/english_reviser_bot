@@ -51,11 +51,13 @@ const forceAction = async (bot, user, logger) => {
   }
   const [
     actionText,
-    actionKeyboard,
+    actionKeyboardFn,
     audio,
     onFileUploaded,
     telegramPictureId,
   ] = result;
+
+  const actionKeyboard = actionKeyboardFn(user.chatID);
 
   const sendPhotoPromise = telegramPictureId ?
         bot.sendPhoto(user.chatID, telegramPictureId) :
@@ -65,7 +67,7 @@ const forceAction = async (bot, user, logger) => {
     bot.sendVoice(user.chatID, Buffer.from(audio), {
       caption: actionText,
       parse_mode: 'MarkdownV2',
-      reply_markup: actionKeyboard !== null ?
+      reply_markup: actionKeyboard ?
         actionKeyboard :
        {
          remove_keyboard: true,
@@ -76,7 +78,7 @@ const forceAction = async (bot, user, logger) => {
     }) :
     bot.sendMessage(user.chatID, actionText, {
       parse_mode: 'MarkdownV2',
-      reply_markup: actionKeyboard !== null ?
+      reply_markup: actionKeyboard ?
         actionKeyboard :
         {
           remove_keyboard: true,
@@ -152,6 +154,28 @@ const forceTransition = async (bot, chatID, msg, logger) => {
   user.stepID = newStepID;
 
   return forceAction(bot, user, logger);
+};
+
+/**
+ * @param {TelegramBot.ReplyKeyboardMarkup | TelegramBot.InlineKeyboardMarkup | null} input
+ * @returns {input is TelegramBot.InlineKeyboardMarkup}
+ */
+const isInlineKeyboard = (input) => {
+  if ('inline_keyboard' in input) {
+    return true;
+  }
+  return false;
+};
+
+/**
+ * @param {TelegramBot.ReplyKeyboardMarkup | TelegramBot.InlineKeyboardMarkup | null} input
+ * @returns {input is TelegramBot.InlineKeyboardMarkup}
+ */
+const isReplyKeyboard = (input) => {
+  if ('keyboard' in input) {
+    return true;
+  }
+  return false;
 };
 
 module.exports = {

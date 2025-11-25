@@ -6,6 +6,7 @@ const {StartCommand} = require('./commands/start.js');
 const {forceTransition} = require('./flows/processor/index.js');
 const {AddCommand} = require('./commands/add.js');
 const {EditWordCommand} = require('./webAppCommands/editWord.js');
+const {AddWordCommand} = require('./webAppCommands/addWord.js');
 const {renderHelpMsg} = require('./render/renderHelpMsg.js');
 const {renderYouAreNotMyMaster} = require('./render/renderTextMsg.js');
 const {pino}= require('pino');
@@ -21,6 +22,8 @@ class Bot {
   #startCommand;
   #addCommand;
   #editLearnWordWebAppCommand;
+  #addWordWebAppCommand;
+
   #editReviseWordWebAppCommand;
   /**
    * @type {Object.<string, () => void>}
@@ -47,7 +50,10 @@ class Bot {
     this.#addCommand = new AddCommand(this.#bot, this.#logger);
 
     this.#testCommand = new TestCommand(this.#bot, this.#logger);
-
+    this.#addWordWebAppCommand = new AddWordCommand(
+        this.#bot,
+        this.#logger.child({command: 'AddWordCommand'}),
+    );
     this.#editLearnWordWebAppCommand = new EditWordCommand(
         this.#bot,
         this.#logger.child({command: 'EditWordCommand'}),
@@ -183,7 +189,7 @@ class Bot {
 
   /**
    * @typedef WebAppMsg
-   * @type {import('./webAppCommands/editWord').EditWordMsg}
+   * @type {import('./webAppCommands/editWord').EditWordMsg | import("./webAppCommands/addWord").AddWordMsg}
    */
 
   /**
@@ -194,6 +200,8 @@ class Bot {
     switch (msg.type) {
       case 'edit_word_msg':
         return this.#editLearnWordWebAppCommand.processMsg(msg);
+      case 'add_word_msg':
+        return this.#addWordWebAppCommand.processMsg(msg);
       default:
         return null;
     }

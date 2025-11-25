@@ -32,7 +32,7 @@ class AddNewWordSpellcheck extends Step {
 
     return [
       renderYouAreAddingExistingWord(newWord?.English ?? ''),
-      {
+      () => ({
         keyboard: [
           ...(suggestions
               ?.map((suggestion) => [{
@@ -40,7 +40,7 @@ class AddNewWordSpellcheck extends Step {
               }]) ?? []),
           [{text: ThisIsNewWord}],
         ],
-      },
+      }),
       null,
       null,
       null,

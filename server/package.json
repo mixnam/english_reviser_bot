@@ -4,8 +4,8 @@
   "description": "revise words server API",
   "main": "index.js",
   "scripts": {
-    "telegram": "node dev.js | pino-pretty",
-    "api": "node src/api/api.js --dev",
+    "telegram": "node dev.js --bot | pino-pretty",
+    "api": "node dev.js --api",
     "webhook:off": "node ./scripts/removeWebhook.js",
     "webhook:on": "node ./scripts/setWebhook.js",
     "check-types": "tsc"

@@ -37,7 +37,7 @@ jobs:
       - name: Deploy telegram bot function
         working-directory: ${{ env.DEPLOY_DIR }}
         env:
-          FUNCTION_NAME: ${{ env.FUNCTION_NAME }}
+          FUNCTION_NAME: nodejs-http-function 
         run: >
           gcloud functions deploy "${FUNCTION_NAME}"
           --gen2
@@ -45,4 +45,17 @@ jobs:
           --region=europe-west1
           --source=.
           --entry-point=telegram
+          --trigger-http
+
+      - name: Deploy telegram bot api function
+        working-directory: ${{ env.DEPLOY_DIR }}
+        env:
+          FUNCTION_NAME: api 
+        run: >
+          gcloud functions deploy "${FUNCTION_NAME}"
+          --gen2
+          --runtime=nodejs20
+          --region=europe-west1
+          --source=.
+          --entry-point=api
           --trigger-http

@@ -27,7 +27,7 @@ class AddNewWordPictureFork extends Step {
   makeAction = async () => {
     return [
       renderDoYouWantToAddPicture(),
-      {
+      () => ({
         keyboard: [[
           {
             text: YesAnswer,
@@ -36,7 +36,7 @@ class AddNewWordPictureFork extends Step {
             text: NoAnswer,
           },
         ]],
-      },
+      }),
       null,
       null,
       null,
