@@ -1,9 +1,13 @@
-const {Bot} = require('../telegram');
+const {Bot} = require('../telegram.js');
+const {pino}= require('pino');
 
 const {verifyTelegramWebAppData} = require('./verify');
 const fastify = require('fastify');
 const dotenv = require('dotenv');
 const fastifyCors = require('@fastify/cors');
+const {getSpelcheckSuggestions, Progress} = require('../repo/words');
+const {getUserByChatID} = require('../repo/users');
+const {OpenAIExamplesService} = require('../services/openAIExamples');
 
 /**
  * Api
@@ -11,13 +15,18 @@ const fastifyCors = require('@fastify/cors');
 class Api {
   #bot;
   #server;
+  #logger;
+  #isDev;
+
 
   /**
    * Api constructor
    */
   constructor() {
     this.#bot = new Bot();
+    this.#logger = pino({level: process.env.PINO_LOG_LEVEL || 'info'});
     this.#server = fastify({logger: true});
+    this.#isDev = process.env.DEV;
 
     this.#setup();
   }
@@ -31,22 +40,23 @@ class Api {
       maxAge: 86400, // Specify how long the results of a preflight request can be cached
     });
 
-
-    this.#server.addHook('preHandler', async (request, reply) => {
-      try {
-        const telegramInitData = request.headers['telegram-init-data'];
-        if (!telegramInitData) {
-          throw new Error('no right header');
+    if (!this.#isDev) {
+      this.#server.addHook('preHandler', async (request, reply) => {
+        try {
+          const telegramInitData = request.headers['telegram-init-data'];
+          if (!telegramInitData) {
+            throw new Error('no right header');
+          }
+          const verified = verifyTelegramWebAppData(telegramInitData);
+          if (!verified) {
+            throw new Error('request is not verified');
+          }
+        } catch (err) {
+          this.#server.log.error(err);
+          reply.code(401).send({message: 'Authentication failed'});
         }
-        const verified = verifyTelegramWebAppData(telegramInitData);
-        if (!verified) {
-          throw new Error('request is not verified');
-        }
-      } catch (err) {
-        this.#server.log.error(err);
-        reply.code(401).send({message: 'Authentication failed'});
-      }
-    });
+      });
+    }
 
     this.#server.get('/ping', (_req, res) => {
       res.send({msg: 'pong'});
@@ -77,6 +87,90 @@ class Api {
 
       res.code(200).send();
     });
+
+    this.#server.post('/chat/:chat_id/word/similar', async (req, res) => {
+      const user = await getUserByChatID(Number.parseInt(req.params['chat_id']), this.#logger);
+      if (user instanceof Error) {
+        this.#logger.error(user);
+        res.code(500).send();
+        return;
+      }
+
+      const suggestions = await getSpelcheckSuggestions((/** @type {{word: string}} */(req.body)).word, user._id, this.#logger);
+      if (suggestions instanceof Error) {
+        this.#logger.error(suggestions);
+        res.code(500).send();
+        return;
+      }
+
+      res.code(200).send(JSON.stringify({words: suggestions.map(({English}) => English)}));
+    });
+
+    this.#server.post('/chat/:chat_id/word/example', async (req, res) => {
+      const user = await getUserByChatID(Number.parseInt(req.params['chat_id']), this.#logger);
+      if (user instanceof Error) {
+        this.#logger.error(user);
+        res.code(500).send();
+        return;
+      }
+
+      const {word, translate} = /** @type {{word: string, translate: string}} */(req.body);
+
+      const aiExample = await OpenAIExamplesService.generateExampleSentence(
+          word,
+          translate,
+          process.env.LANGUAGE_CODE,
+          this.#logger,
+      );
+      if (aiExample instanceof Error) {
+        this.#logger.error(aiExample);
+        res.code(500).send();
+        return;
+      }
+
+      res.code(200).send(JSON.stringify({example: aiExample}));
+    });
+
+    this.#server.post('/chat/:chat_id/word/save', async (req, res) => {
+      const user = await getUserByChatID(Number.parseInt(req.params['chat_id']), this.#logger);
+      if (user instanceof Error) {
+        this.#logger.error(user);
+        res.code(500).send();
+        return;
+      }
+
+      const {word, translation, example} = /** @type {{word: string, translation: string, example: string | null}} */(req.body);
+      /** @type {import('../repo/words').Word} */
+      const newWord = {
+        userID: user._id,
+        English: word,
+        Translation: translation,
+        Examples: example,
+        Progress: Progress.HaveProblems,
+      };
+
+      try {
+        this.#bot.handleWebAppMessage({
+          type: 'add_word_msg',
+          payload: {
+            chatID: Number.parseInt(req.params['chat_id']),
+            word: newWord,
+          },
+        });
+      } catch (err) {
+        this.#logger.error(err);
+        res.code(500).send();
+        return;
+      }
+
+      res.code(200).send();
+    });
+
+    // TODO
+    // add new endpoints
+    // POST /chat/:id/word/similar {word: string} -> { words: string[] } done
+    // POST /chat/:id/word/example {word: string, currentExample: string} -> {example: string} done
+    // POST /chat/:is/word/submit {word: string, example: string} -> void
   };
 
   /**
