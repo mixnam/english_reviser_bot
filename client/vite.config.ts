@@ -18,6 +18,11 @@ const i18n = {
 
 export default defineConfig(({mode}) => ({
   base: './',
+  server: {
+    allowedHosts: [
+      "fleet-bird-intent.ngrok-free.app"
+    ]
+  },
   define: {
       i18n: i18n[mode === 'dev' ? 'en' : mode]
   },

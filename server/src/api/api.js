@@ -165,12 +165,6 @@ class Api {
 
       res.code(200).send();
     });
-
-    // TODO
-    // add new endpoints
-    // POST /chat/:id/word/similar {word: string} -> { words: string[] } done
-    // POST /chat/:id/word/example {word: string, currentExample: string} -> {example: string} done
-    // POST /chat/:is/word/submit {word: string, example: string} -> void
   };
 
   /**

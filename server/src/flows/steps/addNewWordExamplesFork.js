@@ -66,7 +66,7 @@ class AddNewWordExamplesFork extends Step {
       suggestedExample ?
         renderSuggestedExampleQuestion(suggestedExample) :
         renderDoYouWantToAddContext(),
-      {
+      () => ({
         keyboard: [[
           {
             text: YesAnswer,
@@ -75,7 +75,7 @@ class AddNewWordExamplesFork extends Step {
             text: NoAnswer,
           },
         ]],
-      },
+      }),
       null,
       null,
       null,
