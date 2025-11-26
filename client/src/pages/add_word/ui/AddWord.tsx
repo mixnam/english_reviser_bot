@@ -1,6 +1,6 @@
 import {useSearchParams} from 'react-router-dom'
 import {List, Button, Textarea} from '@telegram-apps/telegram-ui'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useCheckSimilarWorkQuery } from '../api/checkSimilarWords'
 import { useGetExamplesQuery } from '../api/getExamples';
 import { useSubmitWordMutation } from '../api/submitWord';
@@ -19,6 +19,7 @@ export const AddWord = () => {
 
     const [word, setWord] = useState("")
     const [translation, setTranslation] = useState("")
+    const [example, setExample] = useState("")
 
     const checkSimilarWordQuery = useCheckSimilarWorkQuery({chatID: chatIDParam ?? "", word })
     const getExamplesQuery = useGetExamplesQuery({chatID: chatIDParam ?? "", word, translation})
@@ -30,13 +31,21 @@ export const AddWord = () => {
     const onChangeWord = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.currentTarget.value
         setWord(value)
-        checkSimilarWordDebounced()
+        if (value) {
+            checkSimilarWordDebounced()
+        }
     }
 
     const onChangeTranslation = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.currentTarget.value
         setTranslation(value)
-        getExmaplesQueryDebounced()
+        if (value) {
+            getExmaplesQueryDebounced()
+        }
+    }
+
+    const onChangeExample = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setExample(e.currentTarget.value)
     }
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -46,13 +55,19 @@ export const AddWord = () => {
             chatID: chatIDParam ?? '',
             word,
             translation,
-            example: getExamplesQuery.data.example
+            example
         }, {
             onSuccess: () => {
                 WebApp.close()
             }
         })
     }
+
+    useEffect(() => {
+        if (getExamplesQuery.data) {
+            setExample(getExamplesQuery.data.example)
+        }
+    }, [getExamplesQuery.data])
 
     const isPending = checkSimilarWordQuery.isFetching || getExamplesQuery.isFetching
 
@@ -75,7 +90,8 @@ export const AddWord = () => {
             name='examples'
             header={i18n.examples} 
             disabled={isPending}
-            value={getExamplesQuery.data.example}
+            value={example}
+            onChange={onChangeExample}
           />
           <Button 
             type='submit' 
