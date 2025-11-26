@@ -57,7 +57,7 @@ const forceAction = async (bot, user, logger) => {
     telegramPictureId,
   ] = result;
 
-  const actionKeyboard = actionKeyboardFn(user.chatID);
+  const actionKeyboard = actionKeyboardFn ? actionKeyboardFn(user.chatID) : null;
 
   const sendPhotoPromise = telegramPictureId ?
         bot.sendPhoto(user.chatID, telegramPictureId) :

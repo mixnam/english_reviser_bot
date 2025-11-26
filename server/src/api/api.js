@@ -150,7 +150,7 @@ class Api {
       };
 
       try {
-        this.#bot.handleWebAppMessage({
+        await this.#bot.handleWebAppMessage({
           type: 'add_word_msg',
           payload: {
             chatID: Number.parseInt(req.params['chat_id']),
