@@ -1,7 +1,10 @@
 // eslint-disable-next-line
 const {MongoClient, ServerApiVersion, Db} = require('mongodb');
 
-global.client = null;
+/** @type {Promise<MongoClient> | null} */
+let clientPromise = null;
+/** @type {Promise<Db> | null} */
+let dbPromise = null;
 
 /**
  * @param {import('./utils').Logger} logger
@@ -11,22 +14,30 @@ const getClient = async (logger) => {
   if (!process.env.MONGODB_URI) {
     throw new Error('There is not env MONGODB_URI');
   }
-  if (global.client) {
+
+  if (!clientPromise) {
+    const client = new MongoClient(process.env.MONGODB_URI, {
+      serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+      },
+    });
+
+    clientPromise = client.connect()
+        .then((connectedClient) => {
+          logger.info('MongoDB client connected');
+          return connectedClient;
+        })
+        .catch((err) => {
+          clientPromise = null;
+          throw err;
+        });
+  } else {
     logger.info('Using existing client');
-    return global.client;
   }
 
-  global.client = new MongoClient(process.env.MONGODB_URI, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
-  });
-
-  await global.client.connect();
-  logger.info('New connection is opened');
-  return global.client;
+  return clientPromise;
 };
 
 /**
@@ -34,8 +45,10 @@ const getClient = async (logger) => {
  * @return {Promise<Db>}
  */
 const getDb = async (logger) => {
-  const client = await getClient(logger);
-  return client.db(process.env.MONGODB_DB);
+  if (!dbPromise) {
+    dbPromise = getClient(logger).then((client) => client.db(process.env.MONGODB_DB));
+  }
+  return dbPromise;
 };
 
 module.exports = {
