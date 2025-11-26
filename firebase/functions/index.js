@@ -17,14 +17,19 @@ setGlobalOptions({
     region: 'europe-west1'
 })
 
-exports.telegram2 = onRequest((req, res) => {
-    if (req.method === 'POST' && req.url === '/') {
-        const bot = new Bot();
-        bot.handleRequest(req.body).then(() => {
-            res.sendStatus(200);
-        });
-    } else {
-        res.sendStatus(404);
-    }
-})
+const bot = new Bot();
 
+exports.telegram2 = onRequest(async (req, res) => {
+  if (req.method !== 'POST' || req.url !== '/') {
+    res.sendStatus(404);
+    return;
+  }
+
+  try {
+    await bot.handleRequest(req.body);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+});
