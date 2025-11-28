@@ -1,5 +1,5 @@
-const functions = require('@google-cloud/functions-framework');
-const {Api, Bot} = require('server');
+import functions from "@google-cloud/functions-framework";
+import {Api, Bot} from "server";
 
 // Reuse the same bot instance across invocations to keep the Mongo client warm.
 const bot = new Bot();

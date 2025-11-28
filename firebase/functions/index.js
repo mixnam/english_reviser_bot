@@ -7,8 +7,8 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-const {onRequest}= require('firebase-functions/v2/https');
-const {setGlobalOptions}= require('firebase-functions/v2');
+const {onRequest} = require('firebase-functions/v2/https');
+const {setGlobalOptions} = require('firebase-functions/v2');
 
 // const logger = require("firebase-functions/logger");
 const {Bot} = require('server/src/telegram');

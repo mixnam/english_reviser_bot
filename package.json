@@ -1,0 +1,16 @@
+{
+  "name": "notion-revise-words",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "yarn@1.22.22",
+  "workspaces": [
+    "client",
+    "server",
+    "pt_deploy"
+  ],
+  "scripts": {
+    "client:dev": "yarn workspace my-react-telegram-web-app dev",
+    "server:api": "yarn workspace server api",
+    "server:telegram": "yarn workspace server telegram"
+  }
+}

@@ -29,6 +29,12 @@ jobs:
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v3
 
+      - name: Link dependencies
+        run: yarn
+
+      - name: Build typescript
+        run: yarn workspace pt_deploy build
+
       - name: Sync server into deploy package
         run: |
           rm -rf "${DEPLOY_DIR}/server"
