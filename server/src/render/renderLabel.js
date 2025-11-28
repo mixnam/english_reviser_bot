@@ -50,4 +50,32 @@ const languageTokenMap = {
  */
 const translations = languageTokenMap[process.env.LANGUAGE_CODE?.startsWith('pt') ? 'pt' : 'en'];
 
-module.exports = translations;
+const {
+  labelRemember,
+  labelForgot,
+  labelUp,
+  labelDown,
+  labelYes,
+  labelNo,
+  labelStopLearning,
+  labelStopRevising,
+  labelRevised,
+  labelQuestionMark,
+  labelContinue,
+} = translations;
+
+export {
+  labelRemember,
+  labelForgot,
+  labelUp,
+  labelDown,
+  labelYes,
+  labelNo,
+  labelStopLearning,
+  labelStopRevising,
+  labelRevised,
+  labelQuestionMark,
+  labelContinue,
+};
+
+export default translations;

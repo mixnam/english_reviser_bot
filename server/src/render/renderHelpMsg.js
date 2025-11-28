@@ -40,7 +40,7 @@ Em seguida, com o comando /learn, uma vez por dia, você deve tentar lembrar as 
     
 Depois, você pode revisar e verificar suas palavras aprendidas usando o comando /revise\\. Se você não se lembrar de uma palavra, pode marcá\\-la como esquecida, e ela retornará à etapa mais inferior de aprendizado\\.
 `,
-  },
+ },
 };
 
 /**
@@ -48,4 +48,9 @@ Depois, você pode revisar e verificar suas palavras aprendidas usando o comando
  */
 const translations = languageTokenMap[process.env.LANGUAGE_CODE?.startsWith('pt') ? 'pt' : 'en'];
 
-module.exports = translations;
+const {renderHelpMsg} = translations;
+
+export {
+  renderHelpMsg,
+};
+export default translations;

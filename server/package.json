@@ -2,6 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "description": "revise words server API",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "telegram": "node dev.js --bot | pino-pretty",

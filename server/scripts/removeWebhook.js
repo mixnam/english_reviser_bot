@@ -1,5 +1,5 @@
-const TelegramBot = require('node-telegram-bot-api');
-const dotenv = require('dotenv');
+import TelegramBot from 'node-telegram-bot-api';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -14,4 +14,3 @@ bot.deleteWebHook()
       console.error(err);
       process.exit(-1);
     });
-

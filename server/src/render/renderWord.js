@@ -1,5 +1,6 @@
-const {escapeMarkdown} = require('telegram-escape');
-const {Progress} = require('../repo/words');
+import {escapeMarkdown} from 'telegram-escape';
+
+import {Progress} from '../repo/words.js';
 
 /**
  * @typedef {Object} LanguageTranslations
@@ -59,7 +60,7 @@ const mapWordProgressToStatus = {
 
 // eslint-disable-next-line
 /**
- * @param {Pick<import('../repo/words').Word, 'English' | 'Translation' | 'Examples'>} word
+ * @param {import('../repo/words.js').Word} word
  * @param {string} [status]
  * @return {string}
  */
@@ -80,8 +81,7 @@ ${examples}
   `;
 };
 
-module.exports = {
+export {
   renderWordWithCustomStatus,
   mapWordProgressToStatus,
 };
-

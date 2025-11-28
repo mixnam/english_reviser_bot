@@ -1,15 +1,13 @@
-const {updateWord} = require('../repo/words');
-
-const {TTSService} = require('../tts/openaiTts');
-
-const {WebAppCommand} = require('./webAppCommand');
+import {updateWord} from '../repo/words.js';
+import {TTSService} from '../tts/openaiTts.js';
+import {WebAppCommand} from './webAppCommand.js';
 
 /**
  * @typedef EditWordPayload
  * @type {object}
  * @property {number} chatID
  * @property {number} messageID
- * @property {import('../repo/words').Word} word
+ * @property {import('../repo/words.js').Word} word
  */
 
 /**
@@ -25,8 +23,8 @@ const {WebAppCommand} = require('./webAppCommand');
 class EditWordCommand extends WebAppCommand {
   /**
    * @param {import('node-telegram-bot-api')} bot
-   * @param {import('./webAppCommand').Logger} logger
-   * @param {(chatID: number, word: import('../repo/words').Word, wordCount?: number) => Promise<void>} sendWord
+   * @param {import('./webAppCommand.js').Logger} logger
+   * @param {(chatID: number, word: import('../repo/words.js').Word, wordCount?: number) => Promise<void>} sendWord
    */
   constructor(bot, logger, sendWord) {
     super(bot, logger);
@@ -73,6 +71,6 @@ class EditWordCommand extends WebAppCommand {
   }
 }
 
-module.exports = {
+export {
   EditWordCommand,
 };

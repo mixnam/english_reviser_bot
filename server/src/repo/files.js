@@ -1,11 +1,12 @@
-const {getDb} = require('./repo');
-const {executionTime} = require('./utils');
-const {GridFSBucket, ObjectId} = require('mongodb');
+import {GridFSBucket, ObjectId} from 'mongodb';
+
+import {getDb} from './repo.js';
+import {executionTime} from './utils.js';
 
 const uploadPicture = executionTime('uploadPicture',
     /**
      * @param {import('node:stream').Readable} fileStream
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      *
      * @returns {Promise<string>}
      */
@@ -27,7 +28,7 @@ const uploadPicture = executionTime('uploadPicture',
 const downloadPictrure = executionTime('downloadPictrure',
     /**
      * @param {string} fileName
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      *
      * @returns {Promise<import('node:stream').Readable>}
      */
@@ -39,7 +40,7 @@ const downloadPictrure = executionTime('downloadPictrure',
     },
 );
 
-module.exports = {
+export {
   uploadPicture,
   downloadPictrure,
 };

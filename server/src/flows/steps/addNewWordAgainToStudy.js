@@ -1,5 +1,5 @@
-const {Step} = require('./step');
-const {renderYouHaveMovedThisWordBackToStady} = require('../../render/renderTextMsg');
+import {Step} from './step.js';
+import {renderYouHaveMovedThisWordBackToStady} from '../../render/renderTextMsg.js';
 
 const StepID = 'ADD_NEW_WORD_AGAIN_TO_STUDY';
 
@@ -30,7 +30,7 @@ class AddNewWordAgainToStudy extends Step {
   };
 }
 
-module.exports = {
+export {
   AddNewWordAgainToStudy,
   StepID,
 };

@@ -1,15 +1,18 @@
-const TelegramBot = require('node-telegram-bot-api');
-const {ReviseCommand, ReviseCallbackId} = require('./commands/revise.js');
-const {LearnCommand, LearnCallbackId} = require('./commands/learn.js');
-const {TestCommand} = require('./commands/test.js');
-const {StartCommand} = require('./commands/start.js');
-const {forceTransition} = require('./flows/processor/index.js');
-const {AddCommand} = require('./commands/add.js');
-const {EditWordCommand} = require('./webAppCommands/editWord.js');
-const {AddWordCommand} = require('./webAppCommands/addWord.js');
-const {renderHelpMsg} = require('./render/renderHelpMsg.js');
-const {renderYouAreNotMyMaster} = require('./render/renderTextMsg.js');
-const {pino}= require('pino');
+import TelegramBot from 'node-telegram-bot-api';
+import pino from 'pino';
+
+import {ReviseCommand, ReviseCallbackId} from './commands/revise.js';
+import {LearnCommand, LearnCallbackId} from './commands/learn.js';
+import {TestCommand} from './commands/test.js';
+import {StartCommand} from './commands/start.js';
+import {forceTransition} from './flows/processor/index.js';
+import {AddCommand} from './commands/add.js';
+import {EditWordCommand} from './webAppCommands/editWord.js';
+import {AddWordCommand} from './webAppCommands/addWord.js';
+import {renderHelpMsg} from './render/renderHelpMsg.js';
+import {renderYouAreNotMyMaster} from './render/renderTextMsg.js';
+
+const createLogger = /** @type {import('pino').pino} */ (/** @type {unknown} */ (pino));
 
 /**
  * Bot
@@ -42,7 +45,7 @@ class Bot {
     this.#bot = new TelegramBot(
         process.env.TELEGRAM_BOT_API_KEY,
     );
-    this.#logger = pino({level: process.env.PINO_LOG_LEVEL || 'info'});
+    this.#logger = createLogger({level: process.env.PINO_LOG_LEVEL || 'info'});
 
     this.#reviseCommand = new ReviseCommand(this.#bot, this.#logger);
     this.#learnCommand = new LearnCommand(this.#bot, this.#logger);
@@ -189,7 +192,7 @@ class Bot {
 
   /**
    * @typedef WebAppMsg
-   * @type {import('./webAppCommands/editWord').EditWordMsg | import("./webAppCommands/addWord").AddWordMsg}
+   * @type {import('./webAppCommands/editWord.js').EditWordMsg | import("./webAppCommands/addWord.js").AddWordMsg}
    */
 
   /**
@@ -230,6 +233,4 @@ class Bot {
   };
 }
 
-module.exports = {
-  Bot,
-};
+export {Bot};

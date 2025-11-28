@@ -6,15 +6,16 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p .",
-    "deploy:bot": "gcloud functions deploy nodejs-http-function --gen2 --runtime=nodejs20  --region=europe-west1 --source=. --entry-point=telegram --trigger-http --env-vars-file .env.yaml",
-    "deploy:api": "gcloud functions deploy api --gen2 --runtime=nodejs20  --region=europe-west1 --source=. --entry-point=api --trigger-http --env-vars-file .env.yaml"
+    "build": "tsc -p ."
   },
   "author": "",
   "license": "ISC",
+  "installConfig": {
+    "hoistingLimits": "dependencies"
+  },
   "dependencies": {
     "@google-cloud/functions-framework": "^4.0.1",
-    "server": "1.0.0"
+    "server": "file:../server"
   },
   "devDependencies": {
     "@types/node": "^22.7.4",

@@ -1,11 +1,11 @@
-const {labelYes, labelNo} = require('../../render/renderLabel');
-const {
+import {labelYes, labelNo} from '../../render/renderLabel.js';
+import {
   renderDoYouWantToAddContext,
   renderSuggestedExampleQuestion,
-} = require('../../render/renderTextMsg');
-const {OpenAIExamplesService} = require('../../services/openAIExamples');
-const {setUserState} = require('../../repo/users');
-const {Step} = require('./step');
+} from '../../render/renderTextMsg.js';
+import {OpenAIExamplesService} from '../../services/openAIExamples.js';
+import {setUserState} from '../../repo/users.js';
+import {Step} from './step.js';
 
 const StepID = 'ADD_NEW_WORD_EXAMPLES_FORK';
 const YesAnswer = labelYes;
@@ -117,7 +117,7 @@ class AddNewWordExamplesFork extends Step {
   };
 }
 
-module.exports = {
+export {
   AddNewWordExamplesFork,
   StepID,
 };

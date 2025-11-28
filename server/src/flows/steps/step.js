@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-const TelegramBot = require('node-telegram-bot-api');
+import TelegramBot from 'node-telegram-bot-api';
 
 /**
  * @typedef LogFn
@@ -35,11 +35,11 @@ class Step {
 
   /**
    * @param {TelegramBot.Message} msg
-   * @param {import("../../repo/users").User} user
+   * @param {import("../../repo/users.js").User} user
    * @param {TelegramBot} bot - DO NOT INJECT BOT LIKE THIS
    * @param {Logger} logger
    * @return {Promise<[
-   *    import('../../repo/users').State | null,
+   *    import('../../repo/users.js').State | null,
    *    string
    * ]>}
    */
@@ -55,7 +55,7 @@ class Step {
    */
 
   /**
-   * @param {import("../../repo/users").User} user
+   * @param {import("../../repo/users.js").User} user
    * @param {Logger} logger
    * @returns {Promise<[
    *    string,
@@ -70,6 +70,4 @@ class Step {
   };
 }
 
-module.exports = {
-  Step,
-};
+export {Step};

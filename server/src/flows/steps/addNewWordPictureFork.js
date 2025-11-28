@@ -1,6 +1,6 @@
-const {labelYes, labelNo} = require('../../render/renderLabel');
-const {renderDoYouWantToAddPicture} = require('../../render/renderTextMsg');
-const {Step} = require('./step');
+import {labelYes, labelNo} from '../../render/renderLabel.js';
+import {renderDoYouWantToAddPicture} from '../../render/renderTextMsg.js';
+import {Step} from './step.js';
 
 const StepID = 'ADD_NEW_WORD_PICTURE_FORK';
 const YesAnswer = labelYes;
@@ -58,7 +58,7 @@ class AddNewWordPictureFork extends Step {
   };
 }
 
-module.exports = {
+export {
   AddNewWordPictureFork,
   StepID,
 };

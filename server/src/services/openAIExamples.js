@@ -1,4 +1,4 @@
-const {OpenAI} = require('openai');
+import OpenAI from 'openai';
 
 const LANGUAGE_PROMPTS = {
   en: {
@@ -49,7 +49,7 @@ const normalizeLanguageCode = (languageCode) => {
  * Small helper around OpenAI chat completions to get a single example sentence
  * for a given English word.
  */
-class OpenAIExamplesService {
+class OpenAIExamplesServiceImpl {
   #client;
   #model;
   #defaultLanguage;
@@ -75,7 +75,7 @@ class OpenAIExamplesService {
    * @param {string} word
    * @param {string|undefined} translation
    * @param {string|undefined} languageCode
-   * @param {import('../commands/command').Logger} [logger]
+   * @param {import('../commands/command.js').Logger} [logger]
    * @return {Promise<string|null|Error>}
    */
   generateExampleSentence = async (word, translation, languageCode, logger ) => {
@@ -131,11 +131,11 @@ let instance;
 /**
  * Lazily create singleton to avoid instantiating client without env vars.
  *
- * @returns {OpenAIExamplesService}
+ * @returns {OpenAIExamplesServiceImpl}
  */
 const getInstance = () => {
   if (!instance) {
-    instance = new OpenAIExamplesService(
+    instance = new OpenAIExamplesServiceImpl(
         process.env.OPENAI_API_KEY,
         process.env.OPENAI_EXAMPLE_MODEL,
         process.env.OPENAI_BASE_URL,
@@ -145,6 +145,6 @@ const getInstance = () => {
   return instance;
 };
 
-module.exports = {
-  OpenAIExamplesService: getInstance(),
-};
+const OpenAIExamplesServiceInstance = getInstance();
+
+export {OpenAIExamplesServiceInstance as OpenAIExamplesService};

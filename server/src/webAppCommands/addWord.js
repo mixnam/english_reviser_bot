@@ -1,16 +1,16 @@
-const {renderYouJustAddedNewWord} = require('../render/renderTextMsg');
+import {renderYouJustAddedNewWord} from '../render/renderTextMsg.js';
 
-const {addNewWord, setWordTelegramAudioID} = require('../repo/words');
+import {addNewWord, setWordTelegramAudioID} from '../repo/words.js';
 
-const {TTSService} = require('../tts/openaiTts');
+import {TTSService} from '../tts/openaiTts.js';
 
-const {WebAppCommand} = require('./webAppCommand');
+import {WebAppCommand} from './webAppCommand.js';
 
 /**
  * @typedef AddWordPayload
  * @type {object}
  * @property {number} chatID
- * @property {import('../repo/words').Word} word
+ * @property {import('../repo/words.js').Word} word
  */
 
 /**
@@ -26,7 +26,7 @@ const {WebAppCommand} = require('./webAppCommand');
 class AddWordCommand extends WebAppCommand {
   /**
    * @param {import('node-telegram-bot-api')} bot
-   * @param {import('./webAppCommand').Logger} logger
+   * @param {import('./webAppCommand.js').Logger} logger
    */
   constructor(bot, logger) {
     super(bot, logger);
@@ -97,6 +97,6 @@ class AddWordCommand extends WebAppCommand {
   }
 }
 
-module.exports = {
+export {
   AddWordCommand,
 };

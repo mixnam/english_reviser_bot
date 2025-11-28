@@ -44,7 +44,7 @@ const minusDaysFromNow = (days) => {
   return now;
 };
 
-module.exports = {
+export {
   executionTime,
   minusDaysFromNow,
 };

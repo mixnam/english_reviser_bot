@@ -1,7 +1,7 @@
-const {Step} = require('./step');
-const {Progress, setWordProgress, getWordByText} = require('../../repo/words');
-const {renderYouAreAddingExistingWord} = require('../../render/renderTextMsg');
-const {labelContinue} = require('../../render/renderLabel');
+import {Step} from './step.js';
+import {Progress, setWordProgress, getWordByText} from '../../repo/words.js';
+import {renderYouAreAddingExistingWord} from '../../render/renderTextMsg.js';
+import {labelContinue} from '../../render/renderLabel.js';
 
 const StepID = 'ADD_NEW_WORD_SPELLCHECK';
 const ThisIsNewWord = labelContinue;
@@ -79,7 +79,7 @@ class AddNewWordSpellcheck extends Step {
   };
 }
 
-module.exports = {
+export {
   AddNewWordSpellcheck,
   StepID,
 };

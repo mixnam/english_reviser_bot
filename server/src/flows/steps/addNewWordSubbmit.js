@@ -1,7 +1,7 @@
-const {Step} = require('./step');
-const {addNewWord, setWordTelegramAudioID} = require('../../repo/words');
-const {TTSService} = require('../../tts/openaiTts');
-const {renderYouJustAddedNewWord} = require('../../render/renderTextMsg');
+import {Step} from './step.js';
+import {addNewWord, setWordTelegramAudioID} from '../../repo/words.js';
+import {TTSService} from '../../tts/openaiTts.js';
+import {renderYouJustAddedNewWord} from '../../render/renderTextMsg.js';
 
 const StepID = 'ADD_NEW_WORD_SUBBMIT';
 
@@ -13,7 +13,7 @@ class AddNewWordSubbmit extends Step {
    * @type {Step['makeAction']}
    */
   makeAction = async (user, logger) => {
-    const newWord = /** @type {import('../../repo/words').Word} */ (user.state.newWord);
+    const newWord = /** @type {import('../../repo/words.js').Word} */ (user.state.newWord);
     if (!newWord) {
       return new Error('impossible state, no newWord');
     }
@@ -54,7 +54,7 @@ class AddNewWordSubbmit extends Step {
   };
 }
 
-module.exports = {
+export {
   AddNewWordSubbmit,
   StepID,
 };

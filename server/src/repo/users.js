@@ -1,14 +1,15 @@
-const {getDb} = require('./repo');
-const {executionTime} = require('./utils');
-const {ObjectId} = require('mongodb');
+import {ObjectId} from 'mongodb';
+
+import {getDb} from './repo.js';
+import {executionTime} from './utils.js';
 
 /**
  * @typedef State
  * @type {object}
- * @property {Partial<import('./words').Word>} [newWord]
- * @property {Array<Pick<import('./words').Word, 'English'>>} [suggestions]
+ * @property {Partial<import('./words.js').Word>} [newWord]
+ * @property {Array<Pick<import('./words.js').Word, 'English'>>} [suggestions]
  * @property {string} [suggestedExample]
- * @property {import('./words').Word} wordToStudyAgain
+ * @property {import('./words.js').Word} wordToStudyAgain
  */
 
 /**
@@ -28,7 +29,7 @@ const addNewUser = executionTime(
     'addNewUser',
     /**
      * @param {Omit<User, '_id'>} user
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<string|Error>}
      */
     async (user, logger) => {
@@ -57,7 +58,7 @@ const getUserByChatID = executionTime(
     'getUserByChatID',
     /**
      * @param {number|string} chatID
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @returns {Promise<User|Error>}
      */
     async (chatID, logger) => {
@@ -78,7 +79,7 @@ const setUserState = executionTime(
     /**
      * @param {string} userID
      * @param {Object} state
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<Error|null>}
      */
     async (userID, state, logger) => {
@@ -106,7 +107,7 @@ const setUserStepID = executionTime(
     /**
      * @param {string} userID
      * @param {Object} stepID
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<Error|null>}
      */
     async (userID, stepID, logger) => {
@@ -130,7 +131,7 @@ const setUserStepID = executionTime(
     });
 
 
-module.exports = {
+export {
   addNewUser,
   getUserByChatID,
   setUserState,

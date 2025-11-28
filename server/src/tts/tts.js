@@ -1,9 +1,9 @@
-const textToSpeech = require('@google-cloud/text-to-speech');
+import textToSpeech from '@google-cloud/text-to-speech';
 
 /**
  * module responsible for text-to-speach API
  */
-class TTSService {
+class TTSServiceImpl {
   /**
    * @type {textToSpeech.TextToSpeechClient}
    */
@@ -65,11 +65,11 @@ let instance;
 /**
  * [tech-debt] - remove singleton, support proper DI
  *
- * @returns {TTSService}
+ * @returns {TTSServiceImpl}
  */
 const getInstance = () => {
   if (!instance) {
-    instance = new TTSService(
+    instance = new TTSServiceImpl(
         process.env.LANGUAGE_CODE ?? 'en-US',
         process.env.VOICE_NAME ?? 'en-US-Wavenet-B',
     );
@@ -77,6 +77,6 @@ const getInstance = () => {
   return instance;
 };
 
-module.exports = {
-  TTSService: getInstance(),
-};
+const TTSServiceInstance = getInstance();
+
+export {TTSServiceInstance as TTSService};

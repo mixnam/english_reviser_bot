@@ -1,5 +1,5 @@
-const {renderSendMeTranslationForThisWord} = require('../../render/renderTextMsg');
-const {Step} = require('./step');
+import {renderSendMeTranslationForThisWord} from '../../render/renderTextMsg.js';
+import {Step} from './step.js';
 
 const StepID = 'ADD_NEW_WORD_TRANSLATIONS';
 
@@ -28,7 +28,7 @@ class AddNewWordTranslations extends Step {
   };
 }
 
-module.exports = {
+export {
   AddNewWordTranslations,
   StepID,
 };

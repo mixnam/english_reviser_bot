@@ -1,4 +1,4 @@
-const {OpenAI} = require('openai');
+import OpenAI from 'openai';
 
 /**
  * OpenAI Text-to-Speech service that mirrors the Google TTS interface.
@@ -107,6 +107,4 @@ const getInstance = () => {
   return instance;
 };
 
-module.exports = {
-  TTSService: getInstance(),
-};
+export const TTSService = getInstance();

@@ -1,12 +1,13 @@
 // eslint-disable-next-line
-const TelegramBot = require("node-telegram-bot-api");
-const {AddNewWordFlow} = require('../index');
-const {
+import TelegramBot from 'node-telegram-bot-api';
+
+import {AddNewWordFlow} from '../index.js';
+import {
   getUserByChatID,
   setUserStepID,
   setUserState,
-} = require('../../repo/users');
-const {renderNoIdea} = require('../../render/renderTextMsg');
+} from '../../repo/users.js';
+import {renderNoIdea} from '../../render/renderTextMsg.js';
 
 /**
  * @typedef LogFn
@@ -29,7 +30,7 @@ const {renderNoIdea} = require('../../render/renderTextMsg');
 
 /**
  * @param {TelegramBot} bot
- * @param {import("../../repo/users").User} user
+ * @param {import("../../repo/users.js").User} user
  * @param {Logger} logger
  *
  * @returns {Promise<null>}
@@ -178,7 +179,7 @@ const isReplyKeyboard = (input) => {
   return false;
 };
 
-module.exports = {
+export {
   forceAction,
   forceTransition,
 };

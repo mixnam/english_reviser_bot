@@ -1,7 +1,2 @@
-const {Bot} = require('./src/telegram.js');
-const {Api} = require('./src/api/api.js');
-
-module.exports = {
-  Bot,
-  Api,
-};
+export {Bot} from './src/telegram.js';
+export {Api} from './src/api/api.js';

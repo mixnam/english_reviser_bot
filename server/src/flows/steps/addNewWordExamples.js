@@ -1,5 +1,5 @@
-const {renderSendMeContextForThisWord} = require('../../render/renderTextMsg');
-const {Step} = require('./step');
+import {renderSendMeContextForThisWord} from '../../render/renderTextMsg.js';
+import {Step} from './step.js';
 
 const StepID = 'ADD_NEW_WORD_EXAMPLES';
 
@@ -34,7 +34,7 @@ class AddNewWordExamples extends Step {
   };
 }
 
-module.exports = {
+export {
   AddNewWordExamples,
   StepID,
 };

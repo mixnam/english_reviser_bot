@@ -1,6 +1,6 @@
-const {renderSendMePictureForThisWord} = require('../../render/renderTextMsg');
-const {uploadPicture} = require('../../repo/files');
-const {Step} = require('./step');
+import {renderSendMePictureForThisWord} from '../../render/renderTextMsg.js';
+import {uploadPicture} from '../../repo/files.js';
+import {Step} from './step.js';
 
 const StepID = 'ADD_NEW_WORD_PICTURE';
 
@@ -63,7 +63,7 @@ class AddNewWordPicture extends Step {
   };
 }
 
-module.exports = {
+export {
   AddNewWordPicture,
   StepID,
 };

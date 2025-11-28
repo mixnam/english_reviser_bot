@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
-const dotenv = require('dotenv');
-dotenv.config({path: '.env.dev', debug: true});
+import fs from 'node:fs';
+import path from 'node:path';
 
-const fs = require('fs');
-const path = require('path');
-const {TTSService} = require('../src/tts/openaiTts');
+import dotenv from 'dotenv';
+
+import {TTSService} from '../src/tts/openaiTts.js';
+
+dotenv.config({path: '.env.dev', debug: true});
 
 const OUTPUT_FILE = process.argv[2] ?? 'tts-sample.ogg';
 const SAMPLE_TEXT = process.argv[3] ?? 'This is a test audio file generated via OpenAI text to speech.';

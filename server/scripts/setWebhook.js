@@ -1,5 +1,5 @@
-const TelegramBot = require('node-telegram-bot-api');
-const dotenv = require('dotenv');
+import TelegramBot from 'node-telegram-bot-api';
+import dotenv from 'dotenv';
 
 const WebhookURL = process.argv[2];
 if (!WebhookURL) {
@@ -20,4 +20,3 @@ bot.setWebHook(WebhookURL)
       console.error(err);
       process.exit(-1);
     });
-

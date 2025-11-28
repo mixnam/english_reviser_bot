@@ -3,14 +3,14 @@
 
 
 // const TelegramBot = require('node-telegram-bot-api');
-const {Command} = require('./command');
+import {Command} from './command.js';
 // const {getUserByChatID, setUserStepID} = require('../repo/users');
 // const AddNewWord = require('../flows/steps/addNewWordStep');
 // const {forceAction} = require('../flows/processor');
 // const {getSpelcheckSuggestions} = require('../repo/words');
-const {TTSService} = require('../tts/openaiTts');
-const {renderWordWithCustomStatus} = require('../render/renderWord');
-const {OpenAIExamplesService} = require('../services/openAIExamples');
+import {TTSService} from '../tts/openaiTts.js';
+import {renderWordWithCustomStatus} from '../render/renderWord.js';
+import {OpenAIExamplesService} from '../services/openAIExamples.js';
 
 
 /**
@@ -23,7 +23,7 @@ class TestCommand extends Command {
   /**
    * ReviseCommand constructor
    * @param {TelegramBot} bot
-   * @param {import('./command').Logger} logger
+   * @param {import('./command.js').Logger} logger
    */
   constructor(bot, logger) {
     super(logger);
@@ -87,6 +87,6 @@ class TestCommand extends Command {
   };
 }
 
-module.exports = {
+export {
   TestCommand,
 };

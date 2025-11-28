@@ -1,8 +1,9 @@
 // eslint-disable-next-line
-const {ObjectId, Binary, AggregationCursor, FindCursor} = require('mongodb');
-const {getDb} = require('./repo');
-const {executionTime, minusDaysFromNow} = require('./utils');
-const levenshtein = require('js-levenshtein');
+import {ObjectId, Binary, AggregationCursor, FindCursor} from 'mongodb';
+import levenshtein from 'js-levenshtein';
+
+import {getDb} from './repo.js';
+import {executionTime, minusDaysFromNow} from './utils.js';
 
 const WORD_COLLECTION_NAME = 'english_words';
 
@@ -85,7 +86,7 @@ const updateWord = executionTime('updateWord',
     /**
      * @param {string} userID
      * @param {Word} word
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<Error|null>}
      */
     async (userID, word, logger) => {
@@ -116,7 +117,7 @@ const addNewWord = executionTime(
     /**
      * @param {string} userID
      * @param {Word} word
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<Error|string>}
      */
     async (userID, word, logger) => {
@@ -140,7 +141,7 @@ const getRandomWordByUserIDForRevise = executionTime(
     'getRandomWordByUserIDForRevise',
     /**
      * @param {string} userID
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<(Word|null)>}
      */
     async (userID, logger) => {
@@ -176,7 +177,7 @@ const getRandomWordByUserIDForLearn = executionTime(
     'getRandomWordByUserIDForLearn',
     /**
      * @param {string} userID
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<(Word|null)>}
      */
     async (userID, logger) => {
@@ -238,7 +239,7 @@ const setWordProgress = executionTime(
     /**
      * @param {string} wordID
      * @param {string} progress
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<Error|null>}
      */
     async (wordID, progress, logger) => {
@@ -266,7 +267,7 @@ const setWordTelegramAudioID = executionTime(
     /**
      * @param {string} wordID
      * @param {string} audioID
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<Error|null>}
      */
     async (wordID, audioID, logger) => {
@@ -293,7 +294,7 @@ const setWordTelegramPictureID = executionTime(
     /**
      * @param {string} wordID
      * @param {string} telegramPictureID
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<Error|null>}
      */
     async (wordID, telegramPictureID, logger) => {
@@ -320,7 +321,7 @@ const setWordPictureName = executionTime(
     /**
      * @param {string} wordID
      * @param {string} pictureName
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<Error|null>}
      */
     async (wordID, pictureName, logger) => {
@@ -347,7 +348,7 @@ const getWordByID = executionTime(
     'getWordByID',
     /**
      * @param {string} wordID
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<Word|null|Error>}
      */
     async (wordID, logger) => {
@@ -372,7 +373,7 @@ const getWordByText = executionTime(
     'getWordByText',
     /**
      * @param {string} text
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<Word|null|Error>}
      */
     async (text, logger) => {
@@ -392,7 +393,7 @@ const setWordAsRevisedByWordID = executionTime(
     'setWordAsRevisedByWordID',
     /**
      * @param {string} wordID
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<Error|null>}
      */
     async (wordID, logger) => {
@@ -407,7 +408,7 @@ const setWordAsForgottenByWordID = executionTime(
     'setWordAsForgottenByWordID',
     /**
      * @param {string} wordID
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      * @return {Promise<Error|null>}
      */
     async (wordID, logger) => {
@@ -429,7 +430,7 @@ const getSpelcheckSuggestions = executionTime(
     /**
      * @param {string} newWord
      * @param {string} userID
-     * @param {import('./utils').Logger} logger
+     * @param {import('./utils.js').Logger} logger
      *
      * @return {Promise<Error|Array<{English: string}>>}
      */
@@ -482,7 +483,7 @@ const getSpelcheckSuggestions = executionTime(
     });
 
 
-module.exports = {
+export {
   ProgressOrder,
   Progress,
   addNewWord,

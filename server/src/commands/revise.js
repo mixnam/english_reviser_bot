@@ -1,20 +1,21 @@
 // eslint-disable-next-line
-const TelegramBot = require('node-telegram-bot-api');
-const {Command} = require('./command');
-const {
+import TelegramBot from 'node-telegram-bot-api';
+
+import {Command} from './command.js';
+import {
   getRandomWordByUserIDForRevise,
   setWordAsRevisedByWordID,
   getWordByID,
   setWordAsForgottenByWordID,
   setWordTelegramAudioID,
-} = require('../repo/words');
-const {renderWordWithCustomStatus} = require('../render/renderWord');
-const {
+} from '../repo/words.js';
+import {renderWordWithCustomStatus} from '../render/renderWord.js';
+import {
   renderNoMoreWordsToReviseForToday,
   renderYouHaveRevised_N_Words,
   renderYouHaveGoneThrough_N_Words,
-} = require('../render/renderTextMsg');
-const {labelRemember, labelForgot, labelStopRevising, labelQuestionMark, labelRevised} = require('../render/renderLabel');
+} from '../render/renderTextMsg.js';
+import {labelRemember, labelForgot, labelStopRevising, labelQuestionMark, labelRevised} from '../render/renderLabel.js';
 
 const ReviseCallbackId = '[REVISE]';
 
@@ -27,7 +28,7 @@ class ReviseCommand extends Command {
   /**
    * ReviseCommand constructor
    * @param {TelegramBot} bot
-   * @param {import('./command').Logger} logger
+   * @param {import('./command.js').Logger} logger
    */
   constructor(bot, logger) {
     super(logger.child({command: 'ReviseCommand'}));
@@ -60,7 +61,7 @@ class ReviseCommand extends Command {
 
   /**
    * @param {number} chatID
-   * @param {import('../repo/words').Word} word
+   * @param {import('../repo/words.js').Word} word
    * @param {number} [wordCount]
    */
   sendWord = async (chatID, word, wordCount) => {
@@ -68,7 +69,7 @@ class ReviseCommand extends Command {
 
     const text = renderWordWithCustomStatus(word, labelQuestionMark);
     /**
-     * @type {Partial<import('../repo/words').Word>}
+     * @type {Partial<import('../repo/words.js').Word>}
      */
     const wordToEdit = {
       _id: word._id,
@@ -280,7 +281,7 @@ class ReviseCommand extends Command {
   };
 }
 
-module.exports = {
+export {
   ReviseCommand,
   ReviseCallbackId,
 };

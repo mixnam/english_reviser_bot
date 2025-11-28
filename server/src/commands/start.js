@@ -1,13 +1,14 @@
 // eslint-disable-next-line
-const TelegramBot = require('node-telegram-bot-api');
-const {
+import TelegramBot from 'node-telegram-bot-api';
+
+import {
   addNewUser,
-} = require('../repo/users');
-const {Command} = require('./command');
-const {
+} from '../repo/users.js';
+import {Command} from './command.js';
+import {
   renderStartError,
   renderStartSuccess,
-} = require('../render/renderStartMsg');
+} from '../render/renderStartMsg.js';
 
 /**
  * StartCommand
@@ -18,7 +19,7 @@ class StartCommand extends Command {
   /**
    * StartCommand constructor
    * @param {TelegramBot} bot
-   * @param {import('./command').Logger} logger
+   * @param {import('./command.js').Logger} logger
    */
   constructor(bot, logger) {
     super(logger.child({command: 'StartCommand'}));
@@ -50,6 +51,6 @@ class StartCommand extends Command {
   };
 }
 
-module.exports = {
+export {
   StartCommand,
 };

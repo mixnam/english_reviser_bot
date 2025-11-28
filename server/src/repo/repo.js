@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-const {MongoClient, ServerApiVersion, Db} = require('mongodb');
+import {MongoClient, ServerApiVersion, Db} from 'mongodb';
 
 /** @type {Promise<MongoClient> | null} */
 let clientPromise = null;
@@ -7,7 +7,7 @@ let clientPromise = null;
 let dbPromise = null;
 
 /**
- * @param {import('./utils').Logger} logger
+ * @param {import('./utils.js').Logger} logger
  * @return {Promise<MongoClient>}
  */
 const getClient = async (logger) => {
@@ -41,7 +41,7 @@ const getClient = async (logger) => {
 };
 
 /**
- * @param {import('./utils').Logger} logger
+ * @param {import('./utils.js').Logger} logger
  * @return {Promise<Db>}
  */
 const getDb = async (logger) => {
@@ -51,7 +51,7 @@ const getDb = async (logger) => {
   return dbPromise;
 };
 
-module.exports = {
+export {
   getClient,
   getDb,
 };

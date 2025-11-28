@@ -1,4 +1,4 @@
-const {getUserByChatID} = require('../repo/users');
+import {getUserByChatID} from '../repo/users.js';
 
 /**
  * @typedef LogFn
@@ -46,7 +46,7 @@ class WebAppCommand {
   /**
    * @param {number} chatID
    *
-   * @return {Promise<import('../repo/users').User|Error>}
+   * @return {Promise<import('../repo/users.js').User|Error>}
    */
   getSessionUser = async (chatID) => {
     const ctx = {chatID: chatID};
@@ -67,6 +67,4 @@ class WebAppCommand {
   };
 }
 
-module.exports = {
-  WebAppCommand,
-};
+export {WebAppCommand};

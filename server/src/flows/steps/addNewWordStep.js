@@ -1,6 +1,7 @@
-const {Step} = require('./step');
-const {Progress, getSpelcheckSuggestions} = require('../../repo/words');
-const {renderSendMeWordToAdd} = require('../../render/renderTextMsg');
+import {Step} from './step.js';
+
+import {Progress, getSpelcheckSuggestions} from '../../repo/words.js';
+import {renderSendMeWordToAdd} from '../../render/renderTextMsg.js';
 
 const StepID = 'ADD_NEW_WORD';
 
@@ -53,7 +54,7 @@ class AddNewWord extends Step {
     lastRevisedDate.setDate(lastRevisedDate.getDate() - 14);
 
     /**
-     * @type {Partial<import('../../repo/words').Word>}
+     * @type {Partial<import('../../repo/words.js').Word>}
      */
     const newWord = {
       'English': text,
@@ -81,7 +82,7 @@ class AddNewWord extends Step {
   };
 }
 
-module.exports = {
+export {
   AddNewWord,
   StepID,
 };

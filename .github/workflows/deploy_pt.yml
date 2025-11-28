@@ -30,15 +30,10 @@ jobs:
         uses: google-github-actions/setup-gcloud@v3
 
       - name: Link dependencies
-        run: yarn
+        run: yarn workspaces focus pt_deploy
 
       - name: Build typescript
         run: yarn workspace pt_deploy build
-
-      - name: Sync server into deploy package
-        run: |
-          rm -rf "${DEPLOY_DIR}/server"
-          cp -R server "${DEPLOY_DIR}/server"
 
       - name: Deploy telegram bot function
         working-directory: ${{ env.DEPLOY_DIR }}
@@ -52,6 +47,7 @@ jobs:
           --source=.
           --entry-point=telegram
           --trigger-http
+          --set-build-env-vars GOOGLE_VENDOR_NPM_DEPENDENCIES=true
 
       - name: Deploy telegram bot api function
         working-directory: ${{ env.DEPLOY_DIR }}
@@ -65,3 +61,4 @@ jobs:
           --source=.
           --entry-point=api
           --trigger-http
+          --set-build-env-vars GOOGLE_VENDOR_NPM_DEPENDENCIES=true

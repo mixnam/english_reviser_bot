@@ -1,13 +1,18 @@
-const {Bot} = require('../telegram.js');
-const {pino}= require('pino');
+import {fileURLToPath} from 'node:url';
 
-const {verifyTelegramWebAppData} = require('./verify');
-const fastify = require('fastify');
-const dotenv = require('dotenv');
-const fastifyCors = require('@fastify/cors');
-const {getSpelcheckSuggestions, Progress} = require('../repo/words');
-const {getUserByChatID} = require('../repo/users');
-const {OpenAIExamplesService} = require('../services/openAIExamples');
+import fastify from 'fastify';
+import dotenv from 'dotenv';
+import fastifyCors from '@fastify/cors';
+import pino from 'pino';
+import {ObjectId} from 'mongodb';
+
+import {Bot} from '../telegram.js';
+import {verifyTelegramWebAppData} from './verify.js';
+import {getSpelcheckSuggestions, Progress} from '../repo/words.js';
+import {getUserByChatID} from '../repo/users.js';
+import {OpenAIExamplesService} from '../services/openAIExamples.js';
+
+const createLogger = /** @type {import('pino').pino} */ (/** @type {unknown} */ (pino));
 
 /**
  * Api
@@ -24,7 +29,7 @@ class Api {
    */
   constructor() {
     this.#bot = new Bot();
-    this.#logger = pino({level: process.env.PINO_LOG_LEVEL || 'info'});
+    this.#logger = createLogger({level: process.env.PINO_LOG_LEVEL || 'info'});
     this.#server = fastify({logger: true});
     this.#isDev = process.env.DEV;
 
@@ -140,8 +145,9 @@ class Api {
       }
 
       const {word, translation, example} = /** @type {{word: string, translation: string, example: string | null}} */(req.body);
-      /** @type {import('../repo/words').Word} */
+      /** @type {import('../repo/words.js').Word} */
       const newWord = {
+        _id: new ObjectId().toString(),
         userID: user._id,
         English: word,
         Translation: translation,
@@ -167,11 +173,10 @@ class Api {
     });
   };
 
-  /**
-   * @type {import('fastify').AddContentTypeParser}
-   */
-  addContentTypeParser = (contentType, opts, parser) => {
-    this.#server.addContentTypeParser(contentType, opts, parser);
+  /** @param {...any} args */
+  addContentTypeParser = (...args) => {
+    // @ts-ignore Fastify overloads accept these arguments
+    this.#server.addContentTypeParser(...args);
   };
 
   start = async () => {
@@ -196,12 +201,10 @@ class Api {
   };
 }
 
-module.exports = {
-  Api,
-};
+export {Api};
 
 
-if (require.main === module && process.argv[2] === '--dev') {
+if (process.argv[1] === fileURLToPath(import.meta.url) && process.argv[2] === '--dev') {
   dotenv.config({path: '.env.dev', debug: true});
 
   const server = new Api();

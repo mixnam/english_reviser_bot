@@ -1,6 +1,7 @@
 // eslint-disable-next-line
-const TelegramBot = require('node-telegram-bot-api');
-const {addNewUser, getUserByChatID} = require('../repo/users');
+import TelegramBot from 'node-telegram-bot-api';
+
+import {addNewUser, getUserByChatID} from '../repo/users.js';
 
 /**
  * @typedef LogFn
@@ -40,7 +41,7 @@ class Command {
 
   /**
    * @param {TelegramBot.Message} msg
-   * @return {Promise<import('../repo/users').User|Error>}
+   * @return {Promise<import('../repo/users.js').User|Error>}
    */
   getSessionUser = async (msg) => {
     const ctx = {chatID: msg.chat.id};
@@ -50,7 +51,7 @@ class Command {
     }
     if (user === null) {
       /**
-       * @type {Omit<import('../repo/users').User, '_id'>}
+       * @type {Omit<import('../repo/users.js').User, '_id'>}
        */
       const newUser = {
         chatID: msg.chat.id,
@@ -96,6 +97,4 @@ class Command {
   };
 }
 
-module.exports = {
-  Command,
-};
+export {Command};

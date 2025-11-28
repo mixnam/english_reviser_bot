@@ -1,9 +1,10 @@
 // eslint-disable-next-line
-const TelegramBot = require('node-telegram-bot-api');
-const {Command} = require('./command');
-const {setUserStepID} = require('../repo/users');
-const AddNewWord = require('../flows/steps/addNewWordStep');
-const {forceAction} = require('../flows/processor');
+import TelegramBot from 'node-telegram-bot-api';
+
+import {Command} from './command.js';
+import {setUserStepID} from '../repo/users.js';
+import {StepID as AddNewWordStepID} from '../flows/steps/addNewWordStep.js';
+import {forceAction} from '../flows/processor/index.js';
 
 
 /**
@@ -15,7 +16,7 @@ class AddCommand extends Command {
   /**
    * AddCommand constructor
    * @param {TelegramBot} bot
-   * @param {import('./command').Logger} logger
+   * @param {import('./command.js').Logger} logger
    */
   constructor(bot, logger) {
     super(logger.child({command: 'AddCommand'}));
@@ -34,16 +35,16 @@ class AddCommand extends Command {
     }
     ctx.userID = user._id;
 
-    const result = await setUserStepID(user._id, AddNewWord.StepID, this.logger.child(ctx));
+    const result = await setUserStepID(user._id, AddNewWordStepID, this.logger.child(ctx));
     if (result !== null) {
       this.logger.error(ctx, result);
       return;
     }
-    user.stepID = AddNewWord.StepID;
+    user.stepID = AddNewWordStepID;
     return forceAction(this.#bot, user, this.logger.child(ctx));
   };
 }
 
-module.exports = {
+export {
   AddCommand,
 };

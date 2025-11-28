@@ -43,7 +43,10 @@ Aqui está o que posso fazer:
  */
 const translations = languageTokenMap[process.env.LANGUAGE_CODE?.startsWith('pt') ? 'pt' : 'en'];
 
-module.exports = {
-  renderStartError: translations.renderStartError,
-  renderStartSuccess: translations.renderStartSuccess,
+const {renderStartError, renderStartSuccess} = translations;
+
+export {
+  renderStartError,
+  renderStartSuccess,
 };
+export default translations;

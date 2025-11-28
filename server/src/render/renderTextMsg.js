@@ -1,5 +1,6 @@
-const {renderWordWithCustomStatus, mapWordProgressToStatus} = require('./renderWord');
-const {escapeMarkdown} = require('telegram-escape');
+import {escapeMarkdown} from 'telegram-escape';
+
+import {renderWordWithCustomStatus, mapWordProgressToStatus} from './renderWord.js';
 
 /**
  * @typedef {Object} LanguageTranslations
@@ -14,12 +15,12 @@ const {escapeMarkdown} = require('telegram-escape');
  * @property {() => string} renderSendMeWordToAdd - Translation for 'Send me a word you want to add'.
  * @property {() => string} renderSendMeTranslationForThisWord - Translation for 'Send me translation for this word'.
  * @property {() => string} renderYouAreNotMyMaster - Translation for 'You are not my master, I am not your slave'.
- * @property {(word: import("../repo/words").Word) => string} renderYouHaveMovedThisWordBackToStady - Translation for 'You have moved this word back to the learning list'.
+ * @property {(word: import("../repo/words.js").Word) => string} renderYouHaveMovedThisWordBackToStady - Translation for 'You have moved this word back to the learning list'.
  * @property {() => string} renderDoYouWantToAddContext - Translation for 'Do you want to add some context (e.g., meaning, usage, etc.) to this word?'.
  * @property {(example: string) => string} renderSuggestedExampleQuestion - Translation for 'Use suggested example?' message.
  * @property {() => string} renderDoYouWantToAddPicture - Translation for 'Do you want to add any picture to this word?'.
  * @property {(word: string) => string} renderYouAreAddingExistingWord - Translation for 'You are adding the following word'.
- * @property {(word: import("../repo/words").Word) => string} renderYouJustAddedNewWord - Translation for 'You just added new word'.
+ * @property {(word: import("../repo/words.js").Word) => string} renderYouJustAddedNewWord - Translation for 'You just added new word'.
  */
 
 /**
@@ -75,4 +76,44 @@ Volte e repita amanhã!`,
  */
 const translations = languageTokenMap[process.env.LANGUAGE_CODE?.startsWith('pt') ? 'pt' : 'en'];
 
-module.exports = translations;
+const {
+  renderNoMoreWordsToLearnForToday,
+  renderYouHaveCovered_N_Words,
+  renderYouHaveGoneThrough_N_Words,
+  renderNoMoreWordsToReviseForToday,
+  renderYouHaveRevised_N_Words,
+  renderNoIdea,
+  renderSendMeContextForThisWord,
+  renderSendMePictureForThisWord,
+  renderSendMeWordToAdd,
+  renderSendMeTranslationForThisWord,
+  renderYouAreNotMyMaster,
+  renderYouHaveMovedThisWordBackToStady,
+  renderDoYouWantToAddContext,
+  renderSuggestedExampleQuestion,
+  renderDoYouWantToAddPicture,
+  renderYouAreAddingExistingWord,
+  renderYouJustAddedNewWord,
+} = translations;
+
+export {
+  renderNoMoreWordsToLearnForToday,
+  renderYouHaveCovered_N_Words,
+  renderYouHaveGoneThrough_N_Words,
+  renderNoMoreWordsToReviseForToday,
+  renderYouHaveRevised_N_Words,
+  renderNoIdea,
+  renderSendMeContextForThisWord,
+  renderSendMePictureForThisWord,
+  renderSendMeWordToAdd,
+  renderSendMeTranslationForThisWord,
+  renderYouAreNotMyMaster,
+  renderYouHaveMovedThisWordBackToStady,
+  renderDoYouWantToAddContext,
+  renderSuggestedExampleQuestion,
+  renderDoYouWantToAddPicture,
+  renderYouAreAddingExistingWord,
+  renderYouJustAddedNewWord,
+};
+
+export default translations;

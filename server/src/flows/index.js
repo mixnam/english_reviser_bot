@@ -1,41 +1,41 @@
-const {
-  StepID: AddNewWordExamplesStepID,
+import {
+  StepID as AddNewWordExamplesStepID,
   AddNewWordExamples,
-} = require('./steps/addNewWordExamples');
-const {
-  StepID: AddNewWordExamplesForkStepID,
+} from './steps/addNewWordExamples.js';
+import {
+  StepID as AddNewWordExamplesForkStepID,
   AddNewWordExamplesFork,
-}= require('./steps/addNewWordExamplesFork');
-const {
-  StepID: AddNewWordStepID,
+} from './steps/addNewWordExamplesFork.js';
+import {
+  StepID as AddNewWordStepID,
   AddNewWord,
-} = require('./steps/addNewWordStep');
-const {
-  StepID: AddNewWordSubbmitStepID,
+} from './steps/addNewWordStep.js';
+import {
+  StepID as AddNewWordSubbmitStepID,
   AddNewWordSubbmit,
-} = require('./steps/addNewWordSubbmit');
-const {
-  StepID: AddNewWordTranslationsStepID,
+} from './steps/addNewWordSubbmit.js';
+import {
+  StepID as AddNewWordTranslationsStepID,
   AddNewWordTranslations,
-} = require('./steps/addNewWordTranslation');
-const {
-  StepID: AddNewWordSpellcheckStepID,
+} from './steps/addNewWordTranslation.js';
+import {
+  StepID as AddNewWordSpellcheckStepID,
   AddNewWordSpellcheck,
-} = require('./steps/addNewWordSpellcheck');
-const {
-  StepID: AddNewWordAgainToStudyStepID,
+} from './steps/addNewWordSpellcheck.js';
+import {
+  StepID as AddNewWordAgainToStudyStepID,
   AddNewWordAgainToStudy,
-} = require('./steps/addNewWordAgainToStudy');
-const {
-  StepID: AddNewWordPictureForkStepID,
+} from './steps/addNewWordAgainToStudy.js';
+import {
+  StepID as AddNewWordPictureForkStepID,
   AddNewWordPictureFork,
-} = require('./steps/addNewWordPictureFork');
-const {
-  StepID: AddNewWordPictureStepID,
+} from './steps/addNewWordPictureFork.js';
+import {
+  StepID as AddNewWordPictureStepID,
   AddNewWordPicture,
-} = require('./steps/addNewWordPicture');
+} from './steps/addNewWordPicture.js';
 // eslint-disable-next-line
-const {Step} = require('./steps/step');
+import {Step} from './steps/step.js';
 
 /**
  * @type {Object.<string, Step>}
@@ -66,6 +66,6 @@ const AddNewWordFlow = {
   [AddNewWordPictureStepID]: new AddNewWordPicture(AddNewWordSubbmitStepID),
 };
 
-module.exports = {
+export {
   AddNewWordFlow,
 };

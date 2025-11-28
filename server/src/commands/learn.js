@@ -1,23 +1,24 @@
 // eslint-disable-next-line
-const TelegramBot = require('node-telegram-bot-api');
-const {Command} = require('./command');
-const {
+import TelegramBot from 'node-telegram-bot-api';
+
+import {Command} from './command.js';
+import {
   getRandomWordByUserIDForLearn,
   ProgressOrder,
   getWordByID,
   setWordProgress,
   setWordTelegramAudioID,
-} = require('../repo/words');
-const {
+} from '../repo/words.js';
+import {
   renderWordWithCustomStatus,
   mapWordProgressToStatus,
-} = require('../render/renderWord');
-const {
+} from '../render/renderWord.js';
+import {
   renderNoMoreWordsToLearnForToday,
   renderYouHaveCovered_N_Words,
   renderYouHaveGoneThrough_N_Words,
-} = require('../render/renderTextMsg');
-const {labelUp, labelDown, labelStopLearning} = require('../render/renderLabel');
+} from '../render/renderTextMsg.js';
+import {labelUp, labelDown, labelStopLearning} from '../render/renderLabel.js';
 
 const LearnCallbackId = '[LEARN]';
 
@@ -30,7 +31,7 @@ class LearnCommand extends Command {
   /**
    * LearnCommand constructor
    * @param {TelegramBot} bot
-   * @param {import('./command').Logger} logger
+   * @param {import('./command.js').Logger} logger
    */
   constructor(bot, logger ) {
     super(logger.child({command: 'LearnCommand'}));
@@ -63,13 +64,13 @@ class LearnCommand extends Command {
 
   /**
    * @param {number} chatID
-   * @param {import('../repo/words').Word} word
+   * @param {import('../repo/words.js').Word} word
    * @param {number} [wordCount]
    */
   sendLearnWordMessage = async (chatID, word, wordCount) => {
     const ctx = {chatID};
     /**
-     * @type {Partial<import('../repo/words').Word>}
+     * @type {Partial<import('../repo/words.js').Word>}
      */
     const wordToEdit = {
       _id: word._id,
@@ -304,7 +305,7 @@ class LearnCommand extends Command {
   };
 }
 
-module.exports = {
+export {
   LearnCommand,
   LearnCallbackId,
 };
