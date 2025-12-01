@@ -4,8 +4,7 @@
   "version": "1.0.0",
   "workspaces": [
     "client",
-    "server",
-    "pt_deploy"
+    "server"
   ],
   "scripts": {
     "client:dev": "yarn workspace my-react-telegram-web-app dev",

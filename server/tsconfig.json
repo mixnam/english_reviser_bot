@@ -17,5 +17,6 @@
     "noImplicitAny": false,
     "lib": ["ESNext"]
   },
-  "include": ["**/*"]
+  "include": ["**/*"],
+  "exclude": ["node_modules", "dist"]
 }
