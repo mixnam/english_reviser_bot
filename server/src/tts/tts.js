@@ -5,7 +5,7 @@ import textToSpeech from '@google-cloud/text-to-speech';
  */
 class TTSServiceImpl {
   /**
-   * @type {textToSpeech.TextToSpeechClient}
+   * @type {import("@google-cloud/text-to-speech").TextToSpeechClient}
    */
   #client;
   /**
@@ -33,7 +33,7 @@ class TTSServiceImpl {
    */
   getAudioForText = async (text) => {
     /**
-     * @type {textToSpeech.protos.google.cloud.texttospeech.v1.ISynthesizeSpeechRequest}
+     * @type {import("@google-cloud/text-to-speech").protos.google.cloud.texttospeech.v1.ISynthesizeSpeechRequest}
      */
     const request = {
       input: {text},

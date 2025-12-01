@@ -1,9 +1,10 @@
 import {fileURLToPath} from 'node:url';
 
-import fastify from 'fastify';
+import fastify, {FastifyInstance, FastifyRequest, FastifyReply} from 'fastify';
+import {IncomingMessage, ServerResponse} from 'http';
 import dotenv from 'dotenv';
 import fastifyCors from '@fastify/cors';
-import pino from 'pino';
+import {pino, Logger} from 'pino';
 import {ObjectId} from 'mongodb';
 
 import {Bot} from '../telegram.js';
@@ -12,24 +13,21 @@ import {getSpelcheckSuggestions, Progress} from '../repo/words.js';
 import {getUserByChatID} from '../repo/users.js';
 import {OpenAIExamplesService} from '../services/openAIExamples.js';
 
-const createLogger = /** @type {import('pino').pino} */ (/** @type {unknown} */ (pino));
-
 /**
  * Api
  */
 class Api {
-  #bot;
-  #server;
-  #logger;
-  #isDev;
-
+  #bot: Bot;
+  #server: FastifyInstance;
+  #logger: Logger;
+  #isDev: string | undefined;
 
   /**
    * Api constructor
    */
   constructor() {
     this.#bot = new Bot();
-    this.#logger = createLogger({level: process.env.PINO_LOG_LEVEL || 'info'});
+    this.#logger = pino({level: process.env.PINO_LOG_LEVEL || 'info'});
     this.#server = fastify({logger: true});
     this.#isDev = process.env.DEV;
 
@@ -46,10 +44,10 @@ class Api {
     });
 
     if (!this.#isDev) {
-      this.#server.addHook('preHandler', async (request, reply) => {
+      this.#server.addHook('preHandler', async (request: FastifyRequest, reply: FastifyReply) => {
         try {
           const telegramInitData = request.headers['telegram-init-data'];
-          if (!telegramInitData) {
+          if (!telegramInitData || typeof telegramInitData !== 'string') {
             throw new Error('no right header');
           }
           const verified = verifyTelegramWebAppData(telegramInitData);
@@ -67,7 +65,12 @@ class Api {
       res.send({msg: 'pong'});
     });
 
-    this.#server.post('/chat/:chat_id/word/:word_id', async (req, res) => {
+    this.#server.post<{
+      Params: {
+        chat_id: string;
+        word_id: string;
+      }
+    }>('/chat/:chat_id/word/:word_id', async (req, res) => {
       const messageID = req.headers['telegram-message-id'];
       if (typeof messageID !== 'string') {
         this.#server.log.error('No telegram-message-id header');
@@ -80,7 +83,7 @@ class Api {
           type: 'edit_word_msg',
           payload: {
             word: typeof req.body === 'string' ? JSON.parse(req.body): req.body,
-            chatID: Number.parseInt(req.params['chat_id']),
+            chatID: Number.parseInt(req.params.chat_id),
             messageID: Number.parseInt(messageID),
           },
         });
@@ -93,33 +96,48 @@ class Api {
       res.code(200).send();
     });
 
-    this.#server.post('/chat/:chat_id/word/similar', async (req, res) => {
-      const user = await getUserByChatID(Number.parseInt(req.params['chat_id']), this.#logger);
+    this.#server.post<{
+      Params: {
+        chat_id: string;
+      },
+      Body: {
+        word: string;
+      }
+    }>('/chat/:chat_id/word/similar', async (req, res) => {
+      const user = await getUserByChatID(Number.parseInt(req.params.chat_id), this.#logger);
       if (user instanceof Error) {
         this.#logger.error(user);
         res.code(500).send();
         return;
       }
 
-      const suggestions = await getSpelcheckSuggestions((/** @type {{word: string}} */(req.body)).word, user._id, this.#logger);
+      const suggestions = await getSpelcheckSuggestions(req.body.word, user._id, this.#logger);
       if (suggestions instanceof Error) {
         this.#logger.error(suggestions);
         res.code(500).send();
         return;
       }
-
+      // @ts-ignore
       res.code(200).send(JSON.stringify({words: suggestions.map(({English}) => English)}));
     });
 
-    this.#server.post('/chat/:chat_id/word/example', async (req, res) => {
-      const user = await getUserByChatID(Number.parseInt(req.params['chat_id']), this.#logger);
+    this.#server.post<{
+      Params: {
+        chat_id: string;
+      },
+      Body: {
+        word: string;
+        translate: string;
+      }
+    }>('/chat/:chat_id/word/example', async (req, res) => {
+      const user = await getUserByChatID(Number.parseInt(req.params.chat_id), this.#logger);
       if (user instanceof Error) {
         this.#logger.error(user);
         res.code(500).send();
         return;
       }
 
-      const {word, translate} = /** @type {{word: string, translate: string}} */(req.body);
+      const {word, translate} = req.body;
 
       const aiExample = await OpenAIExamplesService.generateExampleSentence(
           word,
@@ -136,16 +154,25 @@ class Api {
       res.code(200).send(JSON.stringify({example: aiExample}));
     });
 
-    this.#server.post('/chat/:chat_id/word/save', async (req, res) => {
-      const user = await getUserByChatID(Number.parseInt(req.params['chat_id']), this.#logger);
+    this.#server.post<{
+      Params: {
+        chat_id: string;
+      },
+      Body: {
+        word: string;
+        translation: string;
+        example: string | null;
+      }
+    }>('/chat/:chat_id/word/save', async (req, res) => {
+      const user = await getUserByChatID(Number.parseInt(req.params.chat_id), this.#logger);
       if (user instanceof Error) {
         this.#logger.error(user);
         res.code(500).send();
         return;
       }
 
-      const {word, translation, example} = /** @type {{word: string, translation: string, example: string | null}} */(req.body);
-      /** @type {import('../repo/words.js').Word} */
+      const {word, translation, example} = req.body;
+
       const newWord = {
         _id: new ObjectId().toString(),
         userID: user._id,
@@ -159,7 +186,7 @@ class Api {
         await this.#bot.handleWebAppMessage({
           type: 'add_word_msg',
           payload: {
-            chatID: Number.parseInt(req.params['chat_id']),
+            chatID: Number.parseInt(req.params.chat_id),
             word: newWord,
           },
         });
@@ -173,11 +200,11 @@ class Api {
     });
   };
 
-  /** @param {...any} args */
-  addContentTypeParser = (...args) => {
-    // @ts-ignore Fastify overloads accept these arguments
-    this.#server.addContentTypeParser(...args);
-  };
+  addContentTypeParser(
+      params: Parameters<FastifyInstance['addContentTypeParser']>,
+  ): void {
+    this.#server.addContentTypeParser(...params);
+  }
 
   start = async () => {
     try {
@@ -189,13 +216,10 @@ class Api {
     }
   };
 
-  /**
-   * handler for google cloud functions
-   *
-   * @param {any} req
-   * @param {any} res
-   */
-  handleRequest = async (req, res) => {
+  handleRequest = async (
+      req: IncomingMessage,
+      res: ServerResponse,
+  ) => {
     await this.#server.ready();
     this.#server.server.emit('request', req, res);
   };
