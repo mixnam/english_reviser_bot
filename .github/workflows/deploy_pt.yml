@@ -30,18 +30,18 @@ jobs:
         uses: google-github-actions/setup-gcloud@v3
 
       - name: Link server dependencies
-        run: yarn
+        run: yarn workspaces focus server 
 
       - name: Build server typescript
         run: yarn workspace server build
 
       - name: Link deploy dependencies
         working-directory: ${{ env.DEPLOY_DIR }}
-        run: yarn
-
+        run: yarn workspaces focus pt_deploy 
+ 
       - name: Build deploy typescript
         working-directory: ${{ env.DEPLOY_DIR }}
-        run: yarn build
+        run: yarn workspace pt_deploy build 
 
       - name: Deploy telegram bot function
         working-directory: ${{ env.DEPLOY_DIR }}
