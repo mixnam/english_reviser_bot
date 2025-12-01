@@ -10,6 +10,9 @@
   },
   "author": "",
   "license": "ISC",
+  "installConfig": {
+    "hoistingLimits": "dependencies"
+  },
   "dependencies": {
     "@google-cloud/functions-framework": "^4.0.1",
     "server": "file:../server"
