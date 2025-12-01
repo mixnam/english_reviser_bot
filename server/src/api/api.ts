@@ -117,7 +117,7 @@ class Api {
         res.code(500).send();
         return;
       }
-      // @ts-ignore
+
       res.code(200).send(JSON.stringify({words: suggestions.map(({English}) => English)}));
     });
 
@@ -201,7 +201,7 @@ class Api {
   };
 
   addContentTypeParser(
-      params: Parameters<FastifyInstance['addContentTypeParser']>,
+      ...params: Parameters<FastifyInstance['addContentTypeParser']>
   ): void {
     this.#server.addContentTypeParser(...params);
   }
