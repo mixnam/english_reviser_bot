@@ -6574,7 +6574,7 @@ __metadata:
 
 "server@file:../server::locator=pt_deploy%40workspace%3Apt_deploy":
   version: 1.0.0
-  resolution: "server@file:../server#../server::hash=3cbae8&locator=pt_deploy%40workspace%3Apt_deploy"
+  resolution: "server@file:../server#../server::hash=640193&locator=pt_deploy%40workspace%3Apt_deploy"
   dependencies:
     "@fastify/cors": "npm:^9.0.1"
     "@google-cloud/text-to-speech": "npm:^5.0.1"
@@ -6586,7 +6586,7 @@ __metadata:
     openai: "npm:^4"
     pino: "npm:^8.17.1"
     telegram-escape: "npm:^1.1.1"
-  checksum: 10c0/0a37023a1128a6dcce0021d89a9757040a36129024d8fb7b78bc596b018d45f05a5ee71195aeb346334e09a73a781b547d05f01d1b9d4e04f0d37f29bc0648ec
+  checksum: 10c0/32534879a0d6f98a8060460361de2638919b45fe60032c27b7837be074762c53eb1ef2149a280c3eb9c871068747930b1e06a4121ab03b38c62c35f7bd8fc578
   languageName: node
   linkType: hard
 

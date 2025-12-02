@@ -1,6 +1,6 @@
 import {fileURLToPath} from 'node:url';
 
-import fastify, {FastifyInstance, FastifyRequest, FastifyReply} from 'fastify';
+import fastify, {FastifyInstance, FastifyRequest, FastifyReply, AddContentTypeParser} from 'fastify';
 import {IncomingMessage, ServerResponse} from 'http';
 import dotenv from 'dotenv';
 import fastifyCors from '@fastify/cors';
@@ -200,11 +200,9 @@ class Api {
     });
   };
 
-  addContentTypeParser(
-      ...params: Parameters<FastifyInstance['addContentTypeParser']>
-  ): void {
+  addContentTypeParser = (...params: Parameters<AddContentTypeParser>) => {
     this.#server.addContentTypeParser(...params);
-  }
+  };
 
   start = async () => {
     try {
