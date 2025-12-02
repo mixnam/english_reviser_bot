@@ -1,5 +1,5 @@
 import TelegramBot from 'node-telegram-bot-api';
-import pino from 'pino';
+import {pino} from 'pino';
 import {Logger} from 'pino';
 
 import {ReviseCommand, ReviseCallbackId} from './commands/revise.js';
@@ -39,7 +39,7 @@ class Bot {
     this.bot = new TelegramBot(
         process.env.TELEGRAM_BOT_API_KEY,
     );
-    this.logger = pino.default({level: process.env.PINO_LOG_LEVEL || 'info'});
+    this.logger = pino({level: process.env.PINO_LOG_LEVEL || 'info'});
 
     this.reviseCommand = new ReviseCommand(this.bot, this.logger);
     this.learnCommand = new LearnCommand(this.bot, this.logger);
