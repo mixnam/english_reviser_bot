@@ -23,7 +23,7 @@ class AddNewWordExamplesFork extends Step {
     this.noStepID = noStepID;
   }
 
-  override async makeAction(...params: Parameters<Step['makeAction']>): ReturnType<Step['makeAction']> {
+  override makeAction = async (...params: Parameters<Step['makeAction']>): ReturnType<Step['makeAction']> => {
     const [user, logger] = params;
     const {state, _id: userID} = user;
     const newWord = state?.newWord as Word;
@@ -77,7 +77,7 @@ class AddNewWordExamplesFork extends Step {
     ];
   };
 
-  override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
+  override makeTransition = async (...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> => {
     const [userAnswer, user] = params;
     if (!user.state || !user.state.newWord) {
       return [user.state, StepID];

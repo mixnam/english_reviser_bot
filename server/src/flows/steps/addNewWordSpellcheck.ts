@@ -17,7 +17,7 @@ class AddNewWordSpellcheck extends Step {
     this.wordToStudyAgainStepID = wordToStudyAgainStepID;
   }
 
-  override async makeAction(...params: Parameters<Step['makeAction']>): ReturnType<Step['makeAction']> {
+  override makeAction = async (...params: Parameters<Step['makeAction']>): ReturnType<Step['makeAction']> => {
     const [user] = params;
     if (!user.state) {
       return new Error('Impossible state: no state');
@@ -44,7 +44,7 @@ class AddNewWordSpellcheck extends Step {
     ];
   };
 
-  override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
+  override makeTransition = async (...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> => {
     const [msg, user, , logger] = params;
     if (!msg.text) {
       // TODO throw Error

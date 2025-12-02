@@ -9,7 +9,7 @@ const StepID = 'ADD_NEW_WORD_PICTURE';
  * AddNewWordPicture
  */
 class AddNewWordPicture extends Step {
-  override async makeAction(): ReturnType<Step['makeAction']> {
+  override makeAction = async (): ReturnType<Step['makeAction']> => {
     return [
       renderSendMePictureForThisWord(),
       null,
@@ -19,7 +19,7 @@ class AddNewWordPicture extends Step {
     ];
   };
 
-  override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
+  override makeTransition = async (...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> => {
     const [msg, user, bot, logger] = params;
     if (!user.state || !user.state.newWord) {
       // TODO throw Error

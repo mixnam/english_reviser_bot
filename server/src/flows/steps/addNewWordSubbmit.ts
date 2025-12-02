@@ -6,7 +6,7 @@ import {renderYouJustAddedNewWord} from '../../render/renderTextMsg.js';
 const StepID = 'ADD_NEW_WORD_SUBBMIT';
 
 class AddNewWordSubbmit extends Step {
-  override async makeAction(...params: Parameters<Step['makeAction']>): ReturnType<Step['makeAction']> {
+  override makeAction = async (...params: Parameters<Step['makeAction']>): ReturnType<Step['makeAction']> => {
     const [user, logger] = params;
 
     if (!user.state || !user.state.newWord) {
@@ -42,7 +42,7 @@ class AddNewWordSubbmit extends Step {
     ];
   };
 
-  override async makeTransition(): ReturnType<Step['makeTransition']> {
+  override makeTransition = async (): ReturnType<Step['makeTransition']> => {
     return [null, this.nextStepID];
   };
 }

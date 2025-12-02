@@ -21,7 +21,7 @@ class AddNewWord extends Step {
     this.spellcheckStepID = spellcheckStepID;
   }
 
-  override async makeAction(): ReturnType<Step['makeAction']> {
+  override makeAction = async (): ReturnType<Step['makeAction']> => {
     return [renderSendMeWordToAdd(), (chatID) => ({
       inline_keyboard: [
         [
@@ -38,7 +38,7 @@ class AddNewWord extends Step {
     null, null, null];
   };
 
-  override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
+  override makeTransition = async (...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> => {
     const [msg, user, , logger] = params;
     const {text} = msg;
     if (!text) {

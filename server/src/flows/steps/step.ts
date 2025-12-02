@@ -9,23 +9,23 @@ abstract class Step {
     this.nextStepID = nextStepID;
   }
 
-  abstract makeTransition (
+  abstract makeTransition: (
       _msg: TelegramBot.Message,
       _user: User,
       _bot: TelegramBot,
       _logger: Logger,
-  ): Promise<[State | null, string]>
+  ) => Promise<[State | null, string]>;
 
-  abstract makeAction (
+  abstract makeAction: (
       _user: User,
       _logger: Logger,
-  ): Promise<[
+  ) => Promise<[
        string,
        ((chatID: number | string) => TelegramBot.ReplyKeyboardMarkup | TelegramBot.InlineKeyboardMarkup) | null,
        Uint8Array | null,
        ((fileID: string) => Promise<null>) | null,
        string | null
-    ]|Error>
+    ]|Error>;
 }
 
 export {Step};

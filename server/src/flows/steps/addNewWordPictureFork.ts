@@ -17,7 +17,7 @@ class AddNewWordPictureFork extends Step {
     this.noStepID = noStepID;
   }
 
-  override async makeAction(): ReturnType<Step['makeAction']> {
+  override makeAction = async (): ReturnType<Step['makeAction']> => {
     return [
       renderDoYouWantToAddPicture(),
       () => ({
@@ -36,7 +36,7 @@ class AddNewWordPictureFork extends Step {
     ];
   };
 
-  override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
+  override makeTransition = async (...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> => {
     const [userAnswer, user] = params;
     switch (userAnswer.text) {
       case YesAnswer:

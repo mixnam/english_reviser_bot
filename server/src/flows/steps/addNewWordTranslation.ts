@@ -4,7 +4,7 @@ import {Step} from './step.js';
 const StepID = 'ADD_NEW_WORD_TRANSLATIONS';
 
 class AddNewWordTranslations extends Step {
-  override async makeAction(): ReturnType<Step['makeAction']> {
+  override makeAction = async (): ReturnType<Step['makeAction']> => {
     return [
       renderSendMeTranslationForThisWord(),
       null,
@@ -14,7 +14,7 @@ class AddNewWordTranslations extends Step {
     ];
   };
 
-  override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
+  override makeTransition = async (...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> => {
     const [msg, user] = params;
 
     if (!user.state || !user.state.newWord || !msg.text) {
