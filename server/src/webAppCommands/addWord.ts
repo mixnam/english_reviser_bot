@@ -1,41 +1,26 @@
+import TelegramBot from 'node-telegram-bot-api';
+import {Logger} from 'pino';
 import {renderYouJustAddedNewWord} from '../render/renderTextMsg.js';
-
-import {addNewWord, setWordTelegramAudioID} from '../repo/words.js';
-
+import {addNewWord, setWordTelegramAudioID, Word} from '../repo/words.js';
 import {TTSService} from '../tts/openaiTts.js';
-
 import {WebAppCommand} from './webAppCommand.js';
 
-/**
- * @typedef AddWordPayload
- * @type {object}
- * @property {number} chatID
- * @property {import('../repo/words.js').Word} word
- */
+export interface AddWordPayload {
+  chatID: number;
+  word: Word;
+}
 
-/**
- * @typedef AddWordMsg
- * @type {object}
- * @property {'add_word_msg'} type
- * @property {AddWordPayload} payload
- */
+export interface AddWordMsg {
+  type: 'add_word_msg';
+  payload: AddWordPayload;
+}
 
-/**
- * @extends {WebAppCommand<AddWordMsg>}
- */
-class AddWordCommand extends WebAppCommand {
-  /**
-   * @param {import('node-telegram-bot-api')} bot
-   * @param {import('./webAppCommand.js').Logger} logger
-   */
-  constructor(bot, logger) {
+class AddWordCommand extends WebAppCommand<AddWordMsg> {
+  constructor(bot: TelegramBot, logger: Logger) {
     super(bot, logger);
   }
 
-  /**
-   * @param {AddWordMsg} msg
-   */
-  async processMsg(msg) {
+  override async processMsg(msg: AddWordMsg): Promise<Error | void> {
     const {
       chatID,
       word,
@@ -100,3 +85,4 @@ class AddWordCommand extends WebAppCommand {
 export {
   AddWordCommand,
 };
+

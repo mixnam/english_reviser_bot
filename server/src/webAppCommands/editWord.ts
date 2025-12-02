@@ -1,40 +1,33 @@
-import {updateWord} from '../repo/words.js';
+import TelegramBot from 'node-telegram-bot-api';
+import {Logger} from 'pino';
+import {updateWord, Word} from '../repo/words.js';
 import {TTSService} from '../tts/openaiTts.js';
 import {WebAppCommand} from './webAppCommand.js';
 
-/**
- * @typedef EditWordPayload
- * @type {object}
- * @property {number} chatID
- * @property {number} messageID
- * @property {import('../repo/words.js').Word} word
- */
+export interface EditWordPayload {
+  chatID: number;
+  messageID: number;
+  word: Word;
+}
 
-/**
- * @typedef EditWordMsg
- * @type {object}
- * @property {'edit_word_msg'} type
- * @property {EditWordPayload} payload
- */
+export interface EditWordMsg {
+  type: 'edit_word_msg';
+  payload: EditWordPayload;
+}
 
-/**
- * @extends {WebAppCommand<EditWordMsg>}
- */
-class EditWordCommand extends WebAppCommand {
-  /**
-   * @param {import('node-telegram-bot-api')} bot
-   * @param {import('./webAppCommand.js').Logger} logger
-   * @param {(chatID: number, word: import('../repo/words.js').Word, wordCount?: number) => Promise<void>} sendWord
-   */
-  constructor(bot, logger, sendWord) {
+class EditWordCommand extends WebAppCommand<EditWordMsg> {
+  private sendWord: (chatID: number, word: Word, wordCount?: number) => Promise<void>;
+
+  constructor(
+      bot: TelegramBot,
+      logger: Logger,
+      sendWord: (chatID: number, word: Word, wordCount?: number) => Promise<void>,
+  ) {
     super(bot, logger);
     this.sendWord = sendWord;
   }
 
-  /**
-   * @param {EditWordMsg} msg
-   */
-  async processMsg(msg) {
+  override async processMsg(msg: EditWordMsg): Promise<Error | void> {
     const {
       chatID,
       messageID,
@@ -74,3 +67,4 @@ class EditWordCommand extends WebAppCommand {
 export {
   EditWordCommand,
 };
+

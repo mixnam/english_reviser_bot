@@ -197,7 +197,7 @@ class Bot {
 
   /**
    * @param {WebAppMsg} msg
-   * @return {Promise<null|Error>}
+   * @return {Promise<null|Error|void>}
    */
   handleWebAppMessage = async (msg) => {
     switch (msg.type) {
