@@ -1,9 +1,13 @@
-interface LanguageTranslations {
-  renderStartError: () => string;
-  renderStartSuccess: () => string;
-}
+/**
+ * @typedef {Object} LanguageTranslations
+ * @property {() => string} renderStartError - Translation for the start error message.
+ * @property {() => string} renderStartSuccess - Translation for the start success message.
+ */
 
-const languageTokenMap: Record<string, LanguageTranslations> = {
+/**
+ * @type {Object.<string, LanguageTranslations>}
+ */
+const languageTokenMap = {
   en: {
     renderStartError: () => `
 Sorry, there is some problem 🤕.
@@ -34,6 +38,9 @@ Aqui está o que posso fazer:
   },
 };
 
+/**
+ * @type {LanguageTranslations}
+ */
 const translations = languageTokenMap[process.env.LANGUAGE_CODE?.startsWith('pt') ? 'pt' : 'en'];
 
 const {renderStartError, renderStartSuccess} = translations;

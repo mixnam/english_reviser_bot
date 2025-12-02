@@ -1,19 +1,23 @@
 import {escapeMarkdown} from 'telegram-escape';
 
-import {Progress, Word} from '../repo/words.js';
+import {Progress} from '../repo/words.js';
 
-interface LanguageTranslations {
-  learned: string;
-  activeLearning: string;
-  needToRepeat: string;
-  haveToPayAttention: string;
-  haveProblems: string;
-  wordLabel: string;
-  examplesLabel: string;
-  translationLabel: string;
-}
+/**
+ * @typedef {Object} LanguageTranslations
+ * @property {string} learned - Translation for 'Learned'.
+ * @property {string} activeLearning - Translation for 'Active Learning'.
+ * @property {string} needToRepeat - Translation for 'Need to repeat'.
+ * @property {string} haveToPayAttention - Translation for 'Have to pay attention'.
+ * @property {string} haveProblems - Translation for 'Have problems'.
+ * @property {string} wordLabel - Translation for the label 'Word'.
+ * @property {string} examplesLabel - Translation for the label 'Examples'.
+ * @property {string} translationLabel - Translation for the label 'Translation'.
+ */
 
-const languageTokenMap: Record<string, LanguageTranslations> = {
+/**
+ * @type {Object.<string, LanguageTranslations>}
+ */
+const languageTokenMap = {
   en: {
     learned: '*Learned *🟢',
     activeLearning: '*Active Learning 🔵*',
@@ -54,20 +58,26 @@ const mapWordProgressToStatus = {
   [Progress.HaveProblems]: haveProblems,
 };
 
-const renderWordWithCustomStatus = (word: Word, status?: string): string => {
+// eslint-disable-next-line
+/**
+ * @param {import('../repo/words.js').Word} word
+ * @param {string} [status]
+ * @return {string}
+ */
+const renderWordWithCustomStatus = (word, status) => {
   const english = escapeMarkdown(word.English);
   const translation = escapeMarkdown(word.Translation);
   const examples = word.Examples ? escapeMarkdown(word.Examples) : null;
 
   return `
 *${languageTokenMap[languageToken].wordLabel}:*
-${english} ${status ? `\- ${status}` : ''}
+${english} ${status ? `\\- ${status}` : ''}
 ${examples ? `
 *${languageTokenMap[languageToken].examplesLabel}:*
 ${examples}
 `: ''}
 *${languageTokenMap[languageToken].translationLabel}:*
-||${translation}|| 
+||${translation}||
   `;
 };
 
