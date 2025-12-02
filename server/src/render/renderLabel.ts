@@ -1,22 +1,18 @@
-/**
- * @typedef {Object} LanguageTranslations
- * @property {string} labelRemember - Translation for the 'Remember' label.
- * @property {string} labelForgot - Translation for the 'Forgot' label.
- * @property {string} labelUp - Translation for the 'Up' label.
- * @property {string} labelDown - Translation for the 'Down' label.
- * @property {string} labelYes - Translation for the 'Yes' label.
- * @property {string} labelNo - Translation for the 'No' label.
- * @property {string} labelStopLearning - Translation for the 'Stop learning' label.
- * @property {string} labelStopRevising - Translation for the 'Stop revising' label.
- * @property {string} labelRevised - Translation for the 'Revised' label.
- * @property {string} labelQuestionMark - Translation for the 'Question Mark' label.
- * @property {string} labelContinue - Translation for the 'Continue' label.
- */
+type LanguageTranslations = {
+    labelRemember: string
+    labelForgot: string
+    labelUp: string
+    labelDown: string
+    labelYes: string
+    labelNo: string
+    labelStopLearning: string
+    labelStopRevising: string
+    labelRevised: string
+    labelQuestionMark: string
+    labelContinue: string
+}
 
-/**
- * @type {Object.<string, LanguageTranslations>}
- */
-const languageTokenMap = {
+const languageTokenMap : Record<'en' | 'pt', LanguageTranslations>= {
   en: {
     labelRemember: 'Remember ✅',
     labelForgot: 'Forgot ❌',
@@ -45,9 +41,6 @@ const languageTokenMap = {
   },
 };
 
-/**
- * @type {LanguageTranslations}
- */
 const translations = languageTokenMap[process.env.LANGUAGE_CODE?.startsWith('pt') ? 'pt' : 'en'];
 
 const {

@@ -1,12 +1,9 @@
-/**
- * @typedef {Object} LanguageTranslations
- * @property {() => string} renderHelpMsg - Translation for the help message.
- */
 
-/**
- * @type {Object.<string, LanguageTranslations>}
- */
-const languageTokenMap = {
+type LanguageTranslations = {
+    renderHelpMsg: () => string
+}
+
+const languageTokenMap: Record<'en' | 'pt', LanguageTranslations>= {
   en: {
     renderHelpMsg: () => `
 This bot can help you learn and review English words\\.
@@ -40,13 +37,10 @@ Em seguida, com o comando /learn, uma vez por dia, você deve tentar lembrar as 
     
 Depois, você pode revisar e verificar suas palavras aprendidas usando o comando /revise\\. Se você não se lembrar de uma palavra, pode marcá\\-la como esquecida, e ela retornará à etapa mais inferior de aprendizado\\.
 `,
- },
+  },
 };
 
-/**
- * @type {LanguageTranslations}
- */
-const translations = languageTokenMap[process.env.LANGUAGE_CODE?.startsWith('pt') ? 'pt' : 'en'];
+const translations: LanguageTranslations = languageTokenMap[process.env.LANGUAGE_CODE?.startsWith('pt') ? 'pt' : 'en'];
 
 const {renderHelpMsg} = translations;
 

@@ -1,23 +1,19 @@
 import {escapeMarkdown} from 'telegram-escape';
 
-import {Progress} from '../repo/words.js';
+import {Progress, Word} from '../repo/words.js';
 
-/**
- * @typedef {Object} LanguageTranslations
- * @property {string} learned - Translation for 'Learned'.
- * @property {string} activeLearning - Translation for 'Active Learning'.
- * @property {string} needToRepeat - Translation for 'Need to repeat'.
- * @property {string} haveToPayAttention - Translation for 'Have to pay attention'.
- * @property {string} haveProblems - Translation for 'Have problems'.
- * @property {string} wordLabel - Translation for the label 'Word'.
- * @property {string} examplesLabel - Translation for the label 'Examples'.
- * @property {string} translationLabel - Translation for the label 'Translation'.
- */
+interface LanguageTranslations {
+  learned: string;
+  activeLearning: string;
+  needToRepeat: string;
+  haveToPayAttention: string;
+  haveProblems: string;
+  wordLabel: string;
+  examplesLabel: string;
+  translationLabel: string;
+}
 
-/**
- * @type {Object.<string, LanguageTranslations>}
- */
-const languageTokenMap = {
+const languageTokenMap: {[key: string]: LanguageTranslations} = {
   en: {
     learned: '*Learned *🟢',
     activeLearning: '*Active Learning 🔵*',
@@ -58,20 +54,14 @@ const mapWordProgressToStatus = {
   [Progress.HaveProblems]: haveProblems,
 };
 
-// eslint-disable-next-line
-/**
- * @param {import('../repo/words.js').Word} word
- * @param {string} [status]
- * @return {string}
- */
-const renderWordWithCustomStatus = (word, status) => {
+const renderWordWithCustomStatus = (word: Word, status?: string): string => {
   const english = escapeMarkdown(word.English);
   const translation = escapeMarkdown(word.Translation);
   const examples = word.Examples ? escapeMarkdown(word.Examples) : null;
 
   return `
 *${languageTokenMap[languageToken].wordLabel}:*
-${english} ${status ? `\\- ${status}` : ''}
+${english} ${status ? `\- ${status}` : ''}
 ${examples ? `
 *${languageTokenMap[languageToken].examplesLabel}:*
 ${examples}
@@ -85,3 +75,4 @@ export {
   renderWordWithCustomStatus,
   mapWordProgressToStatus,
 };
+
