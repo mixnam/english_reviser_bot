@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import {fileURLToPath} from 'node:url';
-import {Api} from './src/api/api';
-import {Bot} from './src/telegram';
+import {Bot} from './src/telegram.js';
+import {Api} from './src/api/api.js';
 
 dotenv.config({path: '.env.dev', debug: true});
 

@@ -13,9 +13,6 @@ import {AddWordCommand, AddWordMsg} from './webAppCommands/addWord.js';
 import {renderHelpMsg} from './render/renderHelpMsg.js';
 import {renderYouAreNotMyMaster} from './render/renderTextMsg.js';
 
-// The createLogger from pino returns a Logger type, so we can directly type it.
-const createLogger = pino;
-
 type WebAppMsg = EditWordMsg | AddWordMsg;
 
 /**
@@ -42,7 +39,7 @@ class Bot {
     this.bot = new TelegramBot(
         process.env.TELEGRAM_BOT_API_KEY,
     );
-    this.logger = createLogger({level: process.env.PINO_LOG_LEVEL || 'info'});
+    this.logger = pino.default({level: process.env.PINO_LOG_LEVEL || 'info'});
 
     this.reviseCommand = new ReviseCommand(this.bot, this.logger);
     this.learnCommand = new LearnCommand(this.bot, this.logger);
@@ -137,8 +134,6 @@ class Bot {
           await this.learnCommand.processCallback(query.message, data);
           break;
         default:
-          // deadcode
-          // enchancment add forceCallbackTransition
           forceTransition(this.bot, query.message.chat.id, query.message, this.logger);
       }
 
@@ -183,10 +178,6 @@ class Bot {
       case 'add_word_msg':
         return this.addWordWebAppCommand.processMsg(msg);
       default:
-        // This default case should ideally not be reached if WebAppMsg is properly discriminated
-        // and covers all possible msg.type values.
-        // However, if new types are added to WebAppMsg, this default might return null.
-        // Returning null here as per original JSDoc.
         return null;
     }
   };
@@ -195,7 +186,7 @@ class Bot {
     const id = update.message?.message_id ?? update.callback_query?.id;
     let resolve: (() => void) | undefined;
     const status = new Promise<null>((res) => {
-      resolve = () => res(null); // Resolve with null
+      resolve = () => res(null);
     });
     this.updateResolverMap[id] = resolve;
 

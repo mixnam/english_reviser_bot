@@ -1,5 +1,5 @@
 import TelegramBot from 'node-telegram-bot-api';
-import {State, User} from '../../repo/users';
+import {State, User} from '../../repo/users.js';
 import {Logger} from 'pino';
 
 abstract class Step {

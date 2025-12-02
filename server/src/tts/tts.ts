@@ -1,11 +1,10 @@
-import {TextToSpeechClient} from '@google-cloud/text-to-speech';
-import {google} from '@google-cloud/text-to-speech/build/protos/protos';
+import * as gcTTS from '@google-cloud/text-to-speech';
 
 /**
  * module responsible for text-to-speech API
  */
 class TTSServiceImpl {
-  private client: TextToSpeechClient;
+  private client: gcTTS.TextToSpeechClient;
   private languageCode: string;
   private voiceName: string;
 
@@ -13,13 +12,13 @@ class TTSServiceImpl {
    * TTSService constructor
    */
   constructor(languageCode: string, voiceName: string) {
-    this.client = new TextToSpeechClient();
+    this.client = new gcTTS.TextToSpeechClient();
     this.voiceName = voiceName;
     this.languageCode = languageCode;
   }
 
   getAudioForText = async (text: string): Promise<Uint8Array | Error> => {
-    const request: google.cloud.texttospeech.v1.ISynthesizeSpeechRequest = {
+    const request: gcTTS.protos.google.cloud.texttospeech.v1.ISynthesizeSpeechRequest = {
       input: {text},
       voice: {
         languageCode: this.languageCode,

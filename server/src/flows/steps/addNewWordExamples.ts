@@ -1,5 +1,5 @@
 import {renderSendMeContextForThisWord} from '../../render/renderTextMsg.js';
-import {Word} from '../../repo/words';
+import {Word} from '../../repo/words.js';
 import {Step} from './step.js';
 
 const StepID = 'ADD_NEW_WORD_EXAMPLES';

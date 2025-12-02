@@ -1,2 +1,2 @@
-export {Bot} from './src/telegram';
-export {Api} from './src/api/api';
+export {Bot} from './src/telegram.js';
+export {Api} from './src/api/api.js';
