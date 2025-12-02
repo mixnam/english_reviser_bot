@@ -1,47 +1,36 @@
-// eslint-disable-next-line
 import TelegramBot from 'node-telegram-bot-api';
+import {Logger} from 'pino';
 
 import {Command} from './command.js';
 import {setUserStepID} from '../repo/users.js';
 import {StepID as AddNewWordStepID} from '../flows/steps/addNewWordStep.js';
 import {forceAction} from '../flows/processor/index.js';
 
-
-/**
- * AddCommand
- */
 class AddCommand extends Command {
-  #bot;
+  private bot: TelegramBot;
 
-  /**
-   * AddCommand constructor
-   * @param {TelegramBot} bot
-   * @param {import('./command.js').Logger} logger
-   */
-  constructor(bot, logger) {
+  constructor(bot: TelegramBot, logger: Logger) {
     super(logger.child({command: 'AddCommand'}));
-    this.#bot = bot;
+    this.bot = bot;
   }
 
-  /**
-   * @type {Command['processMsg']}
-   */
-  processMsg = async (msg) => {
-    const ctx = {chatID: msg.chat.id};
+  processMsg = async (msg: TelegramBot.Message): Promise<null> => {
+    const ctx: {chatID: number; userID?: string} = {chatID: msg.chat.id};
     const user = await this.getSessionUser(msg);
     if (user instanceof Error) {
-      this.logger.error(ctx, user);
-      return;
+      this.logger.error({...ctx, err: user}, 'User error');
+      return null;
     }
     ctx.userID = user._id;
 
     const result = await setUserStepID(user._id, AddNewWordStepID, this.logger.child(ctx));
     if (result !== null) {
-      this.logger.error(ctx, result);
-      return;
+      this.logger.error({...ctx, err: result}, 'Step update error');
+      return null;
     }
     user.stepID = AddNewWordStepID;
-    return forceAction(this.#bot, user, this.logger.child(ctx));
+    await forceAction(this.bot, user, this.logger.child(ctx));
+    return null;
   };
 }
 

@@ -56,7 +56,7 @@ class OpenAITTSService {
 
   /**
    * @param {string} text
-   * @return {Promise<Uint8Array|Error>}
+   * @return {Promise<Buffer<ArrayBuffer>|Error>}
    */
   getAudioForText = async (text) => {
     if (!this.#client) {

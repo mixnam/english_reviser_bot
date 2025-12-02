@@ -2,22 +2,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 
 /**
- * @typedef LogFn
- * @type {{
- *  (ctx: Object, msg: string) : void;
- *  (ctx: Object, error: Error) : void;
- *  (msg: string) : void
- *  (error: Error) : void
- * }}
- */
-
-/**
- * @typedef Logger
- * @type {Object}
- * @property {LogFn} info
- * @property {LogFn} debug
- * @property {LogFn} error
- * @property {(props: Object) => Logger} child
+ * @typedef {import('pino').Logger} Logger
  */
 
 /**

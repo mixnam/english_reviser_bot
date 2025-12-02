@@ -1,4 +1,3 @@
-// eslint-disable-next-line
 import TelegramBot from 'node-telegram-bot-api';
 
 import {
@@ -9,29 +8,20 @@ import {
   renderStartError,
   renderStartSuccess,
 } from '../render/renderStartMsg.js';
+import {Logger} from 'pino';
+import {User} from '../repo/users.js';
 
-/**
- * StartCommand
- */
 class StartCommand extends Command {
-  #bot;
+  private bot: TelegramBot;
 
-  /**
-   * StartCommand constructor
-   * @param {TelegramBot} bot
-   * @param {import('./command.js').Logger} logger
-   */
-  constructor(bot, logger) {
+  constructor(bot: TelegramBot, logger: Logger) {
     super(logger.child({command: 'StartCommand'}));
-    this.#bot = bot;
+    this.bot = bot;
   }
 
-  /**
-   * @type {Command['processMsg']}
-   */
-  async processMsg(msg) {
+  processMsg = async (msg: TelegramBot.Message): Promise<null> => {
     const ctx = {chatID: msg.chat.id};
-    const newUserID = await addNewUser({
+    const newUser: Omit<User, '_id'> = {
       chatID: msg.chat.id,
       username: msg.chat.username,
       firstName: msg.chat.first_name,
@@ -39,15 +29,18 @@ class StartCommand extends Command {
       state: null,
       flowID: null,
       stepID: null,
-    }, this.logger.child(ctx));
+    };
+
+    const newUserID = await addNewUser(newUser, this.logger.child(ctx));
 
     if (newUserID instanceof Error) {
-      this.logger.error(ctx, newUserID);
-      this.#bot.sendMessage(msg.chat.id, renderStartError());
-      return;
+      this.logger.error({...ctx, err: newUserID}, 'addNewUser error');
+      this.bot.sendMessage(msg.chat.id, renderStartError());
+      return null;
     }
 
-    this.#bot.sendMessage(msg.chat.id, renderStartSuccess());
+    this.bot.sendMessage(msg.chat.id, renderStartSuccess());
+    return null;
   };
 }
 

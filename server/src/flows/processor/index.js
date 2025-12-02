@@ -10,22 +10,7 @@ import {
 import {renderNoIdea} from '../../render/renderTextMsg.js';
 
 /**
- * @typedef LogFn
- * @type {{
- *  (ctx: Object, msg: string) : void;
- *  (ctx: Object, error: Error) : void;
- *  (msg: string) : void
- *  (error: Error) : void
- * }}
- */
-
-/**
- * @typedef Logger
- * @type {Object}
- * @property {LogFn} info
- * @property {LogFn} error
- * @property {LogFn} debug
- * @property {(props: Object) => Logger} child
+ * @typedef {import('pino').Logger} Logger
  */
 
 /**
@@ -47,7 +32,7 @@ const forceAction = async (bot, user, logger) => {
   const step = AddNewWordFlow[stepID];
   const result = await step.makeAction(user, logger.child(ctx));
   if (result instanceof Error) {
-    logger.error(ctx, result);
+    logger.error({...ctx, err: result}, 'step.makeAction error');
     return;
   }
   const [
