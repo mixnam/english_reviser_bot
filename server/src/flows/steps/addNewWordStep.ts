@@ -2,6 +2,7 @@ import {Step} from './step.js';
 
 import {Progress, getSpelcheckSuggestions} from '../../repo/words.js';
 import {renderSendMeWordToAdd} from '../../render/renderTextMsg.js';
+import {Word} from '../../repo/words.js';
 
 const StepID = 'ADD_NEW_WORD';
 
@@ -9,21 +10,18 @@ const StepID = 'ADD_NEW_WORD';
  * AddNewWord
  */
 class AddNewWord extends Step {
-  spellcheckStepID;
+  spellcheckStepID: string;
 
   /**
    * @param {string} nextStepID
    * @param {string} spellcheckStepID
    */
-  constructor(nextStepID, spellcheckStepID) {
+  constructor(nextStepID: string, spellcheckStepID: string) {
     super(nextStepID);
     this.spellcheckStepID = spellcheckStepID;
   }
 
-  /**
-   * @type {Step['makeAction']}
-   */
-  makeAction = async () => {
+  override async makeAction(): ReturnType<Step['makeAction']> {
     return [renderSendMeWordToAdd(), (chatID) => ({
       inline_keyboard: [
         [
@@ -40,10 +38,8 @@ class AddNewWord extends Step {
     null, null, null];
   };
 
-  /**
-   * @type {Step['makeTransition']}
-   */
-  makeTransition = async (msg, user, _bot, logger) => {
+  override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
+    const [msg, user, , logger] = params;
     const {text} = msg;
     if (!text) {
       // TODO
@@ -53,18 +49,15 @@ class AddNewWord extends Step {
     const lastRevisedDate = new Date();
     lastRevisedDate.setDate(lastRevisedDate.getDate() - 14);
 
-    /**
-     * @type {Partial<import('../../repo/words.js').Word>}
-     */
-    const newWord = {
+    const newWord: Partial<Word> = {
       'English': text,
       'Progress': Progress.HaveProblems,
-      // @ts-ignore
+      // @ts-expect-error TODO :: migrate this to something normal
       'Last Revised': lastRevisedDate,
     };
     let suggestions = await getSpelcheckSuggestions(text, user._id, logger);
     if (suggestions instanceof Error) {
-      logger.error(suggestions);
+      logger.error({err: suggestions}, 'getSpelcheckSuggestions error');
       suggestions = [];
     }
 

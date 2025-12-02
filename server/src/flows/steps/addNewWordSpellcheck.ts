@@ -2,6 +2,7 @@ import {Step} from './step.js';
 import {Progress, setWordProgress, getWordByText} from '../../repo/words.js';
 import {renderYouAreAddingExistingWord} from '../../render/renderTextMsg.js';
 import {labelContinue} from '../../render/renderLabel.js';
+import {Word} from '../../repo/words.js';
 
 const StepID = 'ADD_NEW_WORD_SPELLCHECK';
 const ThisIsNewWord = labelContinue;
@@ -10,32 +11,26 @@ const ThisIsNewWord = labelContinue;
  * AddNewWordSpellcheck
  */
 class AddNewWordSpellcheck extends Step {
-  wordToStudyAgainStepID;
+  wordToStudyAgainStepID: string;
 
-  /**
-   * @param {string} nextStepID
-   * @param {string} wordToStudyAgainStepID
-   */
-  constructor(nextStepID, wordToStudyAgainStepID) {
+  constructor(nextStepID: string, wordToStudyAgainStepID: string) {
     super(nextStepID);
     this.wordToStudyAgainStepID = wordToStudyAgainStepID;
   }
 
-  /**
-   * @type {Step['makeAction']}
-   */
-  makeAction = async (user) => {
+  override async makeAction(...params: Parameters<Step['makeAction']>): ReturnType<Step['makeAction']> {
+    const [user] = params;
     const {
       suggestions,
       newWord,
     } = user.state;
 
     return [
-      renderYouAreAddingExistingWord(newWord?.English ?? ''),
+      renderYouAreAddingExistingWord((newWord as Word)?.English ?? ''),
       () => ({
         keyboard: [
           ...(suggestions
-              ?.map((suggestion) => [{
+              ?.map((suggestion: { English: string }) => [{
                 text: suggestion.English,
               }]) ?? []),
           [{text: ThisIsNewWord}],
@@ -47,10 +42,8 @@ class AddNewWordSpellcheck extends Step {
     ];
   };
 
-  /**
-   * @type {Step['makeTransition']}
-   */
-  makeTransition = async (msg, user, _bot, logger) => {
+  override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
+    const [msg, user, , logger] = params;
     if (!msg.text) {
       // TODO throw Error
       return [null, StepID];
@@ -62,14 +55,21 @@ class AddNewWordSpellcheck extends Step {
 
     const word = await getWordByText(msg.text, logger);
     if (word instanceof Error) {
-      logger.error(word);
-      return;
+      logger.error({err: word}, 'getWordByText error');
+      return [null, StepID];
+    }
+
+    // If getWordByText returns null, it means the word doesn't exist, which is weird if it came from suggestions
+    // But if it's null, we can't proceed.
+    if (!word) {
+      logger.error({text: msg.text}, 'Word found in suggestions but not in DB');
+      return [null, StepID];
     }
 
     const result = setWordProgress(word._id, Progress.HaveProblems, logger);
     if (result instanceof Error) {
-      logger.error(result);
-      return;
+      logger.error({err: result}, 'setWordProgress error');
+      return [null, StepID];
     }
     const newState = {
       wordToStudyAgain: word,

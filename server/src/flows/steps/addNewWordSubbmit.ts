@@ -1,19 +1,15 @@
 import {Step} from './step.js';
-import {addNewWord, setWordTelegramAudioID} from '../../repo/words.js';
+import {addNewWord, setWordTelegramAudioID, Word} from '../../repo/words.js';
 import {TTSService} from '../../tts/openaiTts.js';
 import {renderYouJustAddedNewWord} from '../../render/renderTextMsg.js';
 
 const StepID = 'ADD_NEW_WORD_SUBBMIT';
 
-/**
- * AddNewWordSubbmit
- */
 class AddNewWordSubbmit extends Step {
-  /**
-   * @type {Step['makeAction']}
-   */
-  makeAction = async (user, logger) => {
-    const newWord = /** @type {import('../../repo/words.js').Word} */ (user.state.newWord);
+  override async makeAction(...params: Parameters<Step['makeAction']>): ReturnType<Step['makeAction']> {
+    const [user, logger] = params;
+
+    const newWord = user.state.newWord as Word;
     if (!newWord) {
       return new Error('impossible state, no newWord');
     }
@@ -46,10 +42,7 @@ class AddNewWordSubbmit extends Step {
     ];
   };
 
-  /**
-   * @type {Step['makeTransition']}
-   */
-  makeTransition = async () => {
+  override async makeTransition(): ReturnType<Step['makeTransition']> {
     return [null, this.nextStepID];
   };
 }

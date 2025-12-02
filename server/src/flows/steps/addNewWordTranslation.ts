@@ -3,25 +3,24 @@ import {Step} from './step.js';
 
 const StepID = 'ADD_NEW_WORD_TRANSLATIONS';
 
-/**
- * AddNewWordTranslations
- */
 class AddNewWordTranslations extends Step {
-  /**
-   * @type {Step['makeAction']}
-   */
-  makeAction = async () => {
-    return [renderSendMeTranslationForThisWord(), null, null, null, null];
+  override async makeAction(): ReturnType<Step['makeAction']> {
+    return [
+      renderSendMeTranslationForThisWord(),
+      null,
+      null,
+      null,
+      null,
+    ];
   };
 
-  /**
-   * @type {Step['makeTransition']}
-   */
-  makeTransition = async (msg, user) => {
+  override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
+    const [msg, user] = params;
+
     const {newWord} = user.state;
     if (!newWord || !msg.text) {
       // TODO throw Error
-      return [null, StepID];
+      return [null, StepID] as const;
     }
     newWord.Translation = msg.text;
     return [user.state, this.nextStepID];

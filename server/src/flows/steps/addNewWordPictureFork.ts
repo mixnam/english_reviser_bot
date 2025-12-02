@@ -10,21 +10,14 @@ const NoAnswer = labelNo;
  * AddNewWordPictureFork
  */
 class AddNewWordPictureFork extends Step {
-  noStepID;
+  noStepID: string;
 
-  /**
-     * @param {string} yesStepID
-     * @param {string} noStepID
-     */
-  constructor(yesStepID, noStepID) {
+  constructor(yesStepID: string, noStepID: string) {
     super(yesStepID);
     this.noStepID = noStepID;
   }
 
-  /**
-   * @type {Step['makeAction']}
-   */
-  makeAction = async () => {
+  override async makeAction(): ReturnType<Step['makeAction']> {
     return [
       renderDoYouWantToAddPicture(),
       () => ({
@@ -43,10 +36,8 @@ class AddNewWordPictureFork extends Step {
     ];
   };
 
-  /**
-   * @type {Step['makeTransition']}
-   */
-  makeTransition = async (userAnswer, user) => {
+  override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
+    const [userAnswer, user] = params;
     switch (userAnswer.text) {
       case YesAnswer:
         return [user.state, this.nextStepID];

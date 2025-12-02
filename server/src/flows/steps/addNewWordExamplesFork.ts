@@ -6,6 +6,7 @@ import {
 import {OpenAIExamplesService} from '../../services/openAIExamples.js';
 import {setUserState} from '../../repo/users.js';
 import {Step} from './step.js';
+import {Word} from '../../repo/words.js';
 
 const StepID = 'ADD_NEW_WORD_EXAMPLES_FORK';
 const YesAnswer = labelYes;
@@ -15,23 +16,17 @@ const NoAnswer = labelNo;
  * AddNewWordExamplesFork
  */
 class AddNewWordExamplesFork extends Step {
-  noStepID;
+  noStepID: string;
 
-  /**
-     * @param {string} yesStepID
-     * @param {string} noStepID
-     */
-  constructor(yesStepID, noStepID) {
+  constructor(yesStepID: string, noStepID: string) {
     super(yesStepID);
     this.noStepID = noStepID;
   }
 
-  /**
-   * @type {Step['makeAction']}
-   */
-  makeAction = async (user, logger) => {
+  override async makeAction(...params: Parameters<Step['makeAction']>): ReturnType<Step['makeAction']> {
+    const [user, logger] = params;
     const {state, _id: userID} = user;
-    const newWord = state?.newWord;
+    const newWord = state?.newWord as Word;
     if (!newWord) {
       return new Error('Impossible state: no newWord');
     }
@@ -46,7 +41,7 @@ class AddNewWordExamplesFork extends Step {
           logger,
       );
       if (aiExample instanceof Error) {
-        logger.error(aiExample);
+        logger.error({err: aiExample}, 'generateExampleSentence error');
       } else if (aiExample) {
         suggestedExample = aiExample;
         const newState = {
@@ -55,7 +50,7 @@ class AddNewWordExamplesFork extends Step {
         };
         const updateResult = await setUserState(userID, newState, logger);
         if (updateResult instanceof Error) {
-          logger.error(updateResult);
+          logger.error({err: updateResult}, 'setUserState error');
         } else {
           user.state = newState;
         }
@@ -82,16 +77,14 @@ class AddNewWordExamplesFork extends Step {
     ];
   };
 
-  /**
-   * @type {Step['makeTransition']}
-   */
-  makeTransition = async (userAnswer, user) => {
+  override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
+    const [userAnswer, user] = params;
     if (!user.state || !user.state.newWord) {
       return [user.state, StepID];
     }
 
     const suggestedExample = user.state?.suggestedExample ?? null;
-    const newWord = user.state.newWord;
+    const newWord = user.state.newWord as Word;
 
     switch (userAnswer.text) {
       case YesAnswer:
