@@ -34,13 +34,9 @@ import {
   StepID as AddNewWordPictureStepID,
   AddNewWordPicture,
 } from './steps/addNewWordPicture.js';
-// eslint-disable-next-line
 import {Step} from './steps/step.js';
 
-/**
- * @type {Object.<string, Step>}
- */
-const AddNewWordFlow = {
+const AddNewWordFlow: Record<string, Step> = {
   [AddNewWordStepID]: new AddNewWord(
       AddNewWordTranslationsStepID,
       AddNewWordSpellcheckStepID,

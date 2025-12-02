@@ -17,11 +17,11 @@ class AddNewWordTranslations extends Step {
   override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
     const [msg, user] = params;
 
-    const {newWord} = user.state;
-    if (!newWord || !msg.text) {
+    if (!user.state || !user.state.newWord || !msg.text) {
       // TODO throw Error
       return [null, StepID] as const;
     }
+    const {newWord} = user.state;
     newWord.Translation = msg.text;
     return [user.state, this.nextStepID];
   };

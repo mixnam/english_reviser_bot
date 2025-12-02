@@ -1,4 +1,3 @@
-// eslint-disable-next-line
 import TelegramBot from 'node-telegram-bot-api';
 
 import {AddNewWordFlow} from '../index.js';
@@ -6,21 +5,13 @@ import {
   getUserByChatID,
   setUserStepID,
   setUserState,
+  User,
+  State,
 } from '../../repo/users.js';
 import {renderNoIdea} from '../../render/renderTextMsg.js';
+import {Logger} from 'pino';
 
-/**
- * @typedef {import('pino').Logger} Logger
- */
-
-/**
- * @param {TelegramBot} bot
- * @param {import("../../repo/users.js").User} user
- * @param {Logger} logger
- *
- * @returns {Promise<null>}
- */
-const forceAction = async (bot, user, logger) => {
+const forceAction = async (bot: TelegramBot, user: User, logger: Logger): Promise<void> => {
   const {stepID} = user;
   const ctx = {stepID, state: user.state};
   if (stepID === null) {
@@ -79,23 +70,15 @@ const forceAction = async (bot, user, logger) => {
       await onFileUploaded(msg.voice.file_id);
     }
   } catch (err) {
-    logger.error(ctx, err);
+    logger.error({...ctx, err}, 'forceAction error');
     return;
   }
 };
 
-/**
- * @param {TelegramBot} bot
- * @param {number} chatID
- * @param {TelegramBot.Message} msg
- * @param {Logger} logger
- *
- * @returns {Promise<null>}
- */
-const forceTransition = async (bot, chatID, msg, logger) => {
+const forceTransition = async (bot: TelegramBot, chatID: number, msg: TelegramBot.Message, logger: Logger): Promise<void> => {
   const user = await getUserByChatID(chatID, logger);
   if (user instanceof Error) {
-    logger.error(user);
+    logger.error({err: user}, 'getUserByChatID error');
     return;
   }
   if (user === null) {
@@ -105,7 +88,13 @@ const forceTransition = async (bot, chatID, msg, logger) => {
 
   const {stepID} = user;
 
-  const ctx = {
+  const ctx: {
+    stepID: string | null;
+    state: State | null;
+    userID: string;
+    userAnswer: string | undefined;
+    newState?: State | null;
+  } = {
     stepID,
     state: user.state,
     userID: user._id,
@@ -128,40 +117,18 @@ const forceTransition = async (bot, chatID, msg, logger) => {
 
   let result = await setUserStepID(user._id, newStepID, logger.child(ctx));
   if (result !== null) {
-    logger.error(ctx, `can't update user step - ${result}`);
+    logger.error({...ctx, err: result}, 'setUserStepID error');
     return;
   }
   result = await setUserState(user._id, newState, logger.child(ctx));
   if (result !== null) {
-    logger.error(ctx, `can't update user state - ${result}`);
+    logger.error({...ctx, err: result}, 'setUserState error');
     return;
   }
   user.state = newState;
   user.stepID = newStepID;
 
   return forceAction(bot, user, logger);
-};
-
-/**
- * @param {TelegramBot.ReplyKeyboardMarkup | TelegramBot.InlineKeyboardMarkup | null} input
- * @returns {input is TelegramBot.InlineKeyboardMarkup}
- */
-const isInlineKeyboard = (input) => {
-  if ('inline_keyboard' in input) {
-    return true;
-  }
-  return false;
-};
-
-/**
- * @param {TelegramBot.ReplyKeyboardMarkup | TelegramBot.InlineKeyboardMarkup | null} input
- * @returns {input is TelegramBot.InlineKeyboardMarkup}
- */
-const isReplyKeyboard = (input) => {
-  if ('keyboard' in input) {
-    return true;
-  }
-  return false;
 };
 
 export {

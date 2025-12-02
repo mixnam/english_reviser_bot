@@ -1,7 +1,7 @@
 import {renderSendMePictureForThisWord} from '../../render/renderTextMsg.js';
 import {uploadPicture} from '../../repo/files.js';
-import {Step} from './step.js';
 import {Word} from '../../repo/words.js';
+import {Step} from './step.js';
 
 const StepID = 'ADD_NEW_WORD_PICTURE';
 
@@ -21,11 +21,11 @@ class AddNewWordPicture extends Step {
 
   override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
     const [msg, user, bot, logger] = params;
-    const newWord = user.state.newWord as Word;
-    if (!newWord) {
+    if (!user.state || !user.state.newWord) {
       // TODO throw Error
       return [user.state, StepID];
     }
+    const newWord = user.state.newWord as Word;
     if (!msg.photo) {
       logger.error({msg}, 'User didn\'t send no photo');
       return [user.state, StepID];

@@ -3,9 +3,9 @@ import {State, User} from '../../repo/users';
 import {Logger} from 'pino';
 
 abstract class Step {
-  nextStepID: string;
+  nextStepID: string | null;
 
-  constructor(nextStepID: string) {
+  constructor(nextStepID: string | null) {
     this.nextStepID = nextStepID;
   }
 

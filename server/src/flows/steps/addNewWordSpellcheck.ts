@@ -1,8 +1,7 @@
 import {Step} from './step.js';
-import {Progress, setWordProgress, getWordByText} from '../../repo/words.js';
+import {Progress, setWordProgress, getWordByText, Word} from '../../repo/words.js';
 import {renderYouAreAddingExistingWord} from '../../render/renderTextMsg.js';
 import {labelContinue} from '../../render/renderLabel.js';
-import {Word} from '../../repo/words.js';
 
 const StepID = 'ADD_NEW_WORD_SPELLCHECK';
 const ThisIsNewWord = labelContinue;
@@ -20,6 +19,9 @@ class AddNewWordSpellcheck extends Step {
 
   override async makeAction(...params: Parameters<Step['makeAction']>): ReturnType<Step['makeAction']> {
     const [user] = params;
+    if (!user.state) {
+      return new Error('Impossible state: no state');
+    }
     const {
       suggestions,
       newWord,

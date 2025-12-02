@@ -9,10 +9,10 @@ class AddNewWordSubbmit extends Step {
   override async makeAction(...params: Parameters<Step['makeAction']>): ReturnType<Step['makeAction']> {
     const [user, logger] = params;
 
-    const newWord = user.state.newWord as Word;
-    if (!newWord) {
+    if (!user.state || !user.state.newWord) {
       return new Error('impossible state, no newWord');
     }
+    const newWord = user.state.newWord as Word;
 
     const ttsText = newWord.Examples?.trim().length > 0 ?
       newWord.Examples :

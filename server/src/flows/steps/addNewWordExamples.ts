@@ -1,6 +1,6 @@
 import {renderSendMeContextForThisWord} from '../../render/renderTextMsg.js';
+import {Word} from '../../repo/words';
 import {Step} from './step.js';
-import {Word} from '../../repo/words.js';
 
 const StepID = 'ADD_NEW_WORD_EXAMPLES';
 
@@ -20,11 +20,11 @@ class AddNewWordExamples extends Step {
 
   override async makeTransition(...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> {
     const [userAnswer, user] = params;
-    const newWord = user.state.newWord as Word;
-    if (!newWord) {
+    if (!user.state || !user.state.newWord) {
       // TODO throw Error
       return [null, StepID];
     }
+    const newWord = user.state.newWord as Word;
     newWord.Examples = userAnswer.text;
     return [user.state, this.nextStepID];
   };
