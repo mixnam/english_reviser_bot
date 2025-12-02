@@ -19,7 +19,9 @@ functions.http('telegram', async (req, res) => {
 });
 
 const api = new Api();
+// @ts-expect-error fix fastify types 
 api.addContentTypeParser('application/json', {}, (req, body, done) => {
+  // @ts-expect-error fix fastify types 
   done(null, body.body);
 });
 

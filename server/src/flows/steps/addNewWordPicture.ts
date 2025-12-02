@@ -1,0 +1,65 @@
+import {renderSendMePictureForThisWord} from '../../render/renderTextMsg.js';
+import {uploadPicture} from '../../repo/files.js';
+import {Word} from '../../repo/words.js';
+import {Step} from './step.js';
+
+const StepID = 'ADD_NEW_WORD_PICTURE';
+
+/**
+ * AddNewWordPicture
+ */
+class AddNewWordPicture extends Step {
+  override makeAction = async (): ReturnType<Step['makeAction']> => {
+    return [
+      renderSendMePictureForThisWord(),
+      null,
+      null,
+      null,
+      null,
+    ];
+  };
+
+  override makeTransition = async (...params: Parameters<Step['makeTransition']>): ReturnType<Step['makeTransition']> => {
+    const [msg, user, bot, logger] = params;
+    if (!user.state || !user.state.newWord) {
+      // TODO throw Error
+      return [user.state, StepID];
+    }
+    const newWord = user.state.newWord as Word;
+    if (!msg.photo) {
+      logger.error({msg}, 'User didn\'t send no photo');
+      return [user.state, StepID];
+    }
+    /**
+     * Choosing largest image with limit size up to 50Kb
+     */
+    const picture = msg.photo.reduce(
+        (res, photo) =>
+            photo.file_size! > res.file_size! &&
+            photo.file_size! < 50000 ?
+                photo :
+                res,
+    );
+
+
+    try {
+      const fileName = await uploadPicture(
+          bot.getFileStream(picture.file_id),
+          logger,
+      );
+      newWord.PictureFileName = fileName;
+    } catch (err) {
+      logger.error({err}, 'uploadPicture error');
+      return [user.state, StepID];
+    }
+
+    newWord.TelegramPictureID = picture.file_id;
+
+    return [user.state, this.nextStepID];
+  };
+}
+
+export {
+  AddNewWordPicture,
+  StepID,
+};
