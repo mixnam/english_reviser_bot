@@ -7,6 +7,7 @@ import {
   getWordByID,
   setWordProgress,
   setWordTelegramAudioID,
+  Word,
 } from '../repo/words.js';
 import {
   renderWordWithCustomStatus,
@@ -17,7 +18,6 @@ import {
   renderYouHaveCovered_N_Words,
   renderYouHaveGoneThrough_N_Words,
 } from '../render/renderTextMsg.js';
-import {Word} from '../repo/words.js';
 import {labelUp, labelDown, labelStopLearning} from '../render/renderLabel.js';
 import {Logger} from 'pino';
 

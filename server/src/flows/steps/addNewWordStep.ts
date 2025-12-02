@@ -52,7 +52,6 @@ class AddNewWord extends Step {
     const newWord: Partial<Word> = {
       'English': text,
       'Progress': Progress.HaveProblems,
-      // @ts-expect-error TODO :: migrate this to something normal
       'Last Revised': lastRevisedDate,
     };
     let suggestions = await getSpelcheckSuggestions(text, user._id, logger);

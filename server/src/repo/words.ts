@@ -1,9 +1,9 @@
-// eslint-disable-next-line
-import {ObjectId, Binary, AggregationCursor, FindCursor} from 'mongodb';
+import {ObjectId, Binary} from 'mongodb';
 import levenshtein from 'js-levenshtein';
 
 import {getDb} from './repo.js';
 import {executionTime, minusDaysFromNow} from './utils.js';
+import {Logger} from 'pino';
 
 const WORD_COLLECTION_NAME = 'english_words';
 
@@ -23,9 +23,6 @@ const ProgressOrder = [
   Progress.Learned,
 ];
 
-/**
- * @type {Record<Progress[keyof Progress], number>}
- */
 const ProgressTimeSpace = {
   [Progress.HaveProblems]: 0,
   [Progress.HaveToPayAttention]: 1,
@@ -34,62 +31,46 @@ const ProgressTimeSpace = {
   [Progress.Learned]: 27,
 };
 
-/**
- * @typedef Word
- * @type {object}
- * @property {string} _id
- * @property {string} userID
- * @property {string} English
- * @property {string} Translation
- * @property {string} [Examples]
- * @property {string} Progress
- * @property {Uint8Array} [Audio]
- * @property {string} [TelegramAudioID]
- * @property {string} [TelegramPictureID]
- * @property {string} [PictureFileName]
- * @ts-ignore
- * @property {Date} 'Last Revised'
- */
+export type Word = {
+  _id: string;
+  userID: string;
+  English: string;
+  Translation: string;
+  Examples?: string;
+  Progress: string;
+  Audio?: Uint8Array;
+  TelegramAudioID?: string;
+  TelegramPictureID?: string;
+  PictureFileName?: string;
+  'Last Revised'?: Date;
+}
 
-/**
- * @typedef WordDTO
- * @type {object}
- * @property {ObjectId} _id
- * @property {string} userID
- * @property {string} English
- * @property {string} Translation
- * @property {string|undefined} Examples
- * @property {string} Progress
- * @property {Binary|undefined} Audio
- * @property {string|undefined} TelegramAudioID
- * @property {string} [TelegramPictureID]
- * @property {string} [PictureFileName]
- * @ts-ignore
- * @property {Date} 'Last Revised'
- */
+type WordDTO = {
+  _id: ObjectId;
+  userID: string;
+  English: string;
+  Translation: string;
+  Examples?: string;
+  Progress: string;
+  Audio?: Binary;
+  TelegramAudioID?: string;
+  TelegramPictureID?: string;
+  PictureFileName?: string;
+  'Last Revised'?: Date;
+}
 
-/**
- * @param {WordDTO} wordDto
- * @return {Word}
- */
-const mapWord = (wordDto) => {
+const mapWord = (wordDto: WordDTO): Word => {
   return {
     ...wordDto,
     _id: wordDto._id.toString(),
     Audio: wordDto.Audio ?
-      Buffer.from(wordDto.Audio.toString('base64'), 'base64') :
+      new Uint8Array(wordDto.Audio.buffer) :
       undefined,
   };
 };
 
 const updateWord = executionTime('updateWord',
-    /**
-     * @param {string} userID
-     * @param {Word} word
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<Error|null>}
-     */
-    async (userID, word, logger) => {
+    async (userID: string, word: Word, logger: Logger): Promise<Error | null> => {
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
@@ -102,7 +83,7 @@ const updateWord = executionTime('updateWord',
             English: word.English,
             Translation: word.Translation,
             Examples: word.Examples,
-            Audio: word.Audio,
+            Audio: word.Audio ? new Binary(word.Audio) : undefined,
             TelegramAudioID: undefined,
           },
         });
@@ -114,13 +95,7 @@ const updateWord = executionTime('updateWord',
 
 const addNewWord = executionTime(
     'addNewWord',
-    /**
-     * @param {string} userID
-     * @param {Word} word
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<Error|string>}
-     */
-    async (userID, word, logger) => {
+    async (userID: string, word: Partial<Word>, logger: Logger): Promise<Error | string> => {
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
@@ -139,18 +114,10 @@ const addNewWord = executionTime(
 
 const getRandomWordByUserIDForRevise = executionTime(
     'getRandomWordByUserIDForRevise',
-    /**
-     * @param {string} userID
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<(Word|null)>}
-     */
-    async (userID, logger) => {
+    async (userID: string, logger: Logger): Promise<Word | null> => {
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
-      /**
-       * @type {AggregationCursor<WordDTO>}
-       */
       const result = words.aggregate([
         {
           $match: {
@@ -168,25 +135,17 @@ const getRandomWordByUserIDForRevise = executionTime(
         },
       ]);
 
-      const wordDto = await result.next();
+      const wordDto = await result.next() as unknown as WordDTO;
 
       return wordDto ? mapWord(wordDto) : null;
     });
 
 const getRandomWordByUserIDForLearn = executionTime(
     'getRandomWordByUserIDForLearn',
-    /**
-     * @param {string} userID
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<(Word|null)>}
-     */
-    async (userID, logger) => {
+    async (userID: string, logger: Logger): Promise<Word | null> => {
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
-      /**
-       * @type {AggregationCursor<WordDTO>}
-       */
       const result = words.aggregate([
         {
           $match: {
@@ -229,20 +188,14 @@ const getRandomWordByUserIDForLearn = executionTime(
         },
       ]);
 
-      const wordDto = await result.next();
+      const wordDto = await result.next() as unknown as WordDTO;
 
       return wordDto ? mapWord(wordDto) : null;
     });
 
 const setWordProgress = executionTime(
     'setWordProgress',
-    /**
-     * @param {string} wordID
-     * @param {string} progress
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<Error|null>}
-     */
-    async (wordID, progress, logger) => {
+    async (wordID: string, progress: string, logger: Logger): Promise<Error | null> => {
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
@@ -264,13 +217,7 @@ const setWordProgress = executionTime(
 
 const setWordTelegramAudioID = executionTime(
     'setWordTelegramAudioID',
-    /**
-     * @param {string} wordID
-     * @param {string} audioID
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<Error|null>}
-     */
-    async (wordID, audioID, logger) => {
+    async (wordID: string, audioID: string, logger: Logger): Promise<Error | null> => {
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
@@ -291,13 +238,7 @@ const setWordTelegramAudioID = executionTime(
 
 const setWordTelegramPictureID = executionTime(
     'setWordPicture',
-    /**
-     * @param {string} wordID
-     * @param {string} telegramPictureID
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<Error|null>}
-     */
-    async (wordID, telegramPictureID, logger) => {
+    async (wordID: string, telegramPictureID: string, logger: Logger): Promise<Error | null> => {
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
@@ -318,13 +259,7 @@ const setWordTelegramPictureID = executionTime(
 
 const setWordPictureName = executionTime(
     'setWordPictureName',
-    /**
-     * @param {string} wordID
-     * @param {string} pictureName
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<Error|null>}
-     */
-    async (wordID, pictureName, logger) => {
+    async (wordID: string, pictureName: string, logger: Logger): Promise<Error | null> => {
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
@@ -346,23 +281,14 @@ const setWordPictureName = executionTime(
 
 const getWordByID = executionTime(
     'getWordByID',
-    /**
-     * @param {string} wordID
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<Word|null|Error>}
-     */
-    async (wordID, logger) => {
+    async (wordID: string, logger: Logger): Promise<Word | null | Error> => {
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
-        /**
-         * hack, to map to WordDTO
-         * @type {any}
-         */
         const wordDto = await words.findOne({
           _id: new ObjectId(wordID),
-        });
+        }) as unknown as WordDTO;
         return wordDto ? mapWord(wordDto) : null;
       } catch (err) {
         return new Error(`[repo][getWordByID] - ${err}`);
@@ -371,18 +297,13 @@ const getWordByID = executionTime(
 
 const getWordByText = executionTime(
     'getWordByText',
-    /**
-     * @param {string} text
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<Word|null|Error>}
-     */
-    async (text, logger) => {
+    async (text: string, logger: Logger): Promise<Word | null | Error> => {
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
       try {
         // enchancment add text index
-        const wordDto = /** @type {WordDTO} */ (await words.findOne({English: text}));
+        const wordDto = await words.findOne({English: text}) as unknown as WordDTO;
         return wordDto ? mapWord(wordDto) : null;
       } catch (err) {
         return new Error(`[repo][getWordByID] - ${err}`);
@@ -391,12 +312,7 @@ const getWordByText = executionTime(
 
 const setWordAsRevisedByWordID = executionTime(
     'setWordAsRevisedByWordID',
-    /**
-     * @param {string} wordID
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<Error|null>}
-     */
-    async (wordID, logger) => {
+    async (wordID: string, logger: Logger): Promise<Error | null> => {
       const result = await setWordProgress(wordID, Progress.Learned, logger);
       if (result !== null) {
         return new Error(`[repo][setWordAsRevisedByWordID] - ${result}`);
@@ -406,12 +322,7 @@ const setWordAsRevisedByWordID = executionTime(
 
 const setWordAsForgottenByWordID = executionTime(
     'setWordAsForgottenByWordID',
-    /**
-     * @param {string} wordID
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<Error|null>}
-     */
-    async (wordID, logger) => {
+    async (wordID: string, logger: Logger): Promise<Error | null> => {
       const result = await setWordProgress(wordID, Progress.HaveProblems, logger);
       if (result !== null) {
         return new Error(`[repo][setWordAsForgottenByWordID] - ${result}`);
@@ -419,22 +330,9 @@ const setWordAsForgottenByWordID = executionTime(
       return null;
     });
 
-/**
- * @param {string} newWord
- * @param {string} userID
- *
- * @return {Promise<Error|Array<{English: string}>>}
- */
 const getSpelcheckSuggestions = executionTime(
     'getSpelcheckSuggestions',
-    /**
-     * @param {string} newWord
-     * @param {string} userID
-     * @param {import('./utils.js').Logger} logger
-     *
-     * @return {Promise<Error|Array<{English: string}>>}
-     */
-    async (newWord, userID, logger) => {
+    async (newWord: string, userID: string, logger: Logger): Promise<Error | Array<{English: string}>> => {
       const db = await getDb(logger);
       const words = db.collection(WORD_COLLECTION_NAME);
 
@@ -444,14 +342,7 @@ const getSpelcheckSuggestions = executionTime(
         },
       });
 
-      /**
-         * Let's just assume that the longest word in user input string
-         * is the word user want to add
-         *
-         * @param {string} word
-         * @return {string}
-         */
-      const cleanWord = (word) => word
+      const cleanWord = (word: string) => word
           .toLowerCase()
           .trim()
           .split(' ')
@@ -461,18 +352,15 @@ const getSpelcheckSuggestions = executionTime(
 
       const newWordCleaned = cleanWord(newWord);
 
-      /**
-       * @type {Array<{English: string}>}
-       */
-      const suggestions = [];
+      const suggestions: Array<{English: string}> = [];
       try {
         for await (const word of result) {
           if (
-            levenshtein(cleanWord(word.English), newWordCleaned) <
+            levenshtein(cleanWord(word['English']), newWordCleaned) <
               (newWordCleaned.length > 6 ? 2 : 1)
           ) {
             suggestions.push(
-                /** @type {{English: string}} */(/** @type {unknown}*/ (word)),
+                word as unknown as {English: string},
             );
           }
         }

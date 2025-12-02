@@ -2,37 +2,30 @@ import {ObjectId} from 'mongodb';
 
 import {getDb} from './repo.js';
 import {executionTime} from './utils.js';
+import {Logger} from 'pino';
+import {Word} from './words.js';
 
-/**
- * @typedef State
- * @type {object}
- * @property {Partial<import('./words.js').Word>} [newWord]
- * @property {Array<Pick<import('./words.js').Word, 'English'>>} [suggestions]
- * @property {string} [suggestedExample]
- * @property {import('./words.js').Word} wordToStudyAgain
- */
+export type State = {
+  newWord?: Partial<Word>;
+  suggestions?: Array<Pick<Word, 'English'>>;
+  suggestedExample?: string;
+  wordToStudyAgain?: Word;
+}
 
-/**
- * @typedef User
- * @type {object}
- * @property {string} _id
- * @property {number|string} chatID
- * @property {string|undefined} username
- * @property {string|undefined} firstName
- * @property {string|undefined} lastName
- * @property {State} state
- * @property {number|null} flowID
- * @property {string|null} stepID
- */
+export type User = {
+  _id: string;
+  chatID: number | string;
+  username: string | undefined;
+  firstName: string | undefined;
+  lastName: string | undefined;
+  state: State | null;
+  flowID: number | null;
+  stepID: string | null;
+}
 
 const addNewUser = executionTime(
     'addNewUser',
-    /**
-     * @param {Omit<User, '_id'>} user
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<string|Error>}
-     */
-    async (user, logger) => {
+    async (user: Omit<User, '_id'>, logger: Logger): Promise<string | Error> => {
       const db = await getDb(logger);
       const users = db.collection('users');
 
@@ -48,7 +41,7 @@ const addNewUser = executionTime(
 
       try {
         const result = await users.insertOne(user);
-        return /** @type {string} */ (/** @type {unknown} */ (result.insertedId));
+        return result.insertedId.toString();
       } catch (err) {
         return new Error(`[repo][addNewUser]: can't insert new user - ${err}`);
       }
@@ -56,17 +49,12 @@ const addNewUser = executionTime(
 
 const getUserByChatID = executionTime(
     'getUserByChatID',
-    /**
-     * @param {number|string} chatID
-     * @param {import('./utils.js').Logger} logger
-     * @returns {Promise<User|Error>}
-     */
-    async (chatID, logger) => {
+    async (chatID: number | string, logger: Logger): Promise<User | Error | null> => {
       const db = await getDb(logger);
       const users = db.collection('users');
       try {
-        const user = /** @type{User} */ (/** @type {unknown} */ (await users.findOne({chatID: chatID})));
-        return user;
+        const user = await users.findOne({chatID: chatID});
+        return user as unknown as User;
       } catch (err) {
         return new Error(
             `[repo][getUserByChatID]: can't retrieve user by chatID ${chatID} - ${err}`,
@@ -76,13 +64,7 @@ const getUserByChatID = executionTime(
 
 const setUserState = executionTime(
     'setUserState',
-    /**
-     * @param {string} userID
-     * @param {Object} state
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<Error|null>}
-     */
-    async (userID, state, logger) => {
+    async (userID: string, state: State, logger: Logger): Promise<Error | null> => {
       const db = await getDb(logger);
       const users = db.collection('users');
 
@@ -104,13 +86,7 @@ const setUserState = executionTime(
 
 const setUserStepID = executionTime(
     'setUserStepID',
-    /**
-     * @param {string} userID
-     * @param {Object} stepID
-     * @param {import('./utils.js').Logger} logger
-     * @return {Promise<Error|null>}
-     */
-    async (userID, stepID, logger) => {
+    async (userID: string, stepID: string, logger: Logger): Promise<Error | null> => {
       const db = await getDb(logger);
       const users = db.collection('users');
 

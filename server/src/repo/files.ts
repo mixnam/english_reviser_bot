@@ -1,16 +1,12 @@
 import {GridFSBucket, ObjectId} from 'mongodb';
+import {Readable} from 'node:stream';
 
 import {getDb} from './repo.js';
 import {executionTime} from './utils.js';
+import {Logger} from 'pino';
 
 const uploadPicture = executionTime('uploadPicture',
-    /**
-     * @param {import('node:stream').Readable} fileStream
-     * @param {import('./utils.js').Logger} logger
-     *
-     * @returns {Promise<string>}
-     */
-    async (fileStream, logger) => {
+    async (fileStream: Readable, logger: Logger): Promise<string> => {
       const db = await getDb(logger);
       const bucket = new GridFSBucket(db, {bucketName: 'images'});
       const fileName = new ObjectId().toString();
@@ -26,13 +22,7 @@ const uploadPicture = executionTime('uploadPicture',
 
 
 const downloadPictrure = executionTime('downloadPictrure',
-    /**
-     * @param {string} fileName
-     * @param {import('./utils.js').Logger} logger
-     *
-     * @returns {Promise<import('node:stream').Readable>}
-     */
-    async (fileName, logger) => {
+    async (fileName: string, logger: Logger): Promise<Readable> => {
       const db = await getDb(logger);
       const bucket = new GridFSBucket(db, {bucketName: 'images'});
 

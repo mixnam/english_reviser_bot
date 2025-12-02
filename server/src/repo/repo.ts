@@ -1,16 +1,10 @@
-// eslint-disable-next-line
 import {MongoClient, ServerApiVersion, Db} from 'mongodb';
+import {Logger} from 'pino';
 
-/** @type {Promise<MongoClient> | null} */
-let clientPromise = null;
-/** @type {Promise<Db> | null} */
-let dbPromise = null;
+let clientPromise: Promise<MongoClient> | null = null;
+let dbPromise: Promise<Db> | null = null;
 
-/**
- * @param {import('./utils.js').Logger} logger
- * @return {Promise<MongoClient>}
- */
-const getClient = async (logger) => {
+const getClient = async (logger: Logger): Promise<MongoClient> => {
   if (!process.env.MONGODB_URI) {
     throw new Error('There is not env MONGODB_URI');
   }
@@ -40,11 +34,7 @@ const getClient = async (logger) => {
   return clientPromise;
 };
 
-/**
- * @param {import('./utils.js').Logger} logger
- * @return {Promise<Db>}
- */
-const getDb = async (logger) => {
+const getDb = async (logger: Logger): Promise<Db> => {
   if (!dbPromise) {
     dbPromise = getClient(logger).then((client) => client.db(process.env.MONGODB_DB));
   }
