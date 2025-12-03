@@ -5,8 +5,8 @@
   "type": "module",
   "main": "./dist/index.js",
   "scripts": {
-    "telegram": "node dev.js --bot | pino-pretty",
-    "api": "node dev.js --api",
+    "telegram": "tsx dev.ts --bot | pino-pretty",
+    "api": "tsx dev.ts --api",
     "webhook:off": "node ./scripts/removeWebhook.js",
     "webhook:on": "node ./scripts/setWebhook.js",
     "check-types": "tsc --noEmit",
@@ -35,6 +35,7 @@
     "eslint": "^8.48.0",
     "eslint-config-google": "^0.14.0",
     "pino-pretty": "^10.3.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.3.2"
   }
 }

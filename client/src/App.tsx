@@ -8,7 +8,7 @@ import { AddWord } from "./pages/add_word";
 
 function App() {
   return (
-    <AppRoot>
+    <AppRoot className="h-full w-full">
       <Routes>
         <Route path="edit-word" element={<EditWord />} />
         <Route path="add-word" element={<AddWord />} />
