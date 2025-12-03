@@ -24,10 +24,11 @@ export default defineConfig(({mode}) => ({
     ]
   },
   define: {
-      i18n: i18n[mode === 'dev' ? 'en' : mode]
+      i18n: i18n[mode === 'dev' ? 'en' : mode as keyof typeof i18n]
   },
   build: {
       outDir: `./dist/${mode}`,
   },
   plugins: [react()],
 }))
+

@@ -1,6 +1,5 @@
 import {Routes, Route} from 'react-router-dom'
 import {AppRoot} from '@telegram-apps/telegram-ui'
-import './App.css'
 
 import '@telegram-apps/telegram-ui/dist/styles.css'
 

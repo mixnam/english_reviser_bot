@@ -1,10 +1,12 @@
 import {useSearchParams} from 'react-router-dom'
-import {List, Button, Textarea} from '@telegram-apps/telegram-ui'
+import {List, Button, Textarea, Title,  Section,  Caption, IconButton} from '@telegram-apps/telegram-ui'
 import React, { useEffect, useState } from 'react'
 import { useCheckSimilarWorkQuery } from '../api/checkSimilarWords'
 import { useGetExamplesQuery } from '../api/getExamples';
 import { useSubmitWordMutation } from '../api/submitWord';
 import WebApp from '@twa-dev/sdk';
+import { ReloadIcon } from './ReloadIcon';
+import './AddWord.css';
 
 let timeout: number;
 
@@ -26,7 +28,6 @@ export const AddWord = () => {
     const submitWordMutation = useSubmitWordMutation() 
 
     const checkSimilarWordDebounced = debounce(() => checkSimilarWordQuery.refetch(), 1000)
-    const getExmaplesQueryDebounced = debounce(() => getExamplesQuery.refetch(), 1000)
 
     const onChangeWord = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.currentTarget.value
@@ -39,9 +40,6 @@ export const AddWord = () => {
     const onChangeTranslation = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.currentTarget.value
         setTranslation(value)
-        if (value) {
-            getExmaplesQueryDebounced()
-        }
     }
 
     const onChangeExample = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -73,6 +71,9 @@ export const AddWord = () => {
 
     return (
       <form onSubmit={onSubmit}>
+        <Title className="title" level="1" weight="2">
+          Add new word
+        </Title>
         <List>
           <Textarea
             name='english' 
@@ -87,14 +88,26 @@ export const AddWord = () => {
             disabled={isPending}
           />
           <Textarea 
-            name='examples'
-            header={i18n.examples} 
-            disabled={isPending}
-            value={example}
-            onChange={onChangeExample}
-          />
+                name='examples'
+                header={i18n.examples} 
+                disabled={isPending}
+                value={example}
+                onChange={onChangeExample}
+            />
+          <div className="generate-example-footer">
+            <Caption>Generate example</Caption>
+            <IconButton 
+                    size="s"
+                    mode="plain"
+                    onClick={() =>
+                    getExamplesQuery.refetch()
+                }>
+              <ReloadIcon size={18}/>
+            </IconButton>
+          </div>
           <Button 
             type='submit' 
+            stretched
             loading={isPending}
             >
             {i18n.save}
