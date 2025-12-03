@@ -41,8 +41,9 @@ module.exports = {
         'camelcase': 0,
         'require-jsdoc': 0, // Disable JSDoc requirement for TS files as types provide documentation
         '@typescript-eslint/no-explicit-any': 'warn', // Warn instead of error for now
-        '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
+        '@typescript-eslint/no-unused-vars': ['error', {'argsIgnorePattern': '^_'}],
       },
     },
   ],
 };
+
