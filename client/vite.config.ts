@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from "@tailwindcss/vite"
 
 const i18n = {
     en: {
@@ -29,6 +30,9 @@ export default defineConfig(({mode}) => ({
   build: {
       outDir: `./dist/${mode}`,
   },
-  plugins: [react()],
+  plugins: [
+        tailwindcss(),
+        react()
+  ],
 }))
 

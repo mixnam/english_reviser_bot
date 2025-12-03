@@ -1,12 +1,11 @@
 import {useSearchParams} from 'react-router-dom'
-import {List, Button, Textarea, Title,  Section,  Caption, IconButton} from '@telegram-apps/telegram-ui'
+import {List, Button, Textarea, Title,  Caption, IconButton} from '@telegram-apps/telegram-ui'
 import React, { useEffect, useState } from 'react'
 import { useCheckSimilarWorkQuery } from '../api/checkSimilarWords'
 import { useGetExamplesQuery } from '../api/getExamples';
 import { useSubmitWordMutation } from '../api/submitWord';
 import WebApp from '@twa-dev/sdk';
 import { ReloadIcon } from './ReloadIcon';
-import './AddWord.css';
 
 let timeout: number;
 
@@ -71,7 +70,7 @@ export const AddWord = () => {
 
     return (
       <form onSubmit={onSubmit}>
-        <Title className="title" level="1" weight="2">
+        <Title className="text-center pb-5" level="1" weight="2">
           Add new word
         </Title>
         <List>
@@ -94,7 +93,7 @@ export const AddWord = () => {
                 value={example}
                 onChange={onChangeExample}
             />
-          <div className="generate-example-footer">
+          <div className="flex items-center justify-between px-[22px] pb-2 -mt-5">
             <Caption>Generate example</Caption>
             <IconButton 
                     size="s"
