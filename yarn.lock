@@ -2724,6 +2724,40 @@ __metadata:
   languageName: node
   linkType: hard
 
+"client@workspace:client":
+  version: 0.0.0-use.local
+  resolution: "client@workspace:client"
+  dependencies:
+    "@eslint/js": "npm:^9.5.0"
+    "@tailwindcss/vite": "npm:^4.1.17"
+    "@tanstack/react-query": "npm:^5.45.1"
+    "@telegram-apps/telegram-ui": "npm:^2.1.4"
+    "@twa-dev/sdk": "npm:^7.0.0"
+    "@types/eslint__js": "npm:^8.42.3"
+    "@types/react": "npm:^18.3.3"
+    "@types/react-dom": "npm:^18.3.0"
+    "@typescript-eslint/eslint-plugin": "npm:^7.13.1"
+    "@typescript-eslint/parser": "npm:^7.13.1"
+    "@vitejs/plugin-react": "npm:^4.3.1"
+    eslint: "npm:^8.57.0"
+    eslint-config-prettier: "npm:^10.1.8"
+    eslint-config-xo: "npm:^0.45.0"
+    eslint-config-xo-typescript: "npm:^4.0.0"
+    eslint-plugin-prettier: "npm:^5.5.4"
+    eslint-plugin-react: "npm:^7.34.3"
+    eslint-plugin-react-hooks: "npm:^4.6.2"
+    eslint-plugin-react-refresh: "npm:^0.4.7"
+    prettier: "npm:^3.7.4"
+    react: "npm:^18.0.0"
+    react-dom: "npm:^18.0.0"
+    react-router-dom: "npm:^6.23.1"
+    tailwindcss: "npm:^4.1.17"
+    typescript: "npm:^5.5.2"
+    typescript-eslint: "npm:^7.13.1"
+    vite: "npm:^5.3.1"
+  languageName: unknown
+  linkType: soft
+
 "cliui@npm:^8.0.1":
   version: 8.0.1
   resolution: "cliui@npm:8.0.1"
@@ -5626,38 +5660,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"my-react-telegram-web-app@workspace:client":
-  version: 0.0.0-use.local
-  resolution: "my-react-telegram-web-app@workspace:client"
-  dependencies:
-    "@eslint/js": "npm:^9.5.0"
-    "@tanstack/react-query": "npm:^5.45.1"
-    "@telegram-apps/telegram-ui": "npm:^2.1.4"
-    "@twa-dev/sdk": "npm:^7.0.0"
-    "@types/eslint__js": "npm:^8.42.3"
-    "@types/react": "npm:^18.3.3"
-    "@types/react-dom": "npm:^18.3.0"
-    "@typescript-eslint/eslint-plugin": "npm:^7.13.1"
-    "@typescript-eslint/parser": "npm:^7.13.1"
-    "@vitejs/plugin-react": "npm:^4.3.1"
-    eslint: "npm:^8.57.0"
-    eslint-config-prettier: "npm:^10.1.8"
-    eslint-config-xo: "npm:^0.45.0"
-    eslint-config-xo-typescript: "npm:^4.0.0"
-    eslint-plugin-prettier: "npm:^5.5.4"
-    eslint-plugin-react: "npm:^7.34.3"
-    eslint-plugin-react-hooks: "npm:^4.6.2"
-    eslint-plugin-react-refresh: "npm:^0.4.7"
-    prettier: "npm:^3.7.4"
-    react: "npm:^18.0.0"
-    react-dom: "npm:^18.0.0"
-    react-router-dom: "npm:^6.23.1"
-    typescript: "npm:^5.5.2"
-    typescript-eslint: "npm:^7.13.1"
-    vite: "npm:^5.3.1"
-  languageName: unknown
-  linkType: soft
-
 "nanoid@npm:^3.3.11":
   version: 3.3.11
   resolution: "nanoid@npm:3.3.11"
@@ -5771,9 +5773,6 @@ __metadata:
 "notion-revise-words@workspace:.":
   version: 0.0.0-use.local
   resolution: "notion-revise-words@workspace:."
-  dependencies:
-    "@tailwindcss/vite": "npm:^4.1.17"
-    tailwindcss: "npm:^4.1.17"
   languageName: unknown
   linkType: soft
 

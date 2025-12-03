@@ -8,13 +8,9 @@
     "pt_deploy"
   ],
   "scripts": {
-    "client:dev": "yarn workspace my-react-telegram-web-app dev",
+    "client:dev": "yarn workspace client dev",
     "server:api": "yarn workspace server api",
     "server:telegram": "yarn workspace server telegram"
   },
-  "packageManager": "yarn@4.12.0",
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.1.17",
-    "tailwindcss": "^4.1.17"
-  }
+  "packageManager": "yarn@4.12.0"
 }
