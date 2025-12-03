@@ -1,1 +1,1 @@
-export * from "./AddWord"
+export * from "./AddWord";

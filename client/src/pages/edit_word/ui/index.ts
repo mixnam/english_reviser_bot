@@ -1,1 +1,1 @@
-export * from './EditWord'
+export * from "./EditWord";

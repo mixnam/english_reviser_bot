@@ -12,5 +12,9 @@
     "server:api": "yarn workspace server api",
     "server:telegram": "yarn workspace server telegram"
   },
-  "packageManager": "yarn@4.12.0"
+  "packageManager": "yarn@4.12.0",
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.17",
+    "tailwindcss": "^4.1.17"
+  }
 }
