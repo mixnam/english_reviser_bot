@@ -1,9 +1,10 @@
 import dotenv from 'dotenv';
+dotenv.config({path: '.env.dev', debug: true});
+
 import {fileURLToPath} from 'node:url';
 import {Bot} from './src/telegram.js';
 import {Api} from './src/api/api.js';
 
-dotenv.config({path: '.env.dev', debug: true});
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 

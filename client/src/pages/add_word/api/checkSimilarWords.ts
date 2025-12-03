@@ -5,6 +5,10 @@ import WebApp from "@twa-dev/sdk";
 
 const CHECK_SIMILAR_WORD_KEY = "check_similar_word_key";
 
+type Data = {
+  words: string[];
+} | null;
+
 export const useCheckSimilarWorkQuery = ({
   word,
   chatID,
@@ -12,7 +16,7 @@ export const useCheckSimilarWorkQuery = ({
   word: string;
   chatID: string;
 }) => {
-  return useQuery({
+  return useQuery<Data>({
     queryKey: [CHECK_SIMILAR_WORD_KEY, chatID, word],
     queryFn: async () => {
       const response = await fetch(
@@ -31,6 +35,7 @@ export const useCheckSimilarWorkQuery = ({
 
       return response;
     },
+    initialData: null,
     enabled: false,
   });
 };

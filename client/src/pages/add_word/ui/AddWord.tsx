@@ -88,9 +88,10 @@ export const AddWord = () => {
 
   const isPending =
     checkSimilarWordQuery.isFetching || getExamplesQuery.isFetching;
+  const isDisabled = !word || !translation;
 
   return (
-    <form onSubmit={onSubmit}>
+    <form className="w-full h-full flex flex-col p-4" onSubmit={onSubmit}>
       <Title className="text-center pb-5" level="1" weight="2">
         Add new word
       </Title>
@@ -100,7 +101,18 @@ export const AddWord = () => {
           header={i18n.word}
           onChange={onChangeWord}
           disabled={isPending}
+          status={
+            checkSimilarWordQuery.data?.words.length ? "error" : undefined
+          }
         />
+        {!!checkSimilarWordQuery.data?.words.length && (
+          <div className="flex items-center text-red-600 justify-between px-[22px] pb-2 -mt-3 z-50">
+            <Caption>
+              You have similar words added:{" "}
+              {checkSimilarWordQuery.data.words.join(",")}
+            </Caption>
+          </div>
+        )}
         <Textarea
           name="translation"
           header={i18n.translation}
@@ -119,15 +131,24 @@ export const AddWord = () => {
           <IconButton
             size="s"
             mode="plain"
+            type="button"
             onClick={() => getExamplesQuery.refetch()}
           >
             <ReloadIcon size={18} />
           </IconButton>
         </div>
-        <Button type="submit" stretched loading={isPending}>
+      </List>
+      <div className="flex flex-1 flex-col justify-end">
+        <Button
+          className="max-h-12"
+          type="submit"
+          stretched
+          disabled={isDisabled}
+          loading={isPending}
+        >
           {i18n.save}
         </Button>
-      </List>
+      </div>
     </form>
   );
 };
