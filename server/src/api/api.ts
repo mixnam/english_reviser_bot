@@ -9,9 +9,10 @@ import {ObjectId} from 'mongodb';
 
 import {Bot} from '../telegram.js';
 import {verifyTelegramWebAppData} from './verify.js';
-import {getSpelcheckSuggestions, Progress} from '../repo/words.js';
+import {getSpelcheckSuggestions, Progress, Word} from '../repo/words.js';
 import {getUserByChatID} from '../repo/users.js';
 import {OpenAIExamplesService} from '../services/openAIExamples.js';
+import {minusDaysFromNow} from '../repo/utils.js';
 
 /**
  * Api
@@ -173,13 +174,14 @@ class Api {
 
       const {word, translation, example} = req.body;
 
-      const newWord = {
-        _id: new ObjectId().toString(),
-        userID: user._id,
-        English: word,
-        Translation: translation,
-        Examples: example,
-        Progress: Progress.HaveProblems,
+      const newWord: Word = {
+        '_id': new ObjectId().toString(),
+        'userID': user._id,
+        'English': word,
+        'Translation': translation,
+        'Examples': example,
+        'Progress': Progress.HaveProblems,
+        'Last Revised': minusDaysFromNow(30),
       };
 
       try {
