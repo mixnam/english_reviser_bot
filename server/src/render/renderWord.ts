@@ -61,7 +61,7 @@ const renderWordWithCustomStatus = (word: Word, status?: string): string => {
 
   return `
 *${languageTokenMap[languageToken].wordLabel}:*
-${english} ${status ? `\- ${status}` : ''}
+${english} ${status ? `\\- ${status}` : ''}
 ${examples ? `
 *${languageTokenMap[languageToken].examplesLabel}:*
 ${examples}
