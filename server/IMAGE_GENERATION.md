@@ -3,7 +3,7 @@
 This document outlines the steps to implement the AI-powered image generation feature for new words via the Web App API.
 
 ## Goal
-Allow users to generate an illustrative image for a word they are learning using OpenAI (DALL-E) via the Web App.
+Allow users to generate an illustrative image for a word they are learning using OpenAI (DALL-E or similar models like `gpt-image-1`) via the Web App.
 
 ## 1. Server-Side Changes
 
@@ -16,11 +16,13 @@ Create a new service file `src/services/openAIImage.ts` to handle interactions w
     *   Use the OpenAI Node.js client `client.images.generate`.
     *   **Prompt Strategy**: Construct a prompt (e.g., "A simple, iconic illustration representing the word '[word]' (meaning: [translation]). Minimalist, clear, white background.").
     *   **Parameters**:
-        *   `model`: `dall-e-3` (or `dall-e-2` for speed/cost).
+        *   `model`: Process `process.env.OPENAI_IMAGE_MODEL` (defaults to `dall-e-3`).
+            *   *Note*: If using `gpt-image-1` (provided it follows the standard Image API), this parameter will handle it.
         *   `n`: 1
-        *   `size`: `1024x1024` (or smaller if allowed by model).
-        *   `response_format`: `'url'` (Default).
-    *   **Return Value**: The OpenAI API returns a temporary public URL (hosted on OpenAI's servers) valid for 60 minutes. The service will return this string directly.
+        *   `size`: `1024x1024` (Standard for DALL-E 3).
+        *   `response_format`: `'url'`
+            *   *Explanation*: OpenAI generates the image and hosts it at a temporary URL (valid for ~60 mins). We return this URL directly to the client.
+    *   **Return Value**: The temporary public URL string.
 
 ### 1.2. Update API Endpoints (`src/api/api.ts`)
 Expose the image generation capability and update the save logic to handle the generated image.
@@ -62,4 +64,4 @@ Expose the image generation capability and update the save logic to handle the g
 *   **OpenAI SDK**: Existing `openai` package is sufficient.
 *   **Environment**:
     *   `OPENAI_API_KEY`: Already exists.
-    *   `OPENAI_IMAGE_MODEL`: Optional env var (default to `dall-e-3`).
+    *   `OPENAI_IMAGE_MODEL`: New variable. Set to `gpt-image-1` or `dall-e-3` (default).
