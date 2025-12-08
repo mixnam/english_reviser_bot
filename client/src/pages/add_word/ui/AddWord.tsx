@@ -11,6 +11,7 @@ import React, { useEffect, useState } from "react";
 import { useCheckSimilarWorkQuery } from "../api/checkSimilarWords";
 import { useGetExamplesQuery } from "../api/getExamples";
 import { useSubmitWordMutation } from "../api/submitWord";
+import { useSearchImagesQuery } from "../api/searchImages";
 import WebApp from "@twa-dev/sdk";
 import { ReloadIcon } from "./ReloadIcon";
 
@@ -28,6 +29,7 @@ export const AddWord = () => {
   const [word, setWord] = useState("");
   const [translation, setTranslation] = useState("");
   const [example, setExample] = useState("");
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
 
   const checkSimilarWordQuery = useCheckSimilarWorkQuery({
     chatID: chatIDParam ?? "",
@@ -38,6 +40,12 @@ export const AddWord = () => {
     word,
     translation,
   });
+  const searchImagesQuery = useSearchImagesQuery({
+    chatID: chatIDParam ?? "",
+    word,
+    translation,
+  });
+
   const submitWordMutation = useSubmitWordMutation();
 
   const checkSimilarWordDebounced = debounce(
@@ -71,6 +79,7 @@ export const AddWord = () => {
         word,
         translation,
         example,
+        imageUrl: selectedImageUrl,
       },
       {
         onSuccess: () => {
@@ -87,7 +96,10 @@ export const AddWord = () => {
   }, [getExamplesQuery.data]);
 
   const isPending =
-    checkSimilarWordQuery.isFetching || getExamplesQuery.isFetching;
+    checkSimilarWordQuery.isFetching ||
+    getExamplesQuery.isFetching ||
+    searchImagesQuery.isFetching;
+
   const isDisabled = !word || !translation;
 
   return (
@@ -137,6 +149,36 @@ export const AddWord = () => {
             <ReloadIcon size={18} />
           </IconButton>
         </div>
+
+        <div className="flex items-center justify-between px-[22px] pt-4 pb-2">
+          <Caption>Search Image</Caption>
+          <IconButton
+            size="s"
+            mode="plain"
+            type="button"
+            onClick={() => searchImagesQuery.refetch()}
+          >
+            <ReloadIcon size={18} />
+          </IconButton>
+        </div>
+
+        {!!searchImagesQuery.data?.urls.length && (
+          <div className="flex gap-2 overflow-x-auto px-[22px] pb-4">
+            {searchImagesQuery.data.urls.map((url) => (
+              <div
+                key={url}
+                className={`shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden ${selectedImageUrl === url ? "border-[#007aff]" : "border-transparent"}`}
+                onClick={() => setSelectedImageUrl(url)}
+              >
+                <img
+                  src={url}
+                  alt="result"
+                  className="h-24 w-24 object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </List>
       <div className="flex flex-1 flex-col justify-end">
         <Button

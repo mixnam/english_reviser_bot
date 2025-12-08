@@ -159,7 +159,7 @@ class Api {
       }
     }>('/chat/:chat_id/word/image/search', async (req, res) => {
       const {word} = req.body;
-      const query = `${word} illustration`;
+      const query = `${word} ilustração`;
 
       const images = await GoogleImageService.getInstance().searchImages(
           query,
