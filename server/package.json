@@ -11,7 +11,7 @@
     "webhook:on": "node ./scripts/setWebhook.js",
     "check-types": "tsc --noEmit",
     "build": "tsc",
-    "tmp": "tsx ./scripts/generateImageTest.ts"
+    "tmp": "tsx ./scripts/searchImageTest.ts"
   },
   "author": "",
   "license": "ISC",

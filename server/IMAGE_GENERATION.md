@@ -1,67 +1,67 @@
-# Image Generation Feature Plan (v0 - API Only)
+# Image Search Feature Plan (Google Custom Search)
 
-This document outlines the steps to implement the AI-powered image generation feature for new words via the Web App API.
+This document outlines the steps to implement an image search feature for new words using the Google Custom Search API, replacing the previously planned AI generation.
 
 ## Goal
-Allow users to generate an illustrative image for a word they are learning using OpenAI (DALL-E or similar models like `gpt-image-1`) via the Web App.
+Allow users to search for and select an illustrative image for a word they are learning using Google Images.
 
-## 1. Server-Side Changes
+## 1. Prerequisites (Google Cloud Setup)
+Before implementation, the following credentials are required:
+1.  **Google Cloud Project**: Create a project in the Google Cloud Console.
+2.  **Enable API**: Enable the "Custom Search API".
+3.  **API Key**: Create a credential (API Key) restricted to this API.
+4.  **Programmable Search Engine (CSE)**:
+    *   Go to [Programmable Search Engine](https://programmablesearchengine.google.com/).
+    *   Create a new engine.
+    *   Enable "Image search" in the settings.
+    *   Set "Sites to search" to "Search the entire web" (or restrict as needed).
+    *   Get the **Search Engine ID (cx)**.
 
-### 1.1. Create `OpenAIImageService`
-Create a new service file `src/services/openAIImage.ts` to handle interactions with the OpenAI Images API.
+## 2. Server-Side Changes
 
-*   **Class**: `OpenAIImageService`
-*   **Method**: `generateImage(word: string, translation: string, logger: Logger): Promise<string | null | Error>`
+### 2.1. Create `GoogleImageService`
+Create a new service file `src/services/googleImage.ts`.
+
+*   **Class**: `GoogleImageService`
+*   **Method**: `searchImages(query: string, logger: Logger): Promise<string[] | Error>`
 *   **Mechanism**:
-    *   Use the OpenAI Node.js client `client.images.generate`.
-    *   **Prompt Strategy**: Construct a prompt (e.g., "A simple, iconic illustration representing the word '[word]' (meaning: [translation]). Minimalist, clear, white background.").
-    *   **Parameters**:
-        *   `model`: Process `process.env.OPENAI_IMAGE_MODEL` (defaults to `dall-e-3`).
-            *   *Note*: If using `gpt-image-1` (provided it follows the standard Image API), this parameter will handle it.
-        *   `n`: 1
-        *   `size`: `1024x1024` (Standard for DALL-E 3).
-        *   `response_format`: `'url'`
-            *   *Explanation*: OpenAI generates the image and hosts it at a temporary URL (valid for ~60 mins). We return this URL directly to the client.
-    *   **Return Value**: The temporary public URL string.
+    *   Make a GET request to `https://www.googleapis.com/customsearch/v1`.
+    *   **Query Parameters**:
+        *   `key`: `process.env.GOOGLE_SEARCH_API_KEY`
+        *   `cx`: `process.env.GOOGLE_SEARCH_ENGINE_ID`
+        *   `q`: The search query (e.g., `word`).
+        *   `searchType`: `image`
+        *   `num`: `3` (Number of results to return).
+        *   `safe`: `active` (SafeSearch).
+    *   **Return Value**: An array of image URLs (`items[].link`).
 
-### 1.2. Update API Endpoints (`src/api/api.ts`)
-Expose the image generation capability and update the save logic to handle the generated image.
+### 2.2. Update API Endpoints (`src/api/api.ts`)
 
-*   **New Endpoint**: `POST /chat/:chat_id/word/image`
+*   **New Endpoint**: `POST /chat/:chat_id/word/image/search`
     *   **Body**: `{ word: string, translation: string }`
-    *   **Action**: Calls `OpenAIImageService.generateImage`.
-    *   **Response**: `{ url: string }` (The temporary OpenAI URL).
-    *   **Details**: This endpoint does *not* save the image to our database yet. It just proxies the generation request.
+    *   **Action**:
+        *   Construct a query (e.g., `word + " illustration"` or just `word`).
+        *   Call `GoogleImageService.searchImages`.
+    *   **Response**: `{ urls: string[] }` (A list of 3-5 image URLs).
 
 *   **Update Endpoint**: `POST /chat/:chat_id/word/save`
-    *   **Body Update**: Accept optional `imageUrl` (string) field.
+    *   **Body Update**: Accept `imageUrl` (string).
     *   **Logic**:
-        *   If `imageUrl` is present:
-            1.  **Fetch**: Perform a server-side HTTP GET request to the provided `imageUrl` (using `fetch`) to retrieve the image binary data.
-            2.  **Stream**: Convert the response body to a Readable Stream.
-            3.  **Save**: Call `uploadPicture` (from `src/repo/files.ts`) passing the stream.
-            4.  **Link**: Set `PictureFileName` in the new `Word` object to the returned filename from `uploadPicture`.
-        *   Proceed with existing saving logic (saving word metadata to MongoDB).
+        *   (Existing logic from previous plan applies here)
+        *   Download the image from the selected `imageUrl`.
+        *   Save to GridFS.
+        *   Link to the Word.
 
-## 2. Client-Side Changes (Web App)
+## 3. Client-Side Changes (Web App)
 
-*> Note: These changes are to be applied in the separate Web App codebase.*
+### 3.1. UI Update
+*   **"Search Image" Button**: Replaces "Generate Image".
+*   **Carousel/Grid**: Display the returned images (thumbnails).
+*   **Selection**: User clicks an image to select it (highlight it).
 
-### 2.1. UI Update
-*   In the "Add Word" form, add a **"Generate Image"** button.
-*   Add an image preview area to display the image from the returned URL.
+### 3.2. Logic
+*   Call search endpoint -> Get list -> Show list -> User Selects -> Save endpoint sends selected URL.
 
-### 2.2. Logic Update
-*   **On "Generate Image" Click**:
-    *   Call `POST /chat/:chat_id/word/image`.
-    *   Receive the temporary URL.
-    *   Display it in an `<img>` tag.
-    *   Store the URL in the component state.
-*   **On Form Submit**:
-    *   Pass the stored `imageUrl` in the payload to `POST /chat/:chat_id/word/save`.
-
-## 3. Dependencies & Config
-*   **OpenAI SDK**: Existing `openai` package is sufficient.
-*   **Environment**:
-    *   `OPENAI_API_KEY`: Already exists.
-    *   `OPENAI_IMAGE_MODEL`: New variable. Set to `gpt-image-1` or `dall-e-3` (default).
+## 4. Environment Variables
+*   `GOOGLE_SEARCH_API_KEY`: New.
+*   `GOOGLE_SEARCH_ENGINE_ID`: New.
