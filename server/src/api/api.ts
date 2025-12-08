@@ -12,6 +12,7 @@ import {verifyTelegramWebAppData} from './verify.js';
 import {getSpelcheckSuggestions, Progress, Word} from '../repo/words.js';
 import {getUserByChatID} from '../repo/users.js';
 import {OpenAIExamplesService} from '../services/openAIExamples.js';
+import * as GoogleImageService from '../services/googleImage.js';
 import {minusDaysFromNow} from '../repo/utils.js';
 
 /**
@@ -131,13 +132,6 @@ class Api {
         translate: string;
       }
     }>('/chat/:chat_id/word/example', async (req, res) => {
-      const user = await getUserByChatID(Number.parseInt(req.params.chat_id), this.#logger);
-      if (user instanceof Error) {
-        this.#logger.error(user);
-        res.code(500).send();
-        return;
-      }
-
       const {word, translate} = req.body;
 
       const aiExample = await OpenAIExamplesService.generateExampleSentence(
@@ -153,6 +147,32 @@ class Api {
       }
 
       res.code(200).send(JSON.stringify({example: aiExample}));
+    });
+
+    this.#server.post<{
+      Params: {
+        chat_id: string;
+      },
+      Body: {
+        word: string;
+        translation: string;
+      }
+    }>('/chat/:chat_id/word/image/search', async (req, res) => {
+      const {word} = req.body;
+      const query = `${word} illustration`;
+
+      const images = await GoogleImageService.getInstance().searchImages(
+          query,
+          this.#logger,
+      );
+
+      if (images instanceof Error) {
+        this.#logger.error(images);
+        res.code(500).send();
+        return;
+      }
+
+      res.code(200).send(JSON.stringify({urls: images}));
     });
 
     this.#server.post<{

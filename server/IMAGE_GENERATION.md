@@ -1,4 +1,4 @@
-# Image Search Feature Plan (Google Custom Search)
+# Image Generation Feature Plan (Google Custom Search)
 
 This document outlines the steps to implement an image search feature for new words using the Google Custom Search API, replacing the previously planned AI generation.
 
