@@ -10,11 +10,13 @@ export const useSubmitWordMutation = () => {
       word,
       translation,
       example,
+      imageUrl,
     }: {
       chatID: string;
       word: string;
       translation: string;
       example: string | null;
+      imageUrl: string | null;
     }) => {
       return fetch(`${API_BASE_URL}/chat/${chatID}/word/save`, {
         method: "POST",
@@ -26,6 +28,7 @@ export const useSubmitWordMutation = () => {
           word,
           translation,
           example,
+          imageUrl,
         }),
       });
     },

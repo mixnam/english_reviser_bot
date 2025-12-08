@@ -10,7 +10,8 @@
     "webhook:off": "node ./scripts/removeWebhook.js",
     "webhook:on": "node ./scripts/setWebhook.js",
     "check-types": "tsc --noEmit",
-    "build": "tsc"
+    "build": "tsc",
+    "tmp": "tsx ./scripts/searchImageTest.ts"
   },
   "author": "",
   "license": "ISC",
