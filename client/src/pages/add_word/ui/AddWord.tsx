@@ -150,7 +150,7 @@ export const AddWord = () => {
           </IconButton>
         </div>
 
-        <div className="flex items-center justify-between px-[22px] pt-4 pb-2">
+        <div className="flex items-center justify-between px-[22px]">
           <Caption>Search Image</Caption>
           <IconButton
             size="s"

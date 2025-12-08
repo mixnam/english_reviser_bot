@@ -183,6 +183,7 @@ class Api {
         word: string;
         translation: string;
         example: string | null;
+        imageUrl: string | null;
       }
     }>('/chat/:chat_id/word/save', async (req, res) => {
       const user = await getUserByChatID(Number.parseInt(req.params.chat_id), this.#logger);
@@ -192,7 +193,7 @@ class Api {
         return;
       }
 
-      const {word, translation, example} = req.body;
+      const {word, translation, example, imageUrl} = req.body;
 
       const newWord: Word = {
         '_id': new ObjectId().toString(),
@@ -210,6 +211,7 @@ class Api {
           payload: {
             chatID: Number.parseInt(req.params.chat_id),
             word: newWord,
+            imageUrl,
           },
         });
       } catch (err) {
