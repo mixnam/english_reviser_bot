@@ -64,7 +64,11 @@ class LearnCommand extends Command {
       return null;
     }
 
-    await this.sendLearnWordMessage(msg.chat.id, word, wordCount);
+    try {
+      await this.sendLearnWordMessage(msg.chat.id, word, wordCount);
+    } catch (err) {
+      this.logger.error({...ctx, err, wordID: word._id}, 'error sending word to learn');
+    }
     return null;
   };
 
