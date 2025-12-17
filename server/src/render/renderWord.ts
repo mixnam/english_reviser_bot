@@ -1,8 +1,8 @@
 import {escapeMarkdown} from 'telegram-escape';
 
-import {Progress, Word} from '../repo/words.js';
+import {Progress, Word, ProgressOrder} from '../repo/words.js';
 
-interface LanguageTranslations {
+type LanguageTranslations = {
   learned: string;
   activeLearning: string;
   needToRepeat: string;
@@ -11,6 +11,8 @@ interface LanguageTranslations {
   wordLabel: string;
   examplesLabel: string;
   translationLabel: string;
+  totalWordsLabel: string;
+  totalProgressLabel: string;
 }
 
 const languageTokenMap: {[key: string]: LanguageTranslations} = {
@@ -23,6 +25,8 @@ const languageTokenMap: {[key: string]: LanguageTranslations} = {
     wordLabel: 'Word',
     examplesLabel: 'Examples',
     translationLabel: 'Translation',
+    totalWordsLabel: 'Total words',
+    totalProgressLabel: 'Total progress',
   },
   pt: {
     learned: '*Aprendido 🟢*',
@@ -33,6 +37,8 @@ const languageTokenMap: {[key: string]: LanguageTranslations} = {
     wordLabel: 'Palavra',
     examplesLabel: 'Exemplos',
     translationLabel: 'Tradução',
+    totalWordsLabel: 'Total palavras',
+    totalProgressLabel: 'Progresso total',
   },
 };
 
@@ -46,7 +52,7 @@ const {
   haveProblems,
 } = languageTokenMap[languageToken];
 
-const mapWordProgressToStatus = {
+const mapWordProgressToStatus: Record<string, string> = {
   [Progress.Learned]: learned,
   [Progress.ActiveLearning]: activeLearning,
   [Progress.NeedToRepeat]: needToRepeat,
@@ -71,8 +77,61 @@ ${examples}
   `;
 };
 
+const renderWordsStats = (stats: Record<string, number>): string => {
+  let totalWords = 0;
+  Object.values(stats).forEach((count) => {
+    totalWords += count;
+  });
+
+  let message = `${languageTokenMap[languageToken].totalWordsLabel}: ${totalWords}\n\n`;
+
+
+  const wordWeight = ProgressOrder.length;
+  const targetWeight = totalWords * wordWeight;
+  let currentWeight = 0;
+
+  const progressWeightMap = ProgressOrder.reduce(({result, weight}, progress) => {
+    return {
+      result: {
+        ...result,
+        [progress]: weight - 1,
+      },
+      weight: weight - 1,
+    };
+  }, {
+    result: {},
+    weight: ProgressOrder.length - 1,
+  }).result;
+
+  ProgressOrder.toReversed().forEach((progress) => {
+    const count = stats[progress] || 0;
+    currentWeight += count * progressWeightMap[progress];
+    if (count > 0) {
+      const percentage = ((count / totalWords) * 100).toFixed(1);
+      const statusLabel = mapWordProgressToStatus[progress] || progress;
+      message += `${statusLabel}: ${escapeMarkdown(`${count} (${percentage}%)`)}\n`;
+    }
+  });
+
+  const progressPersentage = Math.round((currentWeight / targetWeight) * 100);
+  const done = Math.floor(progressPersentage / 10);
+  console.log(done);
+  const left = 10 - done;
+  const progressBar = [
+    ...Array.from({length: done}, () => '🟦'),
+    ...Array.from({length: left}, () => '⬜️'),
+  ].join('');
+
+
+  message +=`\n\n${languageTokenMap[languageToken].totalProgressLabel}: ${progressBar} ${escapeMarkdown(`(${progressPersentage}%)`)}`;
+
+  return message;
+};
+
+
 export {
   renderWordWithCustomStatus,
   mapWordProgressToStatus,
+  renderWordsStats,
 };
 

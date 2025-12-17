@@ -370,6 +370,40 @@ const getSpelcheckSuggestions = executionTime(
       }
     });
 
+const getWordsStats = executionTime(
+    'getWordsStats',
+    async (userID: string, logger: Logger): Promise<Error | Record<string, number>> => {
+      const db = await getDb(logger);
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      try {
+        const pipeline = [
+          {
+            $match: {
+              userID: userID,
+            },
+          },
+          {
+            $group: {
+              _id: '$Progress',
+              count: {$sum: 1},
+            },
+          },
+        ];
+
+        const result = await words.aggregate(pipeline).toArray();
+        const stats: Record<string, number> = {};
+        result.forEach((item) => {
+          if (item._id) {
+            stats[item._id] = item.count;
+          }
+        });
+        return stats;
+      } catch (err) {
+        return new Error(`[repo][getWordsStats] - ${err}`);
+      }
+    });
+
 
 export {
   ProgressOrder,
@@ -387,4 +421,5 @@ export {
   setWordTelegramPictureID,
   setWordPictureName,
   updateWord,
+  getWordsStats,
 };
