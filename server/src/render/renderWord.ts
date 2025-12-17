@@ -103,7 +103,7 @@ const renderWordsStats = (stats: Record<string, number>): string => {
     weight: ProgressOrder.length - 1,
   }).result;
 
-  ProgressOrder.toReversed().forEach((progress) => {
+  [...ProgressOrder].reverse().forEach((progress) => {
     const count = stats[progress] || 0;
     currentWeight += count * progressWeightMap[progress];
     if (count > 0) {
