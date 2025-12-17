@@ -86,7 +86,7 @@ const renderWordsStats = (stats: Record<string, number>): string => {
   let message = `${languageTokenMap[languageToken].totalWordsLabel}: ${totalWords}\n\n`;
 
 
-  const wordWeight = ProgressOrder.length;
+  const wordWeight = ProgressOrder.length - 1;
   const targetWeight = totalWords * wordWeight;
   let currentWeight = 0;
 
@@ -115,7 +115,6 @@ const renderWordsStats = (stats: Record<string, number>): string => {
 
   const progressPersentage = Math.round((currentWeight / targetWeight) * 100);
   const done = Math.floor(progressPersentage / 10);
-  console.log(done);
   const left = 10 - done;
   const progressBar = [
     ...Array.from({length: done}, () => '🟦'),
