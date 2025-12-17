@@ -21,6 +21,7 @@ interface LanguageTranslations {
   renderDoYouWantToAddPicture: () => string;
   renderYouAreAddingExistingWord: (word: string) => string;
   renderYouJustAddedNewWord: (word: Word) => string;
+  renderNoWordsFound: () => string;
 }
 
 const languageTokenMap: {[key: string]: LanguageTranslations} = {
@@ -50,6 +51,7 @@ There are already some similar words in your word list\\. Did you forget about t
 Click on the correct word to move it to the 'Have Problems' state, or click 'Continue' if you are adding new word`,
     renderYouJustAddedNewWord: (word) => `You just added new word 🎉: 
 ${renderWordWithCustomStatus(word)}`,
+    renderNoWordsFound: () => 'You have no words yet.',
   },
   pt: {
     renderNoMoreWordsToLearnForToday: () => `Cobriu todas as palavras designadas para aprendizado hoje 🎉
@@ -77,6 +79,7 @@ Já existem palavras semelhantes em sua lista de palavras\\. Esqueceu delas?
 Clique na palavra correta para movê\-la para o estado 'Tem Problemas', ou clique em 'Continuar' se estiver adicionando uma nova palavra`,
     renderYouJustAddedNewWord: (word) => `Acabou de adicionar uma nova palavra 🎉: 
 ${renderWordWithCustomStatus(word)}`,
+    renderNoWordsFound: () => 'Ainda não tem palavras.',
   },
 };
 
@@ -100,6 +103,7 @@ const {
   renderDoYouWantToAddPicture,
   renderYouAreAddingExistingWord,
   renderYouJustAddedNewWord,
+  renderNoWordsFound,
 } = translations;
 
 export {
@@ -120,6 +124,6 @@ export {
   renderDoYouWantToAddPicture,
   renderYouAreAddingExistingWord,
   renderYouJustAddedNewWord,
+  renderNoWordsFound,
 };
-
 export default translations;

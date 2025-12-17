@@ -6,6 +6,7 @@ import {ReviseCommand, ReviseCallbackId} from './commands/revise.js';
 import {LearnCommand, LearnCallbackId} from './commands/learn.js';
 import {TestCommand} from './commands/test.js';
 import {StartCommand} from './commands/start.js';
+import {StatsCommand} from './commands/stats.js';
 import {forceTransition} from './flows/processor/index.js';
 import {AddCommand} from './commands/add.js';
 import {EditWordCommand, EditWordMsg} from './webAppCommands/editWord.js';
@@ -24,6 +25,7 @@ class Bot {
   private learnCommand: LearnCommand;
   private testCommand: TestCommand;
   private startCommand: StartCommand;
+  private statsCommand: StatsCommand;
   private addCommand: AddCommand;
   private editLearnWordWebAppCommand: EditWordCommand;
   private addWordWebAppCommand: AddWordCommand;
@@ -44,6 +46,7 @@ class Bot {
     this.reviseCommand = new ReviseCommand(this.bot, this.logger);
     this.learnCommand = new LearnCommand(this.bot, this.logger);
     this.startCommand = new StartCommand(this.bot, this.logger);
+    this.statsCommand = new StatsCommand(this.bot, this.logger);
     this.addCommand = new AddCommand(this.bot, this.logger);
 
     this.testCommand = new TestCommand(this.bot, this.logger);
@@ -87,6 +90,9 @@ class Bot {
           break;
         case '/learn':
           await this.learnCommand.processMsg(msg);
+          break;
+        case '/stats':
+          await this.statsCommand.processMsg(msg);
           break;
         case '/add':
           await this.addCommand.processMsg(msg);
