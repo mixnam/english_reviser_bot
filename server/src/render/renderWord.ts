@@ -1,6 +1,7 @@
 import {escapeMarkdown} from 'telegram-escape';
 
 import {Progress, Word, ProgressOrder} from '../repo/words.js';
+import {reverse} from 'dns';
 
 type LanguageTranslations = {
   learned: string;
@@ -83,6 +84,7 @@ const renderWordsStats = (stats: Record<string, number>): string => {
     totalWords += count;
   });
 
+
   let message = `${languageTokenMap[languageToken].totalWordsLabel}: ${totalWords}\n\n`;
 
 
@@ -90,11 +92,13 @@ const renderWordsStats = (stats: Record<string, number>): string => {
   const targetWeight = totalWords * wordWeight;
   let currentWeight = 0;
 
-  const progressWeightMap = ProgressOrder.reduce(({result, weight}, progress) => {
+  const reversedProgressOrder = [...ProgressOrder].reverse();
+
+  const progressWeightMap = reversedProgressOrder.reduce(({result, weight}, progress) => {
     return {
       result: {
         ...result,
-        [progress]: weight - 1,
+        [progress]: weight,
       },
       weight: weight - 1,
     };
@@ -103,7 +107,7 @@ const renderWordsStats = (stats: Record<string, number>): string => {
     weight: ProgressOrder.length - 1,
   }).result;
 
-  [...ProgressOrder].reverse().forEach((progress) => {
+  reversedProgressOrder.forEach((progress) => {
     const count = stats[progress] || 0;
     currentWeight += count * progressWeightMap[progress];
     if (count > 0) {
