@@ -1,0 +1,77 @@
+name: Deploy Client to GCE
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Build mode (en or pt)'
+        required: true
+        default: 'pt'
+        type: choice
+        options:
+          - en
+          - pt
+      instance_name:
+        description: 'GCE Instance Name'
+        required: true
+        default: 'client-vm'
+      zone:
+        description: 'GCE Zone'
+        required: true
+        default: 'europe-west1-b'
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_REGION: europe-west1
+  # Using Container Registry (gcr.io) for simplicity, or Artifact Registry (pkg.dev)
+  # Change this to your Artifact Registry path if using GAR: europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/client
+  IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}/notion-revise-client
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - id: auth
+        name: Auth gcloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn workspaces focus client
+
+      - name: Build Client
+        run: yarn workspace client build:${{ inputs.mode }}
+
+      - name: Build Docker Image
+        working-directory: client
+        run: docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
+
+      - name: Push Docker Image
+        run: docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Deploy to Compute Engine
+        run: |
+          gcloud compute instances update-container ${{ inputs.instance_name }} \
+            --zone=${{ inputs.zone }} \
+            --container-image=${{ env.IMAGE_NAME }}:${{ github.sha }}
