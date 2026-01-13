@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { nitro } from "nitro/vite";
 
 const i18n = {
   en: {
@@ -18,15 +20,14 @@ const i18n = {
 };
 
 export default defineConfig(({ mode }) => ({
-  base: "./",
   server: {
     allowedHosts: ["fleet-bird-intent.ngrok-free.app"],
+  },
+  ssr: {
+    noExternal: ["@telegram-apps/telegram-ui"],
   },
   define: {
     i18n: i18n[mode === "dev" ? "en" : (mode as keyof typeof i18n)],
   },
-  build: {
-    outDir: `./dist/${mode}`,
-  },
-  plugins: [tailwindcss(), react()],
+  plugins: [tailwindcss(), tanstackStart(), nitro(), react()],
 }));

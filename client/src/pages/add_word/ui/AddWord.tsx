@@ -1,4 +1,3 @@
-import { useSearchParams } from "react-router-dom";
 import {
   List,
   Button,
@@ -22,9 +21,12 @@ const debounce = (callback: () => void, time: number) => () => {
   timeout = setTimeout(() => callback(), time);
 };
 
-export const AddWord = () => {
-  const [searchParams] = useSearchParams();
-  const chatIDParam = searchParams.get("chat_id");
+type Props = {
+  chatID: string;
+};
+
+export const AddWord = ({ chatID }: Props) => {
+  const chatIDParam = chatID;
 
   const [word, setWord] = useState("");
   const [translation, setTranslation] = useState("");

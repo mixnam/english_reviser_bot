@@ -1,5 +1,6 @@
 import { useSearchParams } from "react-router-dom";
-import { List, Button, Textarea } from "@telegram-apps/telegram-ui";
+import TGUI from "@telegram-apps/telegram-ui";
+const { List, Button, Textarea } = TGUI;
 import { EditableWord } from "../model";
 import { useSaveWordMutation } from "../api/saveWord";
 import React from "react";
