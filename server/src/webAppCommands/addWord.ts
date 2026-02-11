@@ -2,13 +2,12 @@ import TelegramBot from 'node-telegram-bot-api';
 import http from 'http';
 import https from 'https';
 import {IncomingMessage} from 'http';
-import {Readable} from 'stream';
 import {Logger} from 'pino';
 import {renderYouJustAddedNewWord} from '../render/renderTextMsg.js';
 import {addNewWord, setWordTelegramAudioID, Word} from '../repo/words.js';
-import {uploadPicture} from '../repo/files.js';
-import {TTSService} from '../tts/openaiTts.js';
+import * as TTSService from '../tts/openaiTts.js';
 import {WebAppCommand} from './webAppCommand.js';
+import * as GoogleCloudStorage from '../services/googleCloudStorage.js';
 
 export type AddWordPayload = {
   chatID: number;
@@ -36,7 +35,7 @@ class AddWordCommand extends WebAppCommand<AddWordMsg> {
     const [user, audio, imageResponse] = await Promise.all([
       this.getSessionUser(chatID),
 
-      TTSService.getAudioForText(word.Examples || word.English),
+      TTSService.getInstance().getAudioForText(word.Examples || word.English),
 
       imageUrl !== null ?
         new Promise<IncomingMessage | Error>((resolve) => {
@@ -62,24 +61,23 @@ class AddWordCommand extends WebAppCommand<AddWordMsg> {
       word.Audio = audio;
     }
 
-    let imageBuffer: Buffer | null = null;
-
     if (imageResponse && !(imageResponse instanceof Error)) {
       if (imageResponse.statusCode === 200) {
         try {
-          // Read stream to buffer
-          const chunks: Uint8Array[] = [];
-          for await (const chunk of imageResponse) {
-            chunks.push(chunk);
-          }
-          imageBuffer = Buffer.concat(chunks);
-
-          // Create new stream for upload
-          const fileStream = Readable.from(imageBuffer);
-          const fileName = await uploadPicture(fileStream, this.logger);
-          word.PictureFileName = fileName;
+          const imageURL = await GoogleCloudStorage.getInstance().upload(
+              imageResponse,
+              word._id,
+              this.logger,
+          );
+          word.ImageURL = imageURL;
         } catch (err) {
           this.logger.error({err, imageUrl}, 'Failed to process/upload picture');
+        }
+
+        try {
+          await this.bot.sendPhoto(user.chatID, imageResponse);
+        } catch (err) {
+          this.logger.error({err}, 'Failed to send photo to Telegram');
         }
       } else {
         this.logger.warn({statusCode: imageResponse.statusCode}, 'Image response not 200');
@@ -101,14 +99,6 @@ class AddWordCommand extends WebAppCommand<AddWordMsg> {
     }
 
     const actionText = renderYouJustAddedNewWord(word);
-
-    if (imageBuffer) {
-      try {
-        await this.bot.sendPhoto(user.chatID, imageBuffer);
-      } catch (err) {
-        this.logger.error({err}, 'Failed to send photo to Telegram');
-      }
-    }
 
     const sendMsgPromise = audio ?
     this.bot.sendVoice(user.chatID, Buffer.from(audio), {

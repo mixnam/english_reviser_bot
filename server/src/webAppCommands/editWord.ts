@@ -1,7 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import {Logger} from 'pino';
 import {updateWord, Word} from '../repo/words.js';
-import {TTSService} from '../tts/openaiTts.js';
+import * as TTSService from '../tts/openaiTts.js';
 import {WebAppCommand} from './webAppCommand.js';
 
 export interface EditWordPayload {
@@ -39,7 +39,7 @@ class EditWordCommand extends WebAppCommand<EditWordMsg> {
       return user;
     }
 
-    const audio = await TTSService.getAudioForText(word.English);
+    const audio = await TTSService.getInstance().getAudioForText(word.English);
 
     if (audio instanceof Error) {
       this.logger.error(audio);

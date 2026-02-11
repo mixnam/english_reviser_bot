@@ -1,6 +1,6 @@
 import {Step} from './step.js';
 import {addNewWord, setWordTelegramAudioID, Word} from '../../repo/words.js';
-import {TTSService} from '../../tts/openaiTts.js';
+import * as TTSService from '../../tts/openaiTts.js';
 import {renderYouJustAddedNewWord} from '../../render/renderTextMsg.js';
 
 const StepID = 'ADD_NEW_WORD_SUBBMIT';
@@ -18,7 +18,7 @@ class AddNewWordSubbmit extends Step {
       newWord.Examples :
       newWord.English;
 
-    const audio = await TTSService.getAudioForText(ttsText);
+    const audio = await TTSService.getInstance().getAudioForText(ttsText);
     if (audio instanceof Error) {
       return audio;
     } else {

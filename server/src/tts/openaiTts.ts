@@ -108,5 +108,5 @@ const getInstance = (): OpenAITTSService => {
   return instance;
 };
 
-export const TTSService = getInstance();
+export {getInstance};
 

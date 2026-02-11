@@ -41,7 +41,7 @@ export type Word = {
   Audio?: Uint8Array;
   TelegramAudioID?: string;
   TelegramPictureID?: string;
-  PictureFileName?: string;
+  ImageURL?: string;
   'Last Revised'?: Date;
 }
 
@@ -55,7 +55,7 @@ type WordDTO = {
   Audio?: Binary;
   TelegramAudioID?: string;
   TelegramPictureID?: string;
-  PictureFileName?: string;
+  ImageURL?: string;
   'Last Revised'?: Date;
 }
 
@@ -257,27 +257,6 @@ const setWordTelegramPictureID = executionTime(
       }
     });
 
-const setWordPictureName = executionTime(
-    'setWordPictureName',
-    async (wordID: string, pictureName: string, logger: Logger): Promise<Error | null> => {
-      const db = await getDb(logger);
-      const words = db.collection(WORD_COLLECTION_NAME);
-
-      try {
-        await words.findOneAndUpdate(
-            {_id: new ObjectId(wordID)},
-            {
-              $set: {
-                'PictureFileName': pictureName,
-              },
-            },
-        );
-        return null;
-      } catch (err) {
-        return new Error(`[repo][setWordPictureName] - ${err}`);
-      }
-    });
-
 
 const getWordByID = executionTime(
     'getWordByID',
@@ -419,7 +398,6 @@ export {
   setWordAsRevisedByWordID,
   setWordAsForgottenByWordID,
   setWordTelegramPictureID,
-  setWordPictureName,
   updateWord,
   getWordsStats,
 };
