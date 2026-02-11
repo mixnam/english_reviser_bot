@@ -46,7 +46,6 @@ class EditWordCommand extends WebAppCommand<EditWordMsg> {
       this.logger.error(audio);
       return audio;
     } else {
-      word.Audio = audio;
       try {
         const audioURL = await GoogleCloudStorage.getInstance().uploadAudio(
             audio,

@@ -38,7 +38,6 @@ export type Word = {
   Translation: string;
   Examples?: string;
   Progress: string;
-  Audio?: Uint8Array;
   AudioURL?: string;
   TelegramAudioID?: string;
   TelegramPictureID?: string;
@@ -53,7 +52,6 @@ type WordDTO = {
   Translation: string;
   Examples?: string;
   Progress: string;
-  Audio?: Binary;
   AudioURL?: string;
   TelegramAudioID?: string;
   TelegramPictureID?: string;
@@ -65,9 +63,6 @@ const mapWord = (wordDto: WordDTO): Word => {
   return {
     ...wordDto,
     _id: wordDto._id.toString(),
-    Audio: wordDto.Audio ?
-      new Uint8Array(wordDto.Audio.buffer) :
-      undefined,
   };
 };
 
@@ -85,7 +80,6 @@ const updateWord = executionTime('updateWord',
             English: word.English,
             Translation: word.Translation,
             Examples: word.Examples,
-            Audio: word.Audio ? new Binary(word.Audio) : undefined,
             AudioURL: word.AudioURL,
             TelegramAudioID: undefined,
           },

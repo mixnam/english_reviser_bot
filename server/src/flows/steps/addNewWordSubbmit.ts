@@ -23,7 +23,6 @@ class AddNewWordSubbmit extends Step {
     if (audio instanceof Error) {
       return audio;
     } else {
-      newWord.Audio = audio;
       try {
         const audioURL = await GoogleCloudStorage.getInstance().uploadAudio(
             audio,

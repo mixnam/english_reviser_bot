@@ -58,7 +58,6 @@ class AddWordCommand extends WebAppCommand<AddWordMsg> {
       this.logger.error(audio);
       return audio;
     } else {
-      word.Audio = audio;
       try {
         const audioURL = await GoogleCloudStorage.getInstance().uploadAudio(
             audio,
