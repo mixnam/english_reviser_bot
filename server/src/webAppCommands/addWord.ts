@@ -73,21 +73,34 @@ class AddWordCommand extends WebAppCommand<AddWordMsg> {
 
     if (imageResponse && !(imageResponse instanceof Error)) {
       if (imageResponse.statusCode === 200) {
+        const MIME_TYPES_TO_EXTENSION = {
+          'image/apng': 'apng',
+          'image/avif': 'avif',
+          'image/gif': 'gif',
+          'image/jpeg': 'jpeg',
+          'image/png': 'png',
+          'image/svg+xml': 'svg',
+          'image/webp': 'webp',
+        };
+
         try {
+          const fileExtension = MIME_TYPES_TO_EXTENSION[imageResponse.headers['content-type']];
+          if (!fileExtension) {
+            this.logger.error(
+                {contentType: imageResponse.headers['content-type']},
+                'Failed to classify file extension type',
+            );
+          }
+          const fileName = fileExtension ? `${word._id}.${fileExtension}`: word._id;
           const imageURL = await GoogleCloudStorage.getInstance().uploadImage(
               imageResponse,
-              word._id,
+              fileName,
               this.logger,
           );
           word.ImageURL = imageURL;
+          await this.bot.sendPhoto(user.chatID, imageUrl);
         } catch (err) {
           this.logger.error({err, imageUrl}, 'Failed to process/upload picture');
-        }
-
-        try {
-          await this.bot.sendPhoto(user.chatID, imageResponse);
-        } catch (err) {
-          this.logger.error({err}, 'Failed to send photo to Telegram');
         }
       } else {
         this.logger.warn({statusCode: imageResponse.statusCode}, 'Image response not 200');

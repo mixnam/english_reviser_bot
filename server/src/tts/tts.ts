@@ -65,6 +65,7 @@ const getInstance = (): TTSServiceImpl => {
   return instance;
 };
 
+// Kill it
 const TTSServiceInstance = getInstance();
 
 export {TTSServiceInstance as TTSService};

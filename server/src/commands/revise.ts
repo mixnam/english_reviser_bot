@@ -111,6 +111,21 @@ class ReviseCommand extends Command {
       return;
     }
 
+    if (word.AudioURL) {
+      const sentMsg = await this.bot.sendVoice(
+          chatID,
+          word.AudioURL,
+          {
+            ...options,
+            caption: text,
+          });
+      if (sentMsg.voice) {
+        setWordTelegramAudioID(word._id, sentMsg.voice.file_id, this.logger.child(ctx))
+            .catch((err: Error) => this.logger.error({...ctx, err}, 'setWordTelegramAudioID error'));
+      }
+      return;
+    }
+
     if (word.Audio) {
       const sentMsg = await this.bot.sendVoice(
           chatID,

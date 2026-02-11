@@ -1,7 +1,8 @@
 import {SaveData, Storage} from '@google-cloud/storage';
 import {Logger} from 'pino';
 
-type FileType = 'audio' | 'image'
+type FileType = 'audio' | 'images'
+type FilePath = `${FileType}/${string}`
 
 class GoogleCloudStorageService {
   private storage: Storage;
@@ -17,38 +18,31 @@ class GoogleCloudStorageService {
 
   private upload = async (
       fileData: SaveData,
-      fileName: string,
+      filePath: FilePath,
       logger: Logger,
   ): Promise<null> => {
-    logger.debug({fileName, bucket: this.bucket}, 'Starting upload to GCS');
+    logger.debug({filePath, bucket: this.bucket}, 'Starting upload to GCS');
 
     try {
       const bucket = this.storage.bucket(this.bucket);
-      const file = bucket.file(fileName);
+      const file = bucket.file(filePath);
 
       await file.save(fileData, {
         resumable: false,
       });
 
-      logger.info({fileName, bucket: this.bucket}, 'File uploaded successfully to GCS');
+      logger.info({filePath, bucket: this.bucket}, 'File uploaded successfully to GCS');
 
 
       return null;
     } catch (err) {
-      logger.error({err, fileName, bucket: this.bucket}, 'Error uploading file to GCS');
+      logger.error({err, filePath, bucket: this.bucket}, 'Error uploading file to GCS');
       throw err;
     }
   };
 
-  private getPublicUrl = (fileName: string, fileType: FileType): string => {
-    switch (fileType) {
-      case 'audio':
-        return `https://storage.googleapis.com/${this.bucket}/audio/${fileName}`;
-      case 'image':
-        return `https://storage.googleapis.com/${this.bucket}/images/${fileName}`;
-      default:
-        ((_unreachable: never) => {})(fileType);
-    }
+  private getPublicUrl = (filePath: FilePath): string => {
+    return `https://storage.googleapis.com/${this.bucket}/${filePath}`;
   };
 
   /**
@@ -59,8 +53,9 @@ class GoogleCloudStorageService {
       fileName: string,
       logger: Logger,
   ): Promise<string> => {
-    await this.upload(fileData, fileName, logger);
-    return this.getPublicUrl(fileName, 'image');
+    const filePath: FilePath = `images/${fileName}`;
+    await this.upload(fileData, filePath, logger);
+    return this.getPublicUrl(filePath);
   };
 
   /**
@@ -71,8 +66,9 @@ class GoogleCloudStorageService {
       fileName: string,
       logger: Logger,
   ): Promise<string> => {
-    await this.upload(fileData, fileName, logger);
-    return this.getPublicUrl(fileName, 'audio');
+    const filePath: FilePath = `audio/${fileName}`;
+    await this.upload(fileData, filePath, logger);
+    return this.getPublicUrl(filePath);
   };
 }
 

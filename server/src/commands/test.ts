@@ -2,7 +2,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import {Command} from './command.js';
 import * as TTSService from '../tts/openaiTts.js';
 import {renderWordWithCustomStatus} from '../render/renderWord.js';
-import {OpenAIExamplesService} from '../services/openAIExamples.js';
+import * as OpenAIExamplesService from '../services/openAIExamples.js';
 import {Logger} from 'pino';
 
 class TestCommand extends Command {
@@ -22,7 +22,7 @@ class TestCommand extends Command {
       Examples: null as string | null,
     };
 
-    const example = await OpenAIExamplesService.generateExampleSentence(
+    const example = await OpenAIExamplesService.getInstance().generateExampleSentence(
         word.English,
         word.Translation,
         'pt-PT',

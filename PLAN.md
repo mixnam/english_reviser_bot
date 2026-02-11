@@ -20,11 +20,11 @@ This plan outlines the steps to move audio file storage from MongoDB (binary) to
     - Set `AudioURL` in the `word` object.
 
 ## 3. Update Audio Playback/Sending
-- [ ] Update `server/src/commands/learn.ts`:
+- [x] Update `server/src/commands/learn.ts`:
     - Prefer `word.AudioURL` over `word.Audio` when sending voice messages.
-- [ ] Update `server/src/commands/revise.ts`:
+- [x] Update `server/src/commands/revise.ts`:
     - Prefer `word.AudioURL` over `word.Audio` when sending voice messages.
-- [ ] Update `server/src/flows/processor/index.ts`:
+- [x] Update `server/src/flows/processor/index.ts`:
     - Handle `audio` being a URL string instead of a Buffer/Uint8Array.
 
 ## 4. Migration Script
