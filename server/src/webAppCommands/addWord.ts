@@ -59,12 +59,22 @@ class AddWordCommand extends WebAppCommand<AddWordMsg> {
       return audio;
     } else {
       word.Audio = audio;
+      try {
+        const audioURL = await GoogleCloudStorage.getInstance().uploadAudio(
+            audio,
+            `${word._id}.ogg`,
+            this.logger,
+        );
+        word.AudioURL = audioURL;
+      } catch (err) {
+        this.logger.error({err}, 'Failed to upload audio to GCS');
+      }
     }
 
     if (imageResponse && !(imageResponse instanceof Error)) {
       if (imageResponse.statusCode === 200) {
         try {
-          const imageURL = await GoogleCloudStorage.getInstance().upload(
+          const imageURL = await GoogleCloudStorage.getInstance().uploadImage(
               imageResponse,
               word._id,
               this.logger,

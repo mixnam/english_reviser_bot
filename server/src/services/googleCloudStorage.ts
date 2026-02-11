@@ -1,6 +1,8 @@
 import {SaveData, Storage} from '@google-cloud/storage';
 import {Logger} from 'pino';
 
+type FileType = 'audio' | 'image'
+
 class GoogleCloudStorageService {
   private storage: Storage;
   private bucket: string;
@@ -13,23 +15,12 @@ class GoogleCloudStorageService {
     this.bucket = bucket;
   }
 
-  /**
-   * Uploads an image to a Google Cloud Storage bucket.
-   * @param fileData The image content as a buffer, string or stream.
-   * @param fileName The name of the file to save in the bucket.
-   * @param logger Logger instance.
-   * @returns A promise that resolves to the public URL of the uploaded image.
-   */
-  upload = async (
+  private upload = async (
       fileData: SaveData,
       fileName: string,
       logger: Logger,
-  ): Promise<string> => {
-    logger.debug({fileName, bucket: this.bucket}, 'Starting image upload to GCS');
-
-    if (!this.bucket) {
-      throw new Error('GOOGLE_CLOUD_STORAGE_BUCKET is not set');
-    }
+  ): Promise<null> => {
+    logger.debug({fileName, bucket: this.bucket}, 'Starting upload to GCS');
 
     try {
       const bucket = this.storage.bucket(this.bucket);
@@ -39,15 +30,49 @@ class GoogleCloudStorageService {
         resumable: false,
       });
 
-      logger.info({fileName}, 'Image uploaded successfully to GCS');
+      logger.info({fileName, bucket: this.bucket}, 'File uploaded successfully to GCS');
 
-      // Assuming the bucket is public or we just return the gs:// URI or similar.
-      // Usually keeping it simple:
-      return `https://storage.googleapis.com/${this.bucket}/${fileName}`;
+
+      return null;
     } catch (err) {
-      logger.error({err, fileName, bucket: this.bucket}, 'Error uploading image to GCS');
+      logger.error({err, fileName, bucket: this.bucket}, 'Error uploading file to GCS');
       throw err;
     }
+  };
+
+  private getPublicUrl = (fileName: string, fileType: FileType): string => {
+    switch (fileType) {
+      case 'audio':
+        return `https://storage.googleapis.com/${this.bucket}/audio/${fileName}`;
+      case 'image':
+        return `https://storage.googleapis.com/${this.bucket}/images/${fileName}`;
+      default:
+        ((_unreachable: never) => {})(fileType);
+    }
+  };
+
+  /**
+   * Uploads an image to a Google Cloud Storage bucket.
+   */
+  uploadImage = async (
+      fileData: SaveData,
+      fileName: string,
+      logger: Logger,
+  ): Promise<string> => {
+    await this.upload(fileData, fileName, logger);
+    return this.getPublicUrl(fileName, 'image');
+  };
+
+  /**
+   * Uploads an audio file to a Google Cloud Storage bucket.
+   */
+  uploadAudio = async (
+      fileData: SaveData,
+      fileName: string,
+      logger: Logger,
+  ): Promise<string> => {
+    await this.upload(fileData, fileName, logger);
+    return this.getPublicUrl(fileName, 'audio');
   };
 }
 
@@ -63,3 +88,4 @@ const getInstance = (): GoogleCloudStorageService => {
 };
 
 export {getInstance};
+

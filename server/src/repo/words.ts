@@ -39,6 +39,7 @@ export type Word = {
   Examples?: string;
   Progress: string;
   Audio?: Uint8Array;
+  AudioURL?: string;
   TelegramAudioID?: string;
   TelegramPictureID?: string;
   ImageURL?: string;
@@ -53,6 +54,7 @@ type WordDTO = {
   Examples?: string;
   Progress: string;
   Audio?: Binary;
+  AudioURL?: string;
   TelegramAudioID?: string;
   TelegramPictureID?: string;
   ImageURL?: string;
@@ -84,6 +86,7 @@ const updateWord = executionTime('updateWord',
             Translation: word.Translation,
             Examples: word.Examples,
             Audio: word.Audio ? new Binary(word.Audio) : undefined,
+            AudioURL: word.AudioURL,
             TelegramAudioID: undefined,
           },
         });

@@ -45,7 +45,7 @@ class AddNewWordPicture extends Step {
 
 
     try {
-      const imageURL = await GoogleCloudStorage.getInstance().upload(
+      const imageURL = await GoogleCloudStorage.getInstance().uploadImage(
           bot.getFileStream(picture.file_id),
           newWord._id,
           logger,
