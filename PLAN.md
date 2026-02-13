@@ -29,11 +29,11 @@ Controllers will be responsible for handling the HTTP interface (request validat
     - `saveWord`
 - [x] **Task 2.3**: Move manual request parsing and validation into these controller methods (or separate validation schemas).
 
-### 3. Decouple Routing
+### 3. Decouple Routing (Completed)
 Move the route definitions out of the `Api` class into a dedicated routing system.
-- [ ] **Task 3.1**: Create `server/src/api/routes/wordRoutes.ts`.
-- [ ] **Task 3.2**: Define routes using Fastify's plugin system and map them to `WordController` methods.
-- [ ] **Task 3.3**: Define JSON Schemas for each route to replace manual parsing/casting.
+- [x] **Task 3.1**: Create `server/src/api/routes/wordRoutes.ts`.
+- [x] **Task 3.2**: Define routes using Fastify's plugin system and map them to `WordController` methods.
+- [x] **Task 3.3**: Define JSON Schemas for each route to replace manual parsing/casting.
 
 ### 4. Refactor `Api` Class
 The `Api` class should only be responsible for infrastructure.

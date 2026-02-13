@@ -5,12 +5,12 @@ import {Word} from '../../repo/words.js';
 export class WordController {
   constructor(private wordService: WordService) {}
 
-  async editWord(
-    req: FastifyRequest<{
-      Params: {chat_id: string; word_id: string};
-    }>,
-    res: FastifyReply,
-  ) {
+  editWord = async (
+      req: FastifyRequest<{
+        Params: {chat_id: string; word_id: string};
+      }>,
+      res: FastifyReply,
+  ) => {
     const messageID = req.headers['telegram-message-id'];
     if (typeof messageID !== 'string') {
       return res.code(403).send({message: 'No telegram-message-id header'});
@@ -18,9 +18,9 @@ export class WordController {
 
     const word = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body as Word);
     const result = await this.wordService.editWord(
-      Number.parseInt(req.params.chat_id),
-      Number.parseInt(messageID),
-      word,
+        Number.parseInt(req.params.chat_id),
+        Number.parseInt(messageID),
+        word,
     );
 
     if (result instanceof Error) {
@@ -29,18 +29,17 @@ export class WordController {
     }
 
     return res.code(200).send();
-  }
-
-  async getSimilarWords(
-    req: FastifyRequest<{
-      Params: {chat_id: string};
-      Body: {word: string};
-    }>,
-    res: FastifyReply,
-  ) {
+  };
+  getSimilarWords = async (
+      req: FastifyRequest<{
+        Params: {chat_id: string};
+        Body: {word: string};
+      }>,
+      res: FastifyReply,
+  ) => {
     const result = await this.wordService.getSimilarWords(
-      Number.parseInt(req.params.chat_id),
-      req.body.word,
+        Number.parseInt(req.params.chat_id),
+        req.body.word,
     );
 
     if (result instanceof Error) {
@@ -49,18 +48,17 @@ export class WordController {
     }
 
     return res.code(200).send({words: result});
-  }
-
-  async generateExample(
-    req: FastifyRequest<{
-      Params: {chat_id: string};
-      Body: {word: string; translate: string};
-    }>,
-    res: FastifyReply,
-  ) {
+  };
+  generateExample = async (
+      req: FastifyRequest<{
+        Params: {chat_id: string};
+        Body: {word: string; translate: string};
+      }>,
+      res: FastifyReply,
+  ) => {
     const result = await this.wordService.generateExample(
-      req.body.word,
-      req.body.translate,
+        req.body.word,
+        req.body.translate,
     );
 
     if (result instanceof Error) {
@@ -69,15 +67,14 @@ export class WordController {
     }
 
     return res.code(200).send({example: result});
-  }
-
-  async searchImages(
-    req: FastifyRequest<{
-      Params: {chat_id: string};
-      Body: {word: string};
-    }>,
-    res: FastifyReply,
-  ) {
+  };
+  searchImages = async (
+      req: FastifyRequest<{
+        Params: {chat_id: string};
+        Body: {word: string};
+      }>,
+      res: FastifyReply,
+  ) => {
     const result = await this.wordService.searchImages(req.body.word);
 
     if (result instanceof Error) {
@@ -86,27 +83,26 @@ export class WordController {
     }
 
     return res.code(200).send({urls: result});
-  }
-
-  async saveWord(
-    req: FastifyRequest<{
-      Params: {chat_id: string};
-      Body: {
-        word: string;
-        translation: string;
-        example: string | null;
-        imageUrl: string | null;
-      };
-    }>,
-    res: FastifyReply,
-  ) {
+  };
+  saveWord = async (
+      req: FastifyRequest<{
+        Params: {chat_id: string};
+        Body: {
+          word: string;
+          translation: string;
+          example: string | null;
+          imageUrl: string | null;
+        };
+      }>,
+      res: FastifyReply,
+  ) => {
     const {word, translation, example, imageUrl} = req.body;
     const result = await this.wordService.saveWord(
-      Number.parseInt(req.params.chat_id),
-      word,
-      translation,
-      example,
-      imageUrl,
+        Number.parseInt(req.params.chat_id),
+        word,
+        translation,
+        example,
+        imageUrl,
     );
 
     if (result instanceof Error) {
@@ -115,5 +111,5 @@ export class WordController {
     }
 
     return res.code(200).send();
-  }
+  };
 }
