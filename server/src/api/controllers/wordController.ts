@@ -52,13 +52,13 @@ export class WordController {
   generateExample = async (
       req: FastifyRequest<{
         Params: {chat_id: string};
-        Body: {word: string; translate: string};
+        Body: {word: string; translation: string};
       }>,
       res: FastifyReply,
   ) => {
     const result = await this.wordService.generateExample(
         req.body.word,
-        req.body.translate,
+        req.body.translation,
     );
 
     if (result instanceof Error) {

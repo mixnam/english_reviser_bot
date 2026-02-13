@@ -63,9 +63,9 @@ export const wordRoutes = async (
         type: 'object',
         properties: {
           word: {type: 'string'},
-          translate: {type: 'string'},
+          translation: {type: 'string'},
         },
-        required: ['word', 'translate'],
+        required: ['word', 'translation'],
       },
     },
     handler: wordController.generateExample,

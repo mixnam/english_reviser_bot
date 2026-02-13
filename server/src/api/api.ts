@@ -1,19 +1,14 @@
-import {fileURLToPath} from 'node:url';
-
-import fastify, {FastifyInstance, FastifyRequest, FastifyReply, AddContentTypeParser} from 'fastify';
+import {FastifyInstance, FastifyRequest, FastifyReply, AddContentTypeParser} from 'fastify';
 import {IncomingMessage, ServerResponse} from 'http';
-import dotenv from 'dotenv';
+import fastify from 'fastify';
 import fastifyCors from '@fastify/cors';
 import {pino, Logger} from 'pino';
-import {ObjectId} from 'mongodb';
 
 import {Bot} from '../telegram.js';
 import {verifyTelegramWebAppData} from './verify.js';
-import {getSpelcheckSuggestions, Progress, Word} from '../repo/words.js';
-import {getUserByChatID} from '../repo/users.js';
-import * as OpenAIExamplesService from '../services/openAIExamples.js';
-import * as GoogleImageService from '../services/googleImage.js';
-import {minusDaysFromNow} from '../repo/utils.js';
+import {wordRoutes} from './routes/wordRoutes.js';
+import {WordController} from './controllers/wordController.js';
+import {WordService} from './services/wordService.js';
 
 /**
  * Api
@@ -63,164 +58,13 @@ class Api {
       });
     }
 
+    const wordService = new WordService(this.#bot, this.#logger);
+    const wordController = new WordController(wordService);
+
+    this.#server.register(wordRoutes, {wordController});
+
     this.#server.get('/ping', (_req, res) => {
       res.send({msg: 'pong'});
-    });
-
-    this.#server.post<{
-      Params: {
-        chat_id: string;
-        word_id: string;
-      }
-    }>('/chat/:chat_id/word/:word_id', async (req, res) => {
-      const messageID = req.headers['telegram-message-id'];
-      if (typeof messageID !== 'string') {
-        this.#server.log.error('No telegram-message-id header');
-        res.code(403).send({message: 'No telegram-message-id header'});
-        return;
-      }
-
-      try {
-        await this.#bot.handleWebAppMessage({
-          type: 'edit_word_msg',
-          payload: {
-            word: typeof req.body === 'string' ? JSON.parse(req.body): req.body,
-            chatID: Number.parseInt(req.params.chat_id),
-            messageID: Number.parseInt(messageID),
-          },
-        });
-      } catch (err) {
-        this.#server.log.error(err);
-        res.code(500).send();
-        return;
-      }
-
-      res.code(200).send();
-    });
-
-    this.#server.post<{
-      Params: {
-        chat_id: string;
-      },
-      Body: {
-        word: string;
-      }
-    }>('/chat/:chat_id/word/similar', async (req, res) => {
-      const user = await getUserByChatID(Number.parseInt(req.params.chat_id), this.#logger);
-      if (user instanceof Error) {
-        this.#logger.error(user);
-        res.code(500).send();
-        return;
-      }
-
-      const suggestions = await getSpelcheckSuggestions(req.body.word, user._id, this.#logger);
-      if (suggestions instanceof Error) {
-        this.#logger.error(suggestions);
-        res.code(500).send();
-        return;
-      }
-
-      res.code(200).send(JSON.stringify({words: suggestions.map(({English}) => English)}));
-    });
-
-    this.#server.post<{
-      Params: {
-        chat_id: string;
-      },
-      Body: {
-        word: string;
-        translate: string;
-      }
-    }>('/chat/:chat_id/word/example', async (req, res) => {
-      const {word, translate} = req.body;
-
-      const aiExample = await OpenAIExamplesService.getInstance().generateExampleSentence(
-          word,
-          translate,
-          process.env.LANGUAGE_CODE,
-          this.#logger,
-      );
-      if (aiExample instanceof Error) {
-        this.#logger.error(aiExample);
-        res.code(500).send();
-        return;
-      }
-
-      res.code(200).send(JSON.stringify({example: aiExample}));
-    });
-
-    this.#server.post<{
-      Params: {
-        chat_id: string;
-      },
-      Body: {
-        word: string;
-        translation: string;
-      }
-    }>('/chat/:chat_id/word/image/search', async (req, res) => {
-      const {word} = req.body;
-      const query = `${word} ilustração`;
-
-      const images = await GoogleImageService.getInstance().searchImages(
-          query,
-          this.#logger,
-      );
-
-      if (images instanceof Error) {
-        this.#logger.error(images);
-        res.code(500).send();
-        return;
-      }
-
-      res.code(200).send(JSON.stringify({urls: images}));
-    });
-
-    this.#server.post<{
-      Params: {
-        chat_id: string;
-      },
-      Body: {
-        word: string;
-        translation: string;
-        example: string | null;
-        imageUrl: string | null;
-      }
-    }>('/chat/:chat_id/word/save', async (req, res) => {
-      const user = await getUserByChatID(Number.parseInt(req.params.chat_id), this.#logger);
-      if (user instanceof Error) {
-        this.#logger.error(user);
-        res.code(500).send();
-        return;
-      }
-
-      const {word, translation, example, imageUrl} = req.body;
-
-      const newWord: Word = {
-        '_id': new ObjectId().toString(),
-        'userID': user._id,
-        'English': word,
-        'Translation': translation,
-        'Examples': example,
-        'Progress': Progress.HaveProblems,
-        'Last Revised': minusDaysFromNow(30),
-      };
-
-      try {
-        await this.#bot.handleWebAppMessage({
-          type: 'add_word_msg',
-          payload: {
-            chatID: Number.parseInt(req.params.chat_id),
-            word: newWord,
-            imageUrl,
-          },
-        });
-      } catch (err) {
-        this.#logger.error(err);
-        res.code(500).send();
-        return;
-      }
-
-      res.code(200).send();
     });
   };
 
@@ -230,8 +74,9 @@ class Api {
 
   start = async () => {
     try {
-      await this.#server.listen({port: 3000});
-      console.log('Server is running at http://localhost:3000');
+      const port = process.env.PORT ? Number.parseInt(process.env.PORT) : 3000;
+      await this.#server.listen({port, host: '0.0.0.0'});
+      console.log(`Server is running at http://localhost:${port}`);
     } catch (err) {
       this.#server.log.error(err);
       process.exit(1);
@@ -248,12 +93,3 @@ class Api {
 }
 
 export {Api};
-
-
-if (process.argv[1] === fileURLToPath(import.meta.url) && process.argv[2] === '--dev') {
-  dotenv.config({path: '.env.dev', debug: true});
-
-  const server = new Api();
-
-  server.start();
-}
