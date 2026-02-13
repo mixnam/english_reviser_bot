@@ -18,16 +18,16 @@ Instead of the API calling repositories and external services directly, we will 
 - [x] **Task 1.3**: Move logic for "saving/editing words" (including word object construction) to `WordService`.
 - [x] **Task 1.4**: Orchestrate external calls (OpenAI, Google Search) within `WordService` methods.
 
-### 2. Implement Controllers
+### 2. Implement Controllers (Completed)
 Controllers will be responsible for handling the HTTP interface (request validation, status codes, and mapping data to/from Services).
-- [ ] **Task 2.1**: Create `server/src/api/controllers/wordController.ts`.
-- [ ] **Task 2.2**: Implement methods in `WordController` to handle the current endpoints:
+- [x] **Task 2.1**: Create `server/src/api/controllers/wordController.ts`.
+- [x] **Task 2.2**: Implement methods in `WordController` to handle the current endpoints:
     - `editWord`
     - `getSimilarWords`
     - `generateExample`
     - `searchImages`
     - `saveWord`
-- [ ] **Task 2.3**: Move manual request parsing and validation into these controller methods (or separate validation schemas).
+- [x] **Task 2.3**: Move manual request parsing and validation into these controller methods (or separate validation schemas).
 
 ### 3. Decouple Routing
 Move the route definitions out of the `Api` class into a dedicated routing system.
