@@ -100,7 +100,7 @@ class LearnCommand extends Command {
     }
 
     let sentMsg: TelegramBot.Message;
-    if (!(Boolean(word.Audio) || Boolean(word.TelegramAudioID))) {
+    if (!(Boolean(word.TelegramAudioID) || Boolean(word.AudioURL))) {
       // if there is no audio at all, just send text msg and that's it
       sentMsg = await this.bot.sendMessage(
           chatID,
@@ -115,16 +115,13 @@ class LearnCommand extends Command {
             ...options,
             caption: text,
           });
-    } else if (word.Audio) {
+    } else if (word.AudioURL) {
       sentMsg = await this.bot.sendVoice(
           chatID,
-          Buffer.from(word.Audio),
+          word.AudioURL,
           {
             ...options,
             caption: text,
-          }, {
-            filename: 'example.ogg',
-            contentType: 'audio/ogg',
           });
       if (sentMsg.voice) {
         setWordTelegramAudioID(word._id, sentMsg.voice.file_id, this.logger.child(ctx))

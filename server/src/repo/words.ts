@@ -38,10 +38,10 @@ export type Word = {
   Translation: string;
   Examples?: string;
   Progress: string;
-  Audio?: Uint8Array;
+  AudioURL?: string;
   TelegramAudioID?: string;
   TelegramPictureID?: string;
-  PictureFileName?: string;
+  ImageURL?: string;
   'Last Revised'?: Date;
 }
 
@@ -52,10 +52,10 @@ type WordDTO = {
   Translation: string;
   Examples?: string;
   Progress: string;
-  Audio?: Binary;
+  AudioURL?: string;
   TelegramAudioID?: string;
   TelegramPictureID?: string;
-  PictureFileName?: string;
+  ImageURL?: string;
   'Last Revised'?: Date;
 }
 
@@ -63,9 +63,6 @@ const mapWord = (wordDto: WordDTO): Word => {
   return {
     ...wordDto,
     _id: wordDto._id.toString(),
-    Audio: wordDto.Audio ?
-      new Uint8Array(wordDto.Audio.buffer) :
-      undefined,
   };
 };
 
@@ -83,7 +80,7 @@ const updateWord = executionTime('updateWord',
             English: word.English,
             Translation: word.Translation,
             Examples: word.Examples,
-            Audio: word.Audio ? new Binary(word.Audio) : undefined,
+            AudioURL: word.AudioURL,
             TelegramAudioID: undefined,
           },
         });
@@ -257,27 +254,6 @@ const setWordTelegramPictureID = executionTime(
       }
     });
 
-const setWordPictureName = executionTime(
-    'setWordPictureName',
-    async (wordID: string, pictureName: string, logger: Logger): Promise<Error | null> => {
-      const db = await getDb(logger);
-      const words = db.collection(WORD_COLLECTION_NAME);
-
-      try {
-        await words.findOneAndUpdate(
-            {_id: new ObjectId(wordID)},
-            {
-              $set: {
-                'PictureFileName': pictureName,
-              },
-            },
-        );
-        return null;
-      } catch (err) {
-        return new Error(`[repo][setWordPictureName] - ${err}`);
-      }
-    });
-
 
 const getWordByID = executionTime(
     'getWordByID',
@@ -419,7 +395,6 @@ export {
   setWordAsRevisedByWordID,
   setWordAsForgottenByWordID,
   setWordTelegramPictureID,
-  setWordPictureName,
   updateWord,
   getWordsStats,
 };

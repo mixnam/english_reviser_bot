@@ -1,18 +1,18 @@
 import TelegramBot from 'node-telegram-bot-api';
 import {Command} from './command.js';
-import {TTSService} from '../tts/openaiTts.js';
+import * as TTSService from '../tts/openaiTts.js';
 import {renderWordWithCustomStatus} from '../render/renderWord.js';
-import {OpenAIExamplesService} from '../services/openAIExamples.js';
+import * as OpenAIExamplesService from '../services/openAIExamples.js';
 import {Logger} from 'pino';
 
 class TestCommand extends Command {
   private bot: TelegramBot;
-  private tts: typeof TTSService;
+  private tts: ReturnType<typeof TTSService.getInstance>;
 
   constructor(bot: TelegramBot, logger: Logger) {
     super(logger);
     this.bot = bot;
-    this.tts = TTSService;
+    this.tts = TTSService.getInstance();
   }
 
   processMsg = async (msg: TelegramBot.Message): Promise<null> => {
@@ -22,7 +22,7 @@ class TestCommand extends Command {
       Examples: null as string | null,
     };
 
-    const example = await OpenAIExamplesService.generateExampleSentence(
+    const example = await OpenAIExamplesService.getInstance().generateExampleSentence(
         word.English,
         word.Translation,
         'pt-PT',

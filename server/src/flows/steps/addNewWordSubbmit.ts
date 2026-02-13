@@ -1,7 +1,8 @@
 import {Step} from './step.js';
 import {addNewWord, setWordTelegramAudioID, Word} from '../../repo/words.js';
-import {TTSService} from '../../tts/openaiTts.js';
+import * as TTSService from '../../tts/openaiTts.js';
 import {renderYouJustAddedNewWord} from '../../render/renderTextMsg.js';
+import * as GoogleCloudStorage from '../../services/googleCloudStorage.js';
 
 const StepID = 'ADD_NEW_WORD_SUBBMIT';
 
@@ -18,11 +19,20 @@ class AddNewWordSubbmit extends Step {
       newWord.Examples :
       newWord.English;
 
-    const audio = await TTSService.getAudioForText(ttsText);
+    const audio = await TTSService.getInstance().getAudioForText(ttsText);
     if (audio instanceof Error) {
       return audio;
     } else {
-      newWord.Audio = audio;
+      try {
+        const audioURL = await GoogleCloudStorage.getInstance().uploadAudio(
+            audio,
+            `${newWord._id}.ogg`,
+            logger,
+        );
+        newWord.AudioURL = audioURL;
+      } catch (err) {
+        logger.error({err}, 'Failed to upload audio to GCS');
+      }
     }
 
     const newWordID = await addNewWord(user._id, newWord, logger);

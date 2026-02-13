@@ -5,7 +5,7 @@ import path from 'node:path';
 
 import dotenv from 'dotenv';
 
-import {TTSService} from '../src/tts/openaiTts.js';
+import * as TTSService from '../src/tts/openaiTts.js';
 
 dotenv.config({path: '.env.dev', debug: true});
 
@@ -14,7 +14,7 @@ const SAMPLE_TEXT = process.argv[3] ?? 'This is a test audio file generated via 
 
 const generate = async () => {
   console.log(`Generating TTS audio for: "${SAMPLE_TEXT}"`);
-  const audio = await TTSService.getAudioForText(SAMPLE_TEXT);
+  const audio = await TTSService.getInstance().getAudioForText(SAMPLE_TEXT);
   if (audio instanceof Error) {
     console.error('Failed to generate audio:', audio.message);
     process.exit(1);

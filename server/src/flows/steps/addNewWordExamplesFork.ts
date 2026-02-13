@@ -3,7 +3,7 @@ import {
   renderDoYouWantToAddContext,
   renderSuggestedExampleQuestion,
 } from '../../render/renderTextMsg.js';
-import {OpenAIExamplesService} from '../../services/openAIExamples.js';
+import * as OpenAIExamplesService from '../../services/openAIExamples.js';
 import {setUserState} from '../../repo/users.js';
 import {Step} from './step.js';
 import {Word} from '../../repo/words.js';
@@ -34,7 +34,7 @@ class AddNewWordExamplesFork extends Step {
     let suggestedExample = state?.suggestedExample ?? null;
 
     if (!suggestedExample) {
-      const aiExample = await OpenAIExamplesService.generateExampleSentence(
+      const aiExample = await OpenAIExamplesService.getInstance().generateExampleSentence(
           newWord.English,
           newWord.Translation,
           process.env.LANGUAGE_CODE,

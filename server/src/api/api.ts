@@ -11,7 +11,7 @@ import {Bot} from '../telegram.js';
 import {verifyTelegramWebAppData} from './verify.js';
 import {getSpelcheckSuggestions, Progress, Word} from '../repo/words.js';
 import {getUserByChatID} from '../repo/users.js';
-import {OpenAIExamplesService} from '../services/openAIExamples.js';
+import * as OpenAIExamplesService from '../services/openAIExamples.js';
 import * as GoogleImageService from '../services/googleImage.js';
 import {minusDaysFromNow} from '../repo/utils.js';
 
@@ -134,7 +134,7 @@ class Api {
     }>('/chat/:chat_id/word/example', async (req, res) => {
       const {word, translate} = req.body;
 
-      const aiExample = await OpenAIExamplesService.generateExampleSentence(
+      const aiExample = await OpenAIExamplesService.getInstance().generateExampleSentence(
           word,
           translate,
           process.env.LANGUAGE_CODE,

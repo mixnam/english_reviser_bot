@@ -1,9 +1,11 @@
 import {renderSendMePictureForThisWord} from '../../render/renderTextMsg.js';
-import {uploadPicture} from '../../repo/files.js';
 import {Word} from '../../repo/words.js';
 import {Step} from './step.js';
+import * as GoogleCloudStorage from '../../services/googleCloudStorage.js';
 
 const StepID = 'ADD_NEW_WORD_PICTURE';
+
+const IMAGE_FILE_SIZE = 1_000_000; // size in KB
 
 /**
  * AddNewWordPicture
@@ -36,18 +38,19 @@ class AddNewWordPicture extends Step {
     const picture = msg.photo.reduce(
         (res, photo) =>
             photo.file_size! > res.file_size! &&
-            photo.file_size! < 50000 ?
+            photo.file_size! < IMAGE_FILE_SIZE ?
                 photo :
                 res,
     );
 
 
     try {
-      const fileName = await uploadPicture(
+      const imageURL = await GoogleCloudStorage.getInstance().uploadImage(
           bot.getFileStream(picture.file_id),
+          newWord._id,
           logger,
       );
-      newWord.PictureFileName = fileName;
+      newWord.ImageURL = imageURL;
     } catch (err) {
       logger.error({err}, 'uploadPicture error');
       return [user.state, StepID];

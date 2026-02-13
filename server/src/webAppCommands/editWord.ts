@@ -1,8 +1,9 @@
 import TelegramBot from 'node-telegram-bot-api';
 import {Logger} from 'pino';
 import {updateWord, Word} from '../repo/words.js';
-import {TTSService} from '../tts/openaiTts.js';
+import * as TTSService from '../tts/openaiTts.js';
 import {WebAppCommand} from './webAppCommand.js';
+import * as GoogleCloudStorage from '../services/googleCloudStorage.js';
 
 export interface EditWordPayload {
   chatID: number;
@@ -39,13 +40,22 @@ class EditWordCommand extends WebAppCommand<EditWordMsg> {
       return user;
     }
 
-    const audio = await TTSService.getAudioForText(word.English);
+    const audio = await TTSService.getInstance().getAudioForText(word.English);
 
     if (audio instanceof Error) {
       this.logger.error(audio);
       return audio;
     } else {
-      word.Audio = audio;
+      try {
+        const audioURL = await GoogleCloudStorage.getInstance().uploadAudio(
+            audio,
+            `${word._id}.ogg`,
+            this.logger,
+        );
+        word.AudioURL = audioURL;
+      } catch (err) {
+        this.logger.error({err}, 'Failed to upload audio to GCS');
+      }
     }
 
     const result = await updateWord(

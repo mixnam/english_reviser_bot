@@ -131,6 +131,5 @@ const getInstance = (): OpenAIExamplesServiceImpl => {
   return instance;
 };
 
-const OpenAIExamplesServiceInstance = getInstance();
 
-export {OpenAIExamplesServiceInstance as OpenAIExamplesService};
+export {getInstance};
