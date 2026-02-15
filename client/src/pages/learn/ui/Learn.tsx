@@ -6,13 +6,13 @@ import {
   Placeholder,
 } from "@telegram-apps/telegram-ui";
 import { useState, useEffect } from "react";
-import { useGetRandomWordQuery } from "../api/getRandomWord";
-import { useUpdateWordProgressMutation } from "../api/updateWordProgress";
+import { useGetRandomLearnWordQuery } from "../api/getRandomWord";
+import { useUpdateLearnWordProgressMutation } from "../api/updateWordProgress";
 import { WordCard } from "../../../shared/ui/WordCard";
 import confetti from "canvas-confetti";
 import WebApp from "@twa-dev/sdk";
 
-export const Revise = () => {
+export const Learn = () => {
   const [searchParams] = useSearchParams();
   const chatID = searchParams.get("chat_id") || "";
   const [revealed, setRevealed] = useState(false);
@@ -22,8 +22,8 @@ export const Revise = () => {
     isLoading,
     isError,
     refetch,
-  } = useGetRandomWordQuery(chatID);
-  const updateProgressMutation = useUpdateWordProgressMutation();
+  } = useGetRandomLearnWordQuery(chatID);
+  const updateProgressMutation = useUpdateLearnWordProgressMutation();
 
   useEffect(() => {
     if (!isLoading && !word && !isError) {
@@ -73,7 +73,7 @@ export const Revise = () => {
   if (isError) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-4">
-        <Title level="2">{i18n.noWords}</Title>
+        <Title level="2">{i18n.noWordsLearn}</Title>
         <Button className="mt-4" onClick={() => refetch()}>
           Retry
         </Button>
@@ -84,7 +84,7 @@ export const Revise = () => {
   if (!word) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-4">
-        <Placeholder header={i18n.congrats} description={i18n.allDone}>
+        <Placeholder header={i18n.congrats} description={i18n.allDoneLearn}>
           <img
             alt="Success"
             src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f389/512.gif"
@@ -93,7 +93,7 @@ export const Revise = () => {
         </Placeholder>
         <Button
           size="l"
-          className="mt-auto w-full max-w-xs"
+          className="mt-8 w-full max-w-xs"
           onClick={() => WebApp.close()}
         >
           {i18n.close}
@@ -105,7 +105,7 @@ export const Revise = () => {
   return (
     <div className="flex flex-col h-full p-4">
       <Title level="1" weight="2" className="text-center mb-6">
-        Revise
+        Learn
       </Title>
 
       <div className="flex-1 flex flex-col justify-center">
@@ -113,6 +113,7 @@ export const Revise = () => {
           word={word}
           revealed={revealed}
           onReveal={() => setRevealed(true)}
+          progress={word.Progress}
         />
       </div>
 
@@ -135,6 +136,7 @@ export const Revise = () => {
           stretched
           size="l"
           mode="bezeled"
+          className="bg-green-50"
           onClick={() => handleDecision(true)}
           loading={updateProgressMutation.isPending}
         >

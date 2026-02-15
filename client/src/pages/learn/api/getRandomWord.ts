@@ -1,23 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { API_BASE_URL } from "../../../config";
 import WebApp from "@twa-dev/sdk";
+import { Word } from "../../revise/api/getRandomWord";
 
-export type Word = {
-  _id: string;
-  English: string;
-  Translation: string;
-  Progress: string;
-  Examples?: string;
-  ImageURL?: string;
-  AudioURL?: string;
-};
-
-export const useGetRandomWordQuery = (chatID: string) => {
+export const useGetRandomLearnWordQuery = (chatID: string) => {
   return useQuery<Word | null>({
-    queryKey: ["random-revise-word", chatID],
+    queryKey: ["random-learn-word", chatID],
     queryFn: async () => {
       const response = await fetch(
-        `${API_BASE_URL}/chat/${chatID}/word/random-revise`,
+        `${API_BASE_URL}/chat/${chatID}/word/random-learn`,
         {
           headers: {
             "Telegram-Init-Data": WebApp.initData,

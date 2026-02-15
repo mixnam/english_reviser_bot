@@ -9,6 +9,10 @@ import {
   getRandomWordByUserIDForRevise,
   setWordAsRevisedByWordID,
   setWordAsForgottenByWordID,
+  getRandomWordByUserIDForLearn,
+  ProgressOrder,
+  setWordProgress,
+  getWordByID,
 } from '../../repo/words.js';
 import * as OpenAIExamplesService from '../../services/openAIExamples.js';
 import * as GoogleImageService from '../../services/googleImage.js';
@@ -104,6 +108,34 @@ export class WordService {
       const result = await setWordAsForgottenByWordID(wordID, this.logger);
       return result === null ? undefined : result;
     }
+  }
+
+  async getRandomLearnWord(chatID: number): Promise<Word | null | Error> {
+    const user = await getUserByChatID(chatID, this.logger);
+    if (user instanceof Error) return user;
+    if (!user) return new Error(`User not found for chatID: ${chatID}`);
+
+    return getRandomWordByUserIDForLearn(user._id, this.logger);
+  }
+
+  async updateLearnWordProgress(
+    chatID: number,
+    wordID: string,
+    remember: boolean,
+  ): Promise<void | Error> {
+    const word = await getWordByID(wordID, this.logger);
+    if (word instanceof Error || !word) return word || new Error('Word not found');
+
+    const currentProgressIdx = ProgressOrder.findIndex((i) => i === word.Progress);
+    let nextProgress;
+    if (remember) {
+      nextProgress = ProgressOrder[currentProgressIdx + 1] ?? word.Progress;
+    } else {
+      nextProgress = ProgressOrder[currentProgressIdx - 1] ?? word.Progress;
+    }
+
+    const result = await setWordProgress(word._id, nextProgress, this.logger);
+    return result === null ? undefined : result;
   }
 
   async editWord(

@@ -13,7 +13,7 @@ import { useGetExamplesQuery } from "../api/getExamples";
 import { useSubmitWordMutation } from "../api/submitWord";
 import { useSearchImagesQuery } from "../api/searchImages";
 import WebApp from "@twa-dev/sdk";
-import { ReloadIcon } from "./ReloadIcon";
+import { ReloadIcon } from "../../../shared/ui/ReloadIcon";
 
 let timeout: number;
 

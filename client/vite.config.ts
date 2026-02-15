@@ -14,8 +14,10 @@ const i18n = {
     reveal: "Reveal",
     loading: "Loading...",
     noWords: "No more words to revise!",
+    noWordsLearn: "No more words to learn!",
     congrats: "Congratulations!",
     allDone: "You've finished all your words for today. Great job!",
+    allDoneLearn: "You've learned all your words for today. Great job!",
     close: "Close",
   },
   pt: {
@@ -29,8 +31,10 @@ const i18n = {
     reveal: "Revelar",
     loading: "Carregando...",
     noWords: "Não há mais palavras para revisar!",
+    noWordsLearn: "Não há mais palavras para aprender!",
     congrats: "Parabéns!",
     allDone: "Você terminou todas as suas palavras para hoje. Ótimo trabalho!",
+    allDoneLearn: "Você aprendeu todas as suas palavras para hoje. Ótimo trabalho!",
     close: "Fechar",
   },
 };
