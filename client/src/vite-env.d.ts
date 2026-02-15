@@ -11,6 +11,9 @@ type I18N = {
   reveal: string;
   loading: string;
   noWords: string;
+  congrats: string;
+  allDone: string;
+  close: string;
 };
 
 declare const i18n: I18N;

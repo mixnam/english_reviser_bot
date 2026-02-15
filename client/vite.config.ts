@@ -14,6 +14,9 @@ const i18n = {
     reveal: "Reveal",
     loading: "Loading...",
     noWords: "No more words to revise!",
+    congrats: "Congratulations!",
+    allDone: "You've finished all your words for today. Great job!",
+    close: "Close",
   },
   pt: {
     word: "Palavra",
@@ -26,6 +29,9 @@ const i18n = {
     reveal: "Revelar",
     loading: "Carregando...",
     noWords: "Não há mais palavras para revisar!",
+    congrats: "Parabéns!",
+    allDone: "Você terminou todas as suas palavras para hoje. Ótimo trabalho!",
+    close: "Fechar",
   },
 };
 

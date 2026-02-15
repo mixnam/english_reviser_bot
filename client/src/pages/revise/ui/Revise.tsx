@@ -1,9 +1,16 @@
 import { useSearchParams } from "react-router-dom";
-import { Title, Button, Spinner } from "@telegram-apps/telegram-ui";
-import { useState } from "react";
+import {
+  Title,
+  Button,
+  Spinner,
+  Placeholder,
+} from "@telegram-apps/telegram-ui";
+import { useState, useEffect } from "react";
 import { useGetRandomWordQuery } from "../api/getRandomWord";
 import { useUpdateWordProgressMutation } from "../api/updateWordProgress";
 import { WordCard } from "./WordCard";
+import confetti from "canvas-confetti";
+import WebApp from "@twa-dev/sdk";
 
 export const Revise = () => {
   const [searchParams] = useSearchParams();
@@ -17,6 +24,25 @@ export const Revise = () => {
     refetch,
   } = useGetRandomWordQuery(chatID);
   const updateProgressMutation = useUpdateWordProgressMutation();
+
+  useEffect(() => {
+    if (!isLoading && !word && !isError) {
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: [
+          "#26ccff",
+          "#a25afd",
+          "#ff5e7e",
+          "#88ff5a",
+          "#fcff42",
+          "#ffa62d",
+          "#ff36ff",
+        ],
+      });
+    }
+  }, [isLoading, word, isError]);
 
   const handleDecision = (remember: boolean) => {
     if (!word) return;
@@ -44,12 +70,33 @@ export const Revise = () => {
     );
   }
 
-  if (isError || !word) {
+  if (isError) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-4">
         <Title level="2">{i18n.noWords}</Title>
         <Button className="mt-4" onClick={() => refetch()}>
           Retry
+        </Button>
+      </div>
+    );
+  }
+
+  if (!word) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center p-4">
+        <Placeholder header={i18n.congrats} description={i18n.allDone}>
+          <img
+            alt="Success"
+            src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f389/512.gif"
+            style={{ width: 128, height: 128 }}
+          />
+        </Placeholder>
+        <Button
+          size="l"
+          className="mt-auto w-full max-w-xs"
+          onClick={() => WebApp.close()}
+        >
+          {i18n.close}
         </Button>
       </div>
     );
@@ -88,7 +135,6 @@ export const Revise = () => {
           stretched
           size="l"
           mode="bezeled"
-          className="bg-green-50"
           onClick={() => handleDecision(true)}
           loading={updateProgressMutation.isPending}
         >

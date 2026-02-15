@@ -1825,6 +1825,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/canvas-confetti@npm:^1.9.0":
+  version: 1.9.0
+  resolution: "@types/canvas-confetti@npm:1.9.0"
+  checksum: 10c0/ffe2c674d466b8e13472c81ab2a97056f3433fd40a3513dbc1bb76764e4e7c3ff0a2a58d37b16ea6a245c831077c553db321b069dda6572eab59f2be61137b2e
+  languageName: node
+  linkType: hard
+
 "@types/caseless@npm:*":
   version: 0.12.5
   resolution: "@types/caseless@npm:0.12.5"
@@ -2945,6 +2952,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"canvas-confetti@npm:^1.9.4":
+  version: 1.9.4
+  resolution: "canvas-confetti@npm:1.9.4"
+  checksum: 10c0/08f11b5fa20b365922108828d7488f9b3eac2afdf39bc478339268c1250b5215df82682d7074520a3f0f72f4728f9703bbc937dcfe793f196b44e6e8ac0b1f7b
+  languageName: node
+  linkType: hard
+
 "caseless@npm:~0.12.0":
   version: 0.12.0
   resolution: "caseless@npm:0.12.0"
@@ -2978,12 +2992,14 @@ __metadata:
     "@tanstack/react-query": "npm:^5.45.1"
     "@telegram-apps/telegram-ui": "npm:^2.1.4"
     "@twa-dev/sdk": "npm:^7.0.0"
+    "@types/canvas-confetti": "npm:^1.9.0"
     "@types/eslint__js": "npm:^8.42.3"
     "@types/react": "npm:^18.3.3"
     "@types/react-dom": "npm:^18.3.0"
     "@typescript-eslint/eslint-plugin": "npm:^7.13.1"
     "@typescript-eslint/parser": "npm:^7.13.1"
     "@vitejs/plugin-react": "npm:^4.3.1"
+    canvas-confetti: "npm:^1.9.4"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^10.1.8"
     eslint-config-xo: "npm:^0.45.0"
@@ -7393,7 +7409,7 @@ __metadata:
 
 "server@file:../server::locator=pt_deploy%40workspace%3Apt_deploy":
   version: 1.0.0
-  resolution: "server@file:../server#../server::hash=0e2ea0&locator=pt_deploy%40workspace%3Apt_deploy"
+  resolution: "server@file:../server#../server::hash=5eb40c&locator=pt_deploy%40workspace%3Apt_deploy"
   dependencies:
     "@fastify/cors": "npm:^9.0.1"
     "@google-cloud/storage": "npm:^7.18.0"
@@ -7406,7 +7422,7 @@ __metadata:
     openai: "npm:^4"
     pino: "npm:^8.17.1"
     telegram-escape: "npm:^1.1.1"
-  checksum: 10c0/8779af4d60441f8215416e6355bcd29f0cfcd27957026ca4028b281ac734efb8e3aecc824ebc71035c7ca8698368fe9264b5c1abfd716b686b89894fc4cc1bf1
+  checksum: 10c0/c72555979d321fdabd09cca7f3e50eec9d760cbff2327927124d9af79fc9c3a31d1c3f7e9b4f207d2c108f93e26bc65996e2427779172f1662f00fca1a337f5e
   languageName: node
   linkType: hard
 
