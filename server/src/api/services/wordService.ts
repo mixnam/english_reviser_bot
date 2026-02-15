@@ -2,7 +2,14 @@ import {Logger} from 'pino';
 import {ObjectId} from 'mongodb';
 import {Bot} from '../../telegram.js';
 import {getUserByChatID} from '../../repo/users.js';
-import {getSpelcheckSuggestions, Progress, Word} from '../../repo/words.js';
+import {
+  getSpelcheckSuggestions,
+  Progress,
+  Word,
+  getRandomWordByUserIDForRevise,
+  setWordAsRevisedByWordID,
+  setWordAsForgottenByWordID,
+} from '../../repo/words.js';
 import * as OpenAIExamplesService from '../../services/openAIExamples.js';
 import * as GoogleImageService from '../../services/googleImage.js';
 import {minusDaysFromNow} from '../../repo/utils.js';
@@ -70,6 +77,32 @@ export class WordService {
       });
     } catch (err) {
       return err;
+    }
+  }
+
+  async getRandomReviseWord(chatID: number): Promise<Word | null | Error> {
+    const user = await getUserByChatID(chatID, this.logger);
+    if (user instanceof Error) return user;
+    if (!user) return new Error(`User not found for chatID: ${chatID}`);
+
+    return getRandomWordByUserIDForRevise(user._id, this.logger);
+  }
+
+  async updateWordProgress(
+      chatID: number,
+      wordID: string,
+      remember: boolean,
+  ): Promise<void | Error> {
+    const user = await getUserByChatID(chatID, this.logger);
+    if (user instanceof Error) return user;
+    if (!user) return new Error(`User not found for chatID: ${chatID}`);
+
+    if (remember) {
+      const result = await setWordAsRevisedByWordID(wordID, this.logger);
+      return result === null ? undefined : result;
+    } else {
+      const result = await setWordAsForgottenByWordID(wordID, this.logger);
+      return result === null ? undefined : result;
     }
   }
 

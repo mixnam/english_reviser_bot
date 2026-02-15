@@ -12,7 +12,7 @@ import {AddCommand} from './commands/add.js';
 import {EditWordCommand, EditWordMsg} from './webAppCommands/editWord.js';
 import {AddWordCommand, AddWordMsg} from './webAppCommands/addWord.js';
 import {renderHelpMsg} from './render/renderHelpMsg.js';
-import {renderYouAreNotMyMaster} from './render/renderTextMsg.js';
+import {renderReviseInTMA, renderYouAreNotMyMaster} from './render/renderTextMsg.js';
 
 type WebAppMsg = EditWordMsg | AddWordMsg;
 
@@ -85,9 +85,25 @@ class Bot {
                 parse_mode: 'MarkdownV2',
               });
           break;
-        case '/revise':
-          await this.reviseCommand.processMsg(msg);
+        case '/revise': {
+          const tmaUrl = process.env.TMA_URL || '';
+          const reviseUrl = `${tmaUrl}#/revise?chat_id=${msg.chat.id}`;
+          await this.bot.sendMessage(msg.chat.id, renderReviseInTMA(), {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: 'Revise',
+                    web_app: {
+                      url: reviseUrl,
+                    },
+                  },
+                ],
+              ],
+            },
+          });
           break;
+        }
         case '/learn':
           await this.learnCommand.processMsg(msg);
           break;

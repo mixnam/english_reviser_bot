@@ -22,6 +22,7 @@ interface LanguageTranslations {
   renderYouAreAddingExistingWord: (word: string) => string;
   renderYouJustAddedNewWord: (word: Word) => string;
   renderNoWordsFound: () => string;
+  renderReviseInTMA: () => string;
 }
 
 const languageTokenMap: {[key: string]: LanguageTranslations} = {
@@ -52,6 +53,7 @@ Click on the correct word to move it to the 'Have Problems' state, or click 'Con
     renderYouJustAddedNewWord: (word) => `You just added new word 🎉: 
 ${renderWordWithCustomStatus(word)}`,
     renderNoWordsFound: () => 'You have no words yet.',
+    renderReviseInTMA: () => 'Ready to revise some words?',
   },
   pt: {
     renderNoMoreWordsToLearnForToday: () => `Cobriu todas as palavras designadas para aprendizado hoje 🎉
@@ -80,6 +82,7 @@ Clique na palavra correta para movê\-la para o estado 'Tem Problemas', ou cliqu
     renderYouJustAddedNewWord: (word) => `Acabou de adicionar uma nova palavra 🎉: 
 ${renderWordWithCustomStatus(word)}`,
     renderNoWordsFound: () => 'Ainda não tem palavras.',
+    renderReviseInTMA: () => 'Pronto para revisar algumas palavras?',
   },
 };
 
@@ -104,6 +107,7 @@ const {
   renderYouAreAddingExistingWord,
   renderYouJustAddedNewWord,
   renderNoWordsFound,
+  renderReviseInTMA,
 } = translations;
 
 export {
@@ -125,5 +129,6 @@ export {
   renderYouAreAddingExistingWord,
   renderYouJustAddedNewWord,
   renderNoWordsFound,
+  renderReviseInTMA,
 };
 export default translations;
