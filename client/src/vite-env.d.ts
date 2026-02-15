@@ -11,8 +11,10 @@ type I18N = {
   reveal: string;
   loading: string;
   noWords: string;
+  noWordsLearn: string;
   congrats: string;
   allDone: string;
+  allDoneLearn: string;
   close: string;
 };
 

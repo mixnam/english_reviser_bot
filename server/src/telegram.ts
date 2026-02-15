@@ -12,7 +12,7 @@ import {AddCommand} from './commands/add.js';
 import {EditWordCommand, EditWordMsg} from './webAppCommands/editWord.js';
 import {AddWordCommand, AddWordMsg} from './webAppCommands/addWord.js';
 import {renderHelpMsg} from './render/renderHelpMsg.js';
-import {renderReviseInTMA, renderYouAreNotMyMaster} from './render/renderTextMsg.js';
+import {renderLearnInTMA, renderReviseInTMA, renderYouAreNotMyMaster} from './render/renderTextMsg.js';
 
 type WebAppMsg = EditWordMsg | AddWordMsg;
 
@@ -104,9 +104,26 @@ class Bot {
           });
           break;
         }
-        case '/learn':
-          await this.learnCommand.processMsg(msg);
+        case '/learn': {
+          const tmaUrl = process.env.TMA_URL || '';
+          const learnUrl = `${tmaUrl}#/learn?chat_id=${msg.chat.id}`;
+
+          await this.bot.sendMessage(msg.chat.id, renderLearnInTMA(), {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: 'Learn',
+                    web_app: {
+                      url: learnUrl,
+                    },
+                  },
+                ],
+              ],
+            },
+          });
           break;
+        }
         case '/stats':
           await this.statsCommand.processMsg(msg);
           break;

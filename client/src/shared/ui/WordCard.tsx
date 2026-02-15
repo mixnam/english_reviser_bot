@@ -1,5 +1,5 @@
 import { Card, Text, Caption, Button } from "@telegram-apps/telegram-ui";
-import { Word } from "../api/getRandomWord";
+import { Word } from "../../pages/revise/api/getRandomWord";
 import { useRef } from "react";
 
 interface WordCardProps {

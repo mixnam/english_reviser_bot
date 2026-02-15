@@ -5,6 +5,49 @@ import {Word} from '../../repo/words.js';
 export class WordController {
   constructor(private wordService: WordService) {}
 
+  getRandomLearnWord = async (
+    req: FastifyRequest<{
+      Params: {chat_id: string};
+    }>,
+    res: FastifyReply,
+  ) => {
+    const result = await this.wordService.getRandomLearnWord(
+      Number.parseInt(req.params.chat_id),
+    );
+
+    if (result instanceof Error) {
+      req.log.error(result);
+      return res.code(500).send({message: result.message});
+    }
+
+    if (result === null) {
+      return res.code(404).send({message: 'No words to learn'});
+    }
+
+    return res.code(200).send(result);
+  };
+
+  updateLearnWordProgress = async (
+    req: FastifyRequest<{
+      Params: {chat_id: string; word_id: string};
+      Body: {remember: boolean};
+    }>,
+    res: FastifyReply,
+  ) => {
+    const result = await this.wordService.updateLearnWordProgress(
+      Number.parseInt(req.params.chat_id),
+      req.params.word_id,
+      req.body.remember,
+    );
+
+    if (result instanceof Error) {
+      req.log.error(result);
+      return res.code(500).send({message: result.message});
+    }
+
+    return res.code(200).send({success: true});
+  };
+
   getRandomReviseWord = async (
       req: FastifyRequest<{
       Params: {chat_id: string};
