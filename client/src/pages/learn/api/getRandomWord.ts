@@ -4,7 +4,7 @@ import WebApp from "@twa-dev/sdk";
 import { Word } from "../../revise/api/getRandomWord";
 
 export const useGetRandomLearnWordQuery = (chatID: string) => {
-  return useQuery<Word>({
+  return useQuery<Word | null>({
     queryKey: ["random-learn-word", chatID],
     queryFn: async () => {
       const response = await fetch(
@@ -15,6 +15,9 @@ export const useGetRandomLearnWordQuery = (chatID: string) => {
           },
         },
       );
+      if (response.status === 404) {
+        return null;
+      }
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }

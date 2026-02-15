@@ -1,6 +1,6 @@
 import { Card, Text, Caption, Button } from "@telegram-apps/telegram-ui";
 import { Word } from "../../pages/revise/api/getRandomWord";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 
 interface WordCardProps {
   word: Word;
@@ -10,6 +10,11 @@ interface WordCardProps {
 
 export const WordCard = ({ word, revealed, onReveal }: WordCardProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [revealedExample, setRevealedExample] = useState(false);
+
+  useEffect(() => {
+    setRevealedExample(false);
+  }, [word._id]);
 
   const playAudio = () => {
     if (audioRef.current) {
@@ -19,7 +24,7 @@ export const WordCard = ({ word, revealed, onReveal }: WordCardProps) => {
 
   return (
     <div className="rounded-2xl shadow-2xl">
-      <Card className="flex flex-col overflow-hidden mb-4">
+      <Card className="flex flex-col w-full h-full overflow-hidden">
         {word.ImageURL && (
           <img
             src={word.ImageURL}
@@ -28,9 +33,27 @@ export const WordCard = ({ word, revealed, onReveal }: WordCardProps) => {
           />
         )}
         <div className="p-4 flex flex-col items-center gap-3">
-          <Text weight="1" className="text-2xl">
+          <Text weight="1" className="text-2xl whitespace-pre-wrap text-center">
             {word.English}
           </Text>
+
+          {word.Examples && (
+            <div className="flex flex-col items-center gap-2 w-full">
+              {revealedExample ? (
+                <Caption className="italic text-gray-500 whitespace-pre-wrap text-center px-4">
+                  "{word.Examples}"
+                </Caption>
+              ) : (
+                <Button
+                  size="s"
+                  mode="outline"
+                  onClick={() => setRevealedExample(true)}
+                >
+                  Show Example
+                </Button>
+              )}
+            </div>
+          )}
 
           {word.AudioURL && (
             <div className="flex items-center gap-2">
@@ -47,14 +70,9 @@ export const WordCard = ({ word, revealed, onReveal }: WordCardProps) => {
             </Button>
           ) : (
             <div className="flex flex-col items-center gap-2 text-center">
-              <Text weight="2" className="text-blue-500">
+              <Text weight="2" className="text-blue-500 whitespace-pre-wrap">
                 {word.Translation}
               </Text>
-              {word.Examples && (
-                <Caption className="italic text-gray-500">
-                  "{word.Examples}"
-                </Caption>
-              )}
             </div>
           )}
         </div>

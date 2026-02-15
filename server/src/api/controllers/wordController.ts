@@ -6,13 +6,13 @@ export class WordController {
   constructor(private wordService: WordService) {}
 
   getRandomLearnWord = async (
-    req: FastifyRequest<{
+      req: FastifyRequest<{
       Params: {chat_id: string};
     }>,
-    res: FastifyReply,
+      res: FastifyReply,
   ) => {
     const result = await this.wordService.getRandomLearnWord(
-      Number.parseInt(req.params.chat_id),
+        Number.parseInt(req.params.chat_id),
     );
 
     if (result instanceof Error) {
@@ -28,16 +28,16 @@ export class WordController {
   };
 
   updateLearnWordProgress = async (
-    req: FastifyRequest<{
+      req: FastifyRequest<{
       Params: {chat_id: string; word_id: string};
       Body: {remember: boolean};
     }>,
-    res: FastifyReply,
+      res: FastifyReply,
   ) => {
     const result = await this.wordService.updateLearnWordProgress(
-      Number.parseInt(req.params.chat_id),
-      req.params.word_id,
-      req.body.remember,
+        Number.parseInt(req.params.chat_id),
+        req.params.word_id,
+        req.body.remember,
     );
 
     if (result instanceof Error) {
