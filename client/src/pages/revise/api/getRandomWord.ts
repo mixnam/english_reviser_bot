@@ -6,6 +6,7 @@ export type Word = {
   _id: string;
   English: string;
   Translation: string;
+  Progress: string;
   Examples?: string;
   ImageURL?: string;
   AudioURL?: string;

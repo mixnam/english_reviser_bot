@@ -113,6 +113,7 @@ export const Learn = () => {
           word={word}
           revealed={revealed}
           onReveal={() => setRevealed(true)}
+          progress={word.Progress}
         />
       </div>
 

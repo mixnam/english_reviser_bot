@@ -8,6 +8,14 @@ interface WordCardProps {
   onReveal: () => void;
 }
 
+const progressShadowMap: Record<string, string> = {
+  "Have problems": "shadow-rose-200", // red
+  "Have to pay attention": "shadow-orange-200", // orange
+  "Need to repeat": "shadow-yellow-200", // yellow
+  "Active learning": "shadow-blue-200", // blue
+  Learned: "shadow-green-200", // green
+};
+
 export const WordCard = ({ word, revealed, onReveal }: WordCardProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [revealedExample, setRevealedExample] = useState(false);
@@ -22,8 +30,10 @@ export const WordCard = ({ word, revealed, onReveal }: WordCardProps) => {
     }
   };
 
+  const shadowClass = progressShadowMap[word.Progress];
+
   return (
-    <div className="rounded-2xl shadow-2xl">
+    <div className={`rounded-2xl shadow-2xl ${shadowClass}`}>
       <Card className="flex flex-col w-full h-full overflow-hidden">
         {word.ImageURL && (
           <img
