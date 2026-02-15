@@ -5,6 +5,7 @@ import "@telegram-apps/telegram-ui/dist/styles.css";
 
 import { EditWord } from "./pages/edit_word";
 import { AddWord } from "./pages/add_word";
+import { Revise } from "./pages/revise";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Routes>
         <Route path="edit-word" element={<EditWord />} />
         <Route path="add-word" element={<AddWord />} />
+        <Route path="revise" element={<Revise />} />
       </Routes>
     </AppRoot>
   );

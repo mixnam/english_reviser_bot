@@ -5,6 +5,12 @@ type I18N = {
   translation: string;
   examples: string;
   save: string;
+  doYouRemember: string;
+  yes: string;
+  no: string;
+  reveal: string;
+  loading: string;
+  noWords: string;
 };
 
 declare const i18n: I18N;
