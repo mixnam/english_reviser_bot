@@ -119,12 +119,18 @@ export class WordService {
   }
 
   async updateLearnWordProgress(
-    chatID: number,
-    wordID: string,
-    remember: boolean,
+      chatID: number,
+      wordID: string,
+      remember: boolean,
   ): Promise<void | Error> {
     const word = await getWordByID(wordID, this.logger);
-    if (word instanceof Error || !word) return word || new Error('Word not found');
+    if (word instanceof Error) {
+      return word || new Error('Word not found');
+    }
+    if (!word) {
+      return new Error('word not found in DB');
+    }
+
 
     const currentProgressIdx = ProgressOrder.findIndex((i) => i === word.Progress);
     let nextProgress;
