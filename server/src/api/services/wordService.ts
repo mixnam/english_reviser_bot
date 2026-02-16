@@ -16,6 +16,7 @@ import {
 } from '../../repo/words.js';
 import * as OpenAIExamplesService from '../../services/openAIExamples.js';
 import * as GoogleImageService from '../../services/googleImage.js';
+import * as GoogleCloudStorage from '../../services/googleCloudStorage.js';
 import {minusDaysFromNow} from '../../repo/utils.js';
 
 export class WordService {
@@ -47,6 +48,28 @@ export class WordService {
   async searchImages(word: string, offset: number = 0): Promise<string[] | Error> {
     const query = `ilustração ${word}`;
     return GoogleImageService.getInstance().searchImages(query, this.logger, offset + 1);
+  }
+
+  async uploadImage(file: Buffer, mimetype: string): Promise<string | Error> {
+    const MIME_TYPES_TO_EXTENSION = {
+      'image/apng': 'apng',
+      'image/avif': 'avif',
+      'image/gif': 'gif',
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/svg+xml': 'svg',
+      'image/webp': 'webp',
+    };
+
+    const extension = (MIME_TYPES_TO_EXTENSION as any)[mimetype] || 'jpg';
+    const fileName = `${new ObjectId().toString()}.${extension}`;
+
+    try {
+      return await GoogleCloudStorage.getInstance().uploadImage(file, fileName, this.logger);
+    } catch (err) {
+      this.logger.error({err}, 'Failed to upload image to GCS');
+      return err instanceof Error ? err : new Error(String(err));
+    }
   }
 
   async saveWord(

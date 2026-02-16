@@ -160,6 +160,19 @@ export const wordRoutes = async (
     handler: wordController.searchImages,
   });
 
+  fastify.post('/chat/:chat_id/word/image/upload', {
+    schema: {
+      params: {
+        type: 'object',
+        properties: {
+          chat_id: {type: 'string'},
+        },
+        required: ['chat_id'],
+      },
+    },
+    handler: wordController.uploadImage,
+  });
+
   fastify.post('/chat/:chat_id/word/save', {
     schema: {
       params: {

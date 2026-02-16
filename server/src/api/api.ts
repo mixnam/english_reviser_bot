@@ -2,6 +2,7 @@ import {FastifyInstance, FastifyRequest, FastifyReply, AddContentTypeParser} fro
 import {IncomingMessage, ServerResponse} from 'http';
 import fastify from 'fastify';
 import fastifyCors from '@fastify/cors';
+import fastifyMultipart from '@fastify/multipart';
 import {pino, Logger} from 'pino';
 
 import {Bot} from '../telegram.js';
@@ -38,6 +39,12 @@ class Api {
       methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed methods
       credentials: true, // Allow cookies to be sent
       maxAge: 86400, // Specify how long the results of a preflight request can be cached
+    });
+
+    this.#server.register(fastifyMultipart, {
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB
+      },
     });
 
     if (!this.#isDev) {
