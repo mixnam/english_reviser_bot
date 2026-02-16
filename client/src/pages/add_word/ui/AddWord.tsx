@@ -15,11 +15,12 @@ import {
   useSearchImagesQuery,
   Params as SearchImageParams,
 } from "../api/searchImages";
-import { uploadImage } from "../api/uploadImage";
 import WebApp from "@twa-dev/sdk";
 import { ReloadIcon } from "../../../shared/ui/ReloadIcon";
+import { ImagePreview } from "../../../shared/ui/ImagePreview";
 
 let timeout: number;
+let longPressTimer: ReturnType<typeof setTimeout> | null = null;
 
 const debounce = (callback: () => void, time: number) => () => {
   clearTimeout(timeout);
@@ -36,7 +37,23 @@ export const AddWord = () => {
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | Blob | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const onTouchStart = (url: string) => {
+    longPressTimer = setTimeout(() => {
+      setPreviewUrl(url);
+      longPressTimer = null;
+    }, 1000);
+  };
+
+  const onTouchEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  };
+
   const [searchImageParams, setSearchImageParams] = useState<SearchImageParams>(
     {
       chatID: chatIDParam ?? "",
@@ -258,6 +275,9 @@ export const AddWord = () => {
                 key={url}
                 className={`shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden ${selectedImageUrl === url ? "border-[#007aff]" : "border-transparent"}`}
                 onClick={() => onSelectRemoteImage(url)}
+                onTouchStart={() => onTouchStart(url)}
+                onTouchEnd={onTouchEnd}
+                onTouchMove={onTouchEnd}
               >
                 <img
                   src={url}
@@ -271,7 +291,12 @@ export const AddWord = () => {
 
         {filePreview && (
           <div className="flex gap-2 px-[22px] pb-4">
-            <div className="shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden border-[#007aff]">
+            <div
+              className="shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden border-[#007aff]"
+              onTouchStart={() => onTouchStart(filePreview)}
+              onTouchEnd={onTouchEnd}
+              onTouchMove={onTouchEnd}
+            >
               <img
                 src={filePreview}
                 alt="preview"
@@ -292,6 +317,9 @@ export const AddWord = () => {
           {i18n.save}
         </Button>
       </div>
+      {previewUrl && (
+        <ImagePreview url={previewUrl} onClose={() => setPreviewUrl(null)} />
+      )}
     </form>
   );
 };
