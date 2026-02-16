@@ -154,14 +154,15 @@ export class WordController {
 
     return res.code(200).send({example: result});
   };
+
   searchImages = async (
       req: FastifyRequest<{
-        Params: {chat_id: string};
-        Body: {word: string};
-      }>,
+          Params: {chat_id: string};
+          Body: {word: string; offset?: number};
+        }>,
       res: FastifyReply,
   ) => {
-    const result = await this.wordService.searchImages(req.body.word);
+    const result = await this.wordService.searchImages(req.body.word, req.body.offset);
 
     if (result instanceof Error) {
       req.log.error(result);
@@ -170,6 +171,29 @@ export class WordController {
 
     return res.code(200).send({urls: result});
   };
+
+  uploadImage = async (
+      req: FastifyRequest<{
+          Params: {chat_id: string};
+        }>,
+      res: FastifyReply,
+  ) => {
+    const data = await req.file();
+    if (!data) {
+      return res.code(400).send({message: 'No file uploaded'});
+    }
+
+    const buffer = await data.toBuffer();
+    const result = await this.wordService.uploadImage(buffer, data.mimetype);
+
+    if (result instanceof Error) {
+      req.log.error(result);
+      return res.code(500).send({message: result.message});
+    }
+
+    return res.code(200).send({url: result});
+  };
+
   saveWord = async (
       req: FastifyRequest<{
         Params: {chat_id: string};

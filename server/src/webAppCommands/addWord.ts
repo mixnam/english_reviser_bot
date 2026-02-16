@@ -37,7 +37,7 @@ class AddWordCommand extends WebAppCommand<AddWordMsg> {
 
       TTSService.getInstance().getAudioForText(word.Examples || word.English),
 
-      imageUrl !== null ?
+      (imageUrl !== null && !imageUrl.includes(process.env.GOOGLE_CLOUD_STORAGE_BUCKET!)) ?
         new Promise<IncomingMessage | Error>((resolve) => {
           const client = imageUrl.startsWith('https') ? https : http;
           const req = client.get(imageUrl, (response) => {
@@ -47,6 +47,10 @@ class AddWordCommand extends WebAppCommand<AddWordMsg> {
         }) :
         Promise.resolve<null>(null),
     ]);
+
+    if (imageUrl?.includes(process.env.GOOGLE_CLOUD_STORAGE_BUCKET!)) {
+      word.ImageURL = imageUrl;
+    }
 
 
     if (user instanceof Error) {
