@@ -5,6 +5,14 @@ import WebApp from "@twa-dev/sdk";
 
 const SEARCH_IMAGES_KEY = "search_images";
 
+export type Params = {
+  word: string;
+  translation: string;
+  chatID: string;
+  offset?: number;
+  enabled: boolean;
+};
+
 type Data = {
   urls: string[];
 };
@@ -13,14 +21,12 @@ export const useSearchImagesQuery = ({
   word,
   translation,
   chatID,
-}: {
-  word: string;
-  translation: string;
-  chatID: string;
-}) => {
+  offset = 0,
+  enabled,
+}: Params) => {
   return useQuery<null | Data>({
     initialData: null,
-    queryKey: [SEARCH_IMAGES_KEY, chatID, word],
+    queryKey: [SEARCH_IMAGES_KEY, chatID, word, offset],
     queryFn: async () => {
       const response = await fetch(
         `${API_BASE_URL}/chat/${chatID}/word/image/search`,
@@ -33,12 +39,13 @@ export const useSearchImagesQuery = ({
           body: JSON.stringify({
             word,
             translation,
+            offset,
           }),
         },
       ).then((response) => response.json());
 
       return response as { urls: string[] };
     },
-    enabled: false,
+    enabled,
   });
 };

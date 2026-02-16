@@ -11,7 +11,10 @@ import React, { useEffect, useState } from "react";
 import { useCheckSimilarWorkQuery } from "../api/checkSimilarWords";
 import { useGetExamplesQuery } from "../api/getExamples";
 import { useSubmitWordMutation } from "../api/submitWord";
-import { useSearchImagesQuery } from "../api/searchImages";
+import {
+  useSearchImagesQuery,
+  Params as SearchImageParams,
+} from "../api/searchImages";
 import WebApp from "@twa-dev/sdk";
 import { ReloadIcon } from "../../../shared/ui/ReloadIcon";
 
@@ -30,6 +33,15 @@ export const AddWord = () => {
   const [translation, setTranslation] = useState("");
   const [example, setExample] = useState("");
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  const [searchImageParams, setSearchImageParams] = useState<SearchImageParams>(
+    {
+      chatID: chatIDParam ?? "",
+      word,
+      translation,
+      offset: 0,
+      enabled: false,
+    },
+  );
 
   const checkSimilarWordQuery = useCheckSimilarWorkQuery({
     chatID: chatIDParam ?? "",
@@ -40,11 +52,7 @@ export const AddWord = () => {
     word,
     translation,
   });
-  const searchImagesQuery = useSearchImagesQuery({
-    chatID: chatIDParam ?? "",
-    word,
-    translation,
-  });
+  const searchImagesQuery = useSearchImagesQuery(searchImageParams);
 
   const submitWordMutation = useSubmitWordMutation();
 
@@ -56,6 +64,13 @@ export const AddWord = () => {
   const onChangeWord = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.currentTarget.value;
     setWord(value);
+    setSearchImageParams((params) => ({
+      ...params,
+      word: value,
+      offset: 0,
+      enabled: false,
+    }));
+    setSelectedImageUrl(null);
     if (value) {
       checkSimilarWordDebounced();
     }
@@ -68,6 +83,14 @@ export const AddWord = () => {
 
   const onChangeExample = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setExample(e.currentTarget.value);
+  };
+
+  const onSearchImages = () => {
+    setSearchImageParams((params) => ({
+      ...params,
+      offset: searchImagesQuery.data ? (params.offset ?? 0) + 5 : 0,
+      enabled: true,
+    }));
   };
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -156,7 +179,7 @@ export const AddWord = () => {
             size="s"
             mode="plain"
             type="button"
-            onClick={() => searchImagesQuery.refetch()}
+            onClick={onSearchImages}
           >
             <ReloadIcon size={18} />
           </IconButton>

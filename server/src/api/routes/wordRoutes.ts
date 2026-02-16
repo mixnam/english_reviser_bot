@@ -152,6 +152,7 @@ export const wordRoutes = async (
         type: 'object',
         properties: {
           word: {type: 'string'},
+          offset: {type: 'number'},
         },
         required: ['word'],
       },

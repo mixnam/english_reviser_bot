@@ -44,9 +44,22 @@ export class WordService {
     );
   }
 
-  async searchImages(word: string): Promise<string[] | Error> {
-    const query = `${word} ilustração`;
-    return GoogleImageService.getInstance().searchImages(query, this.logger);
+  // https://www.google.com/search?
+  // q=ir+ilustra%C3%A7%C3%A3o
+  // &sca_esv=6a3dc1d72e9664c9
+  // &rlz=1C5CHFA_enPT1189PT1189
+  // &udm=2
+  // &biw=1512
+  // &bih=861
+  // &sxsrf=ANbL-n60BxBycFr6TVbebj1MmukqfN0knw%3A1771244198569
+  // &ei=pgqTacW1IqWnkdUPi93r-Qs
+  // &oq=Ir+
+  // &gs_lp=Egtnd3Mtd2l6LWltZyIDSXIgKgIIADIHECMYJxjJAjIFEAAYgAQyBRAAGIAEMgUQABiABDIKEAAYgAQYQxiKBTIFEAAYgAQyChAAGIAEGEMYigUyChAAGIAEGEMYigUyBRAAGIAEMgoQABiABBhDGIoFSOsZULUBWLUBcAF4AJABAJgBXaABXaoBATG4AQPIAQD4AQGYAgKgAmeYAwCIBgGSBwEyoAehBrIHATG4B2LCBwMyLTLIBweACAA
+  // &sclient=gws-wiz-img
+
+  async searchImages(word: string, offset: number = 0): Promise<string[] | Error> {
+    const query = `${word}+ilustração`;
+    return GoogleImageService.getInstance().searchImages(query, this.logger, offset + 1);
   }
 
   async saveWord(

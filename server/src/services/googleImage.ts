@@ -18,11 +18,13 @@ class GoogleImageServiceImpl {
    * Searches for images on Google using the Custom Search API.
    * @param query The search query.
    * @param logger Logger instance.
+   * @param start The index of the first result to return (for pagination).
    * @returns A promise that resolves to an array of image URLs or an Error.
    */
   searchImages = async (
       query: string,
       logger: Logger,
+      start: number = 1,
   ): Promise<string[] | Error> => {
     if (!this.apiKey || !this.cx) {
       logger.warn('GOOGLE_SEARCH_API_KEY or GOOGLE_SEARCH_ENGINE_ID is not set, skipping image search.');
@@ -35,6 +37,7 @@ class GoogleImageServiceImpl {
     searchUrl.searchParams.append('q', query);
     searchUrl.searchParams.append('searchType', 'image');
     searchUrl.searchParams.append('num', '5'); // Request up to 5 images
+    searchUrl.searchParams.append('start', start.toString());
     searchUrl.searchParams.append('safe', 'active'); // Enable SafeSearch
 
     logger.debug({url: searchUrl.toString()}, 'Making Google Custom Search API request');
