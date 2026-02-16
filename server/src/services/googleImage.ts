@@ -37,6 +37,8 @@ class GoogleImageServiceImpl {
     searchUrl.searchParams.append('q', query);
     searchUrl.searchParams.append('searchType', 'image');
     searchUrl.searchParams.append('num', '5'); // Request up to 5 images
+    searchUrl.searchParams.append('lr', 'lang_pt');
+    searchUrl.searchParams.append('gr', 'pt');
     searchUrl.searchParams.append('start', start.toString());
     searchUrl.searchParams.append('safe', 'active'); // Enable SafeSearch
 
