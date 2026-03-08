@@ -1,15 +1,15 @@
 import { API_BASE_URL } from "./config";
 
-export interface RequestOptions extends RequestInit {
+export type RequestOptions = RequestInit & {
   params?: Record<string, string>;
-}
+};
 
-export async function apiFetch<T>(
+export const apiFetch = async <T>(
   endpoint: string,
   initData: string,
   options: RequestOptions = {},
-): Promise<T> {
-  const { params, headers, ...rest } = options;
+): Promise<T> => {
+  const { params, headers, body, ...rest } = options;
 
   let url = `${API_BASE_URL}${endpoint}`;
   if (params) {
@@ -20,10 +20,13 @@ export async function apiFetch<T>(
     }
   }
 
+  const isFormData = body instanceof FormData;
+
   const response = await fetch(url, {
     ...rest,
+    body,
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       "Telegram-Init-Data": initData,
       ...headers,
     },
@@ -39,4 +42,4 @@ export async function apiFetch<T>(
   }
 
   return response.json();
-}
+};

@@ -987,6 +987,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hookform/resolvers@npm:^5.2.2":
+  version: 5.2.2
+  resolution: "@hookform/resolvers@npm:5.2.2"
+  dependencies:
+    "@standard-schema/utils": "npm:^0.3.0"
+  peerDependencies:
+    react-hook-form: ^7.55.0
+  checksum: 10c0/0692cd61dcc2a70cbb27b88a37f733c39e97f555c036ba04a81bd42b0467461cfb6bafacb46c16f173672f9c8a216bd7928a2330d4e49c700d130622bf1defaf
+  languageName: node
+  linkType: hard
+
 "@humanwhocodes/config-array@npm:^0.13.0":
   version: 0.13.0
   resolution: "@humanwhocodes/config-array@npm:0.13.0"
@@ -1993,6 +2004,13 @@ __metadata:
   version: 4.53.3
   resolution: "@rollup/rollup-win32-x64-msvc@npm:4.53.3"
   conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@standard-schema/utils@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@standard-schema/utils@npm:0.3.0"
+  checksum: 10c0/6eb74cd13e52d5fc74054df51e37d947ef53f3ab9e02c085665dcca3c38c60ece8d735cebbdf18fbb13c775fbcb9becb3f53109b0e092a63f0f7389ce0993fd0
   languageName: node
   linkType: hard
 
@@ -3703,6 +3721,7 @@ __metadata:
   resolution: "client2@workspace:client2"
   dependencies:
     "@biomejs/biome": "npm:2.4.6"
+    "@hookform/resolvers": "npm:^5.2.2"
     "@tailwindcss/postcss": "npm:^4"
     "@telegram-apps/telegram-ui": "npm:^2.1.13"
     "@twa-dev/sdk": "npm:^8.0.2"
@@ -3714,8 +3733,10 @@ __metadata:
     next: "npm:16.1.6"
     react: "npm:19.2.3"
     react-dom: "npm:19.2.3"
+    react-hook-form: "npm:^7.71.2"
     tailwindcss: "npm:^4"
     typescript: "npm:^5"
+    zod: "npm:^4.3.6"
   languageName: unknown
   linkType: soft
 
@@ -7761,6 +7782,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-hook-form@npm:^7.71.2":
+  version: 7.71.2
+  resolution: "react-hook-form@npm:7.71.2"
+  peerDependencies:
+    react: ^16.8.0 || ^17 || ^18 || ^19
+  checksum: 10c0/bff61c229f5f2516e650325e0c450146cb8a08dc323e5e9aa0753eb937be0b66fe17f40a7b4be9aabc2b5cb770d03de07db7f4912c6c9452a86924072cc1cb46
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^16.13.1":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
@@ -8394,7 +8424,7 @@ __metadata:
 
 "server@file:../server::locator=pt_deploy%40workspace%3Apt_deploy":
   version: 1.0.0
-  resolution: "server@file:../server#../server::hash=106471&locator=pt_deploy%40workspace%3Apt_deploy"
+  resolution: "server@file:../server#../server::hash=f6609e&locator=pt_deploy%40workspace%3Apt_deploy"
   dependencies:
     "@fastify/cors": "npm:^11.2.0"
     "@fastify/multipart": "npm:^9.4.0"
@@ -8408,7 +8438,7 @@ __metadata:
     openai: "npm:^4"
     pino: "npm:^8.17.1"
     telegram-escape: "npm:^1.1.1"
-  checksum: 10c0/c0b0842ec1f407182938e03bca6dfabd3e73c186d94fcebfd5b19c2c7cc417daed40af362591bb9f847831f72f499b6f1c62ca32373ad3cbf87eb10621e0613b
+  checksum: 10c0/40381acfb505541a8d6222c570a5dcbbb69db9f1bb35ee658d81cd31c5d07c49ae5a43f9650c1efa797af11a029fdceffb956c809db5396bf81515974670208f
   languageName: node
   linkType: hard
 
@@ -9747,5 +9777,12 @@ __metadata:
   version: 0.1.0
   resolution: "yocto-queue@npm:0.1.0"
   checksum: 10c0/dceb44c28578b31641e13695d200d34ec4ab3966a5729814d5445b194933c096b7ced71494ce53a0e8820685d1d010df8b2422e5bf2cdea7e469d97ffbea306f
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.3.6":
+  version: 4.3.6
+  resolution: "zod@npm:4.3.6"
+  checksum: 10c0/860d25a81ab41d33aa25f8d0d07b091a04acb426e605f396227a796e9e800c44723ed96d0f53a512b57be3d1520f45bf69c0cb3b378a232a00787a2609625307
   languageName: node
   linkType: hard

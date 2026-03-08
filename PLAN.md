@@ -20,7 +20,7 @@
 - [x] **Task 2.2**: Port specific page API logic to `client2/src/features/[feature]/api`.
 
 ### 3. Migrate Pages (App Router)
-- [ ] **Task 3.1**: Migrate `/add_word` to `client2/src/app/add-word/page.tsx`.
+- [x] **Task 3.1**: Migrate `/add_word` to `client2/src/app/add-word/page.tsx`.
 - [ ] **Task 3.2**: Migrate `/edit_word` to `client2/src/app/edit-word/page.tsx`.
 - [ ] **Task 3.3**: Migrate `/learn` to `client2/src/app/learn/page.tsx`.
 - [ ] **Task 3.4**: Migrate `/revise` to `client2/src/app/revise/page.tsx`.
