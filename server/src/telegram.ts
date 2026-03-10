@@ -87,7 +87,7 @@ class Bot {
           break;
         case '/revise': {
           const tmaUrl = process.env.TMA_URL || '';
-          const reviseUrl = `${tmaUrl}#/revise?chat_id=${msg.chat.id}`;
+          const reviseUrl = `${tmaUrl}/revise?chat_id=${msg.chat.id}`;
           await this.bot.sendMessage(msg.chat.id, renderReviseInTMA(), {
             reply_markup: {
               inline_keyboard: [
@@ -106,7 +106,7 @@ class Bot {
         }
         case '/learn': {
           const tmaUrl = process.env.TMA_URL || '';
-          const learnUrl = `${tmaUrl}#/learn?chat_id=${msg.chat.id}`;
+          const learnUrl = `${tmaUrl}/learn?chat_id=${msg.chat.id}`;
 
           await this.bot.sendMessage(msg.chat.id, renderLearnInTMA(), {
             reply_markup: {
