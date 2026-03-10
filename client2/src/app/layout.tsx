@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Notion Revise Words",
-  description: "Learn and revise words using Notion and Telegram",
+  title: "Revise words",
+  description: "Learn and revise words using Telegram bot",
 };
 
 export default function RootLayout({

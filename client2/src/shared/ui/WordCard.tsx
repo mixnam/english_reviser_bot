@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, Text, Caption, Button } from "@telegram-apps/telegram-ui";
-import { useRef, useState, useEffect } from "react";
+import { Button, Caption, Card, Text } from "@telegram-apps/telegram-ui";
+import { useEffect, useRef, useState } from "react";
 import type { Word } from "../api/types";
 import { i18n } from "../lib/i18n";
 

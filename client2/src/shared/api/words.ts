@@ -70,6 +70,7 @@ export const saveWord = async (
 	initData: string,
 	chatID: string,
 	word: Partial<Word>,
+	messageID?: string,
 ) => {
 	const response = await apiFetch(
 		`/chat/${chatID}/word/${word._id}`,
@@ -77,6 +78,7 @@ export const saveWord = async (
 		{
 			method: "POST",
 			body: JSON.stringify(word),
+			headers: messageID ? { "Telegram-Message-ID": messageID } : undefined,
 		},
 	);
 	if (!response) return null;
@@ -144,7 +146,7 @@ export const searchImages = async (
 			body: JSON.stringify({ word, translation, offset }),
 		},
 	);
-	if (!response) return null;
+	if (!response) throw new Error();
 	const json = await response.json();
 	return SearchImagesResponseSchema.parse(json);
 };
@@ -165,7 +167,7 @@ export const uploadImage = async (
 			body: formData,
 		},
 	);
-	if (!response) return null;
+	if (!response) throw new Error();
 	const json = await response.json();
 	return UploadImageResponseSchema.parse(json);
 };

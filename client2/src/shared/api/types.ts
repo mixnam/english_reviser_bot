@@ -4,7 +4,7 @@ export const WordSchema = z.object({
   _id: z.string(),
   English: z.string(),
   Translation: z.string(),
-  Examples: z.string().optional(),
+  Examples: z.nullable(z.string()).optional(),
   ImageURL: z.string().optional(),
   AudioURL: z.string().optional(),
   Progress: z.string(),
