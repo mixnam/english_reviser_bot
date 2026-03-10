@@ -22,6 +22,8 @@ import { useSearchImage } from "./hooks/useSearchImage";
 import { useSimilarWordsCheck } from "./hooks/useSimilarWordsCheck";
 import { type AddWordFormData, addWordSchema } from "./schema";
 import { ImagePreview } from "@/shared/ui/ImagePreview";
+import { useLocalImage } from "./hooks/useLocalImage";
+import { file } from "zod";
 
 const AddWordForm = () => {
 	const searchParams = useSearchParams();
@@ -71,6 +73,12 @@ const AddWordForm = () => {
 		isLoading: isImageSearching,
 	} = useSearchImage();
 
+	const {
+		preview,
+		handleLocalFile,
+		isLoading: isLocalFileLoading,
+	} = useLocalImage();
+
 	const debouncedWord = useDebounced(wordValue, 1000);
 
 	useEffect(() => {
@@ -87,6 +95,10 @@ const AddWordForm = () => {
 			setValue("example", example, { shouldValidate: true });
 		}
 	}, [example, setValue]);
+
+	useEffect(() => {
+		setPreviewIsOpen(Boolean(preview));
+	}, [preview]);
 
 	const onSubmit = (data: AddWordFormData) => {
 		startTransition(() => {
@@ -118,8 +130,33 @@ const AddWordForm = () => {
 		});
 	};
 
+	const onPaste = async () => {
+		const items = Array.from(await navigator.clipboard.read());
+		const imageItem = items
+			.map((item) => {
+				Object.defineProperty(item, "type", {
+					value: item.types.find((type) => type.startsWith("image/")) ?? null,
+				});
+				return item;
+			})
+			.find<ClipboardItem & { type: string }>(
+				(item): item is ClipboardItem & { type: string } => Boolean(item.type),
+			);
+
+		if (imageItem) {
+			const blob = await imageItem.getType(imageItem.type);
+			if (blob) {
+				handleLocalFile(blob);
+			}
+		}
+	};
+
 	const isFormDisabled =
-		isSubmitting || isGenerating || isSimilarWordChecking || isImageSearching;
+		isSubmitting ||
+		isGenerating ||
+		isSimilarWordChecking ||
+		isImageSearching ||
+		isLocalFileLoading;
 
 	return (
 		<form
@@ -175,10 +212,10 @@ const AddWordForm = () => {
 							size="s"
 							mode="bezeled"
 							type="button"
-							// onClick={() => fileInputRef.current?.click()}
+							onClick={onPaste}
 							// disabled={submitWordMutation.isPending}
 						>
-							Upload
+							Paste
 						</Button>
 						<IconButton
 							size="s"
@@ -210,6 +247,23 @@ const AddWordForm = () => {
 								</picture>
 							</button>
 						))}
+					</div>
+				)}
+				{preview && (
+					<div className="flex gap-2 overflow-x-auto px-5.5 pb-4">
+						<button
+							type="button"
+							className={`shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden "border-[#007aff]"`}
+						>
+							<picture>
+								<source srcSet={preview} />
+								<img
+									src={preview}
+									alt={"preview"}
+									className="h-24 w-24 object-cover"
+								/>
+							</picture>
+						</button>
 					</div>
 				)}
 
