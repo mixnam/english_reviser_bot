@@ -29,7 +29,7 @@ class AddNewWord extends Step {
             text: 'Add word',
             web_app: {
               url: process.env.TMA_URL +
-                '#/add-word?&chat_id=' + chatID,
+                '/add-word?&chat_id=' + chatID,
             },
           },
         ],
