@@ -18,6 +18,7 @@ import { i18n } from "@/shared/lib/i18n";
 import { ReloadIcon } from "@/shared/ui/ReloadIcon";
 import { useAddWordSubmission } from "./hooks/useAddWordSubmission";
 import { useExampleGenerator } from "./hooks/useExampleGenerator";
+import { useSearchImage } from "./hooks/useSearchImage";
 import { useSimilarWordsCheck } from "./hooks/useSimilarWordsCheck";
 import { type AddWordFormData, addWordSchema } from "./schema";
 
@@ -44,6 +45,7 @@ const AddWordForm = () => {
 	});
 
 	const wordValue = watch("word");
+	const selectedImageUrlValue = watch("selectedImageUrl");
 
 	const { submit, isLoading: isSubmitting } = useAddWordSubmission();
 
@@ -59,20 +61,23 @@ const AddWordForm = () => {
 		isLoading: isSimilarWordChecking,
 	} = useSimilarWordsCheck();
 
-	const [debouncedCheckWord, cancel] = useDebounced(checkWord, 1000);
+	const {
+		images,
+		searchImage,
+		resetOffset,
+		isLoading: isImageSearching,
+	} = useSearchImage();
+
+	const debouncedWord = useDebounced(wordValue, 1000);
 
 	useEffect(() => {
-		if (wordValue) {
-			debouncedCheckWord({
-				initData,
-				chatID,
-				word: wordValue,
-			});
-		}
-		return () => {
-			cancel();
-		};
-	}, [wordValue, debouncedCheckWord, cancel, initData, chatID]);
+		checkWord({
+			initData,
+			chatID,
+			word: debouncedWord,
+		});
+		resetOffset();
+	}, [checkWord, resetOffset, debouncedWord, initData, chatID]);
 
 	useEffect(() => {
 		if (example) {
@@ -101,7 +106,17 @@ const AddWordForm = () => {
 		});
 	};
 
-	const isFormDisabled = isSubmitting || isGenerating || isSimilarWordChecking;
+	const onImageSearch = (data: AddWordFormData) => {
+		searchImage({
+			initData,
+			chatID,
+			word: data.word,
+			translation: data.translation,
+		});
+	};
+
+	const isFormDisabled =
+		isSubmitting || isGenerating || isSimilarWordChecking || isImageSearching;
 
 	return (
 		<form
@@ -124,14 +139,12 @@ const AddWordForm = () => {
 						<Caption>{`You have some similar words: ${similarWords.join(", ")}`}</Caption>
 					</div>
 				)}
-
 				<Textarea
 					{...register("translation")}
 					header={i18n.translation}
 					disabled={isFormDisabled}
 					status={errors.translation ? "error" : undefined}
 				/>
-
 				<div className="relative">
 					<Textarea
 						{...register("example")}
@@ -139,7 +152,7 @@ const AddWordForm = () => {
 						disabled={isFormDisabled}
 						status={errors.example ? "error" : undefined}
 					/>
-					<div className="flex items-center justify-between px-[22px] pb-2 -mt-5">
+					<div className="flex items-center justify-between px-5.5 pb-2">
 						<Caption>Generate example</Caption>
 						<IconButton
 							size="s"
@@ -151,6 +164,68 @@ const AddWordForm = () => {
 						</IconButton>
 					</div>
 				</div>
+
+				<div className="flex items-center justify-between px-[22px]">
+					<Caption>Search Image</Caption>
+					<div className="flex items-center gap-2">
+						<Button
+							size="s"
+							mode="bezeled"
+							type="button"
+							// onClick={() => fileInputRef.current?.click()}
+							// disabled={submitWordMutation.isPending}
+						>
+							Upload
+						</Button>
+						<IconButton
+							size="s"
+							mode="plain"
+							type="button"
+							onClick={handleSubmit(onImageSearch)}
+							disabled={isFormDisabled}
+						>
+							<ReloadIcon size={18} />
+						</IconButton>
+					</div>
+				</div>
+
+				{images?.length && (
+					<div className="flex gap-2 overflow-x-auto px-[22px] pb-4">
+						{images.map((url) => (
+							<div
+								key={url}
+								className={`shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden ${selectedImageUrlValue === url ? "border-[#007aff]" : "border-transparent"}`}
+								onClick={() => setValue("selectedImageUrl", url)}
+								// onTouchStart={() => onTouchStart(url)}
+								// onTouchEnd={onTouchEnd}
+								// onTouchMove={onTouchEnd}
+							>
+								<img
+									src={url}
+									alt="result"
+									className="h-24 w-24 object-cover"
+								/>
+							</div>
+						))}
+					</div>
+				)}
+
+				{/* {filePreview && ( */}
+				{/* 	<div className="flex gap-2 px-[22px] pb-4"> */}
+				{/* 		<div */}
+				{/* 			className="shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden border-[#007aff]" */}
+				{/* 			onTouchStart={() => onTouchStart(filePreview)} */}
+				{/* 			onTouchEnd={onTouchEnd} */}
+				{/* 			onTouchMove={onTouchEnd} */}
+				{/* 		> */}
+				{/* 			<img */}
+				{/* 				src={filePreview} */}
+				{/* 				alt="preview" */}
+				{/* 				className="h-24 w-24 object-cover" */}
+				{/* 			/> */}
+				{/* 		</div> */}
+				{/* 	</div> */}
+				{/* )} */}
 			</List>
 
 			<div className="flex flex-1 flex-col justify-end mt-4">

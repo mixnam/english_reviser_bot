@@ -18,6 +18,8 @@ const checkSimilarWordsReducer = async (
 ): Promise<State> => {
 	const { word, initData, chatID } = payload;
 
+	if (!word) return { similarWords: [] };
+
 	try {
 		const res = await checkSimilarWords(initData, chatID, word);
 		return {
