@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "workspaces": [
     "client",
+    "client2",
     "server",
     "pt_deploy"
   ],
