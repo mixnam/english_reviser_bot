@@ -22,14 +22,31 @@ const submitReducer = async (
 	}
 
 	const { data, initData, chatID } = payload;
+
 	try {
-		// todo upload image
+		const imageUrl = await (async () => {
+			switch (data.selectedImage?.type) {
+				case undefined:
+					return null;
+				case "local": {
+					const uploadRes = await uploadImage(
+						initData,
+						chatID,
+						data.selectedImage.file,
+					);
+					return uploadRes.url;
+				}
+				case "remote": {
+					return data.selectedImage.url;
+				}
+			}
+		})();
 
 		await submitWord(initData, chatID, {
 			word: data.word,
 			translation: data.translation,
 			example: data.example || null,
-			imageUrl: data.selectedImageUrl || null,
+			imageUrl,
 		});
 
 		// WebApp.close();

@@ -1,9 +1,13 @@
-export interface Word {
-  _id: string;
-  English: string;
-  Translation: string;
-  Examples?: string;
-  ImageURL?: string;
-  AudioURL?: string;
-  Progress: string;
-}
+import { z } from "zod";
+
+export const WordSchema = z.object({
+  _id: z.string(),
+  English: z.string(),
+  Translation: z.string(),
+  Examples: z.string().optional(),
+  ImageURL: z.string().optional(),
+  AudioURL: z.string().optional(),
+  Progress: z.string(),
+});
+
+export type Word = z.infer<typeof WordSchema>;

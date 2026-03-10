@@ -18,12 +18,10 @@ import { i18n } from "@/shared/lib/i18n";
 import { ReloadIcon } from "@/shared/ui/ReloadIcon";
 import { useAddWordSubmission } from "./hooks/useAddWordSubmission";
 import { useExampleGenerator } from "./hooks/useExampleGenerator";
-import { useSearchImage } from "./hooks/useSearchImage";
+import { useImages } from "./hooks/useImages";
 import { useSimilarWordsCheck } from "./hooks/useSimilarWordsCheck";
 import { type AddWordFormData, addWordSchema } from "./schema";
 import { ImagePreview } from "@/shared/ui/ImagePreview";
-import { useLocalImage } from "./hooks/useLocalImage";
-import { file } from "zod";
 
 const AddWordForm = () => {
 	const searchParams = useSearchParams();
@@ -48,7 +46,7 @@ const AddWordForm = () => {
 	});
 
 	const wordValue = watch("word");
-	const selectedImageUrlValue = watch("selectedImageUrl");
+	const selectedImageUrlValue = watch("selectedImage.url");
 
 	const [previewIsOpen, setPreviewIsOpen] = useState(false);
 
@@ -69,15 +67,10 @@ const AddWordForm = () => {
 	const {
 		images,
 		searchImage,
+		addLocalImage,
 		resetOffset,
-		isLoading: isImageSearching,
-	} = useSearchImage();
-
-	const {
-		preview,
-		handleLocalFile,
-		isLoading: isLocalFileLoading,
-	} = useLocalImage();
+		isLoading: isImagesLoading,
+	} = useImages();
 
 	const debouncedWord = useDebounced(wordValue, 1000);
 
@@ -95,10 +88,6 @@ const AddWordForm = () => {
 			setValue("example", example, { shouldValidate: true });
 		}
 	}, [example, setValue]);
-
-	useEffect(() => {
-		setPreviewIsOpen(Boolean(preview));
-	}, [preview]);
 
 	const onSubmit = (data: AddWordFormData) => {
 		startTransition(() => {
@@ -133,11 +122,11 @@ const AddWordForm = () => {
 	const onPaste = async () => {
 		const items = Array.from(await navigator.clipboard.read());
 		const imageItem = items
-			.map((item) => {
+			.map<ClipboardItem & { type: string | null }>((item) => {
 				Object.defineProperty(item, "type", {
 					value: item.types.find((type) => type.startsWith("image/")) ?? null,
 				});
-				return item;
+				return item as ClipboardItem & { type: string | null };
 			})
 			.find<ClipboardItem & { type: string }>(
 				(item): item is ClipboardItem & { type: string } => Boolean(item.type),
@@ -146,17 +135,13 @@ const AddWordForm = () => {
 		if (imageItem) {
 			const blob = await imageItem.getType(imageItem.type);
 			if (blob) {
-				handleLocalFile(blob);
+				addLocalImage(blob);
 			}
 		}
 	};
 
 	const isFormDisabled =
-		isSubmitting ||
-		isGenerating ||
-		isSimilarWordChecking ||
-		isImageSearching ||
-		isLocalFileLoading;
+		isSubmitting || isGenerating || isSimilarWordChecking || isImagesLoading;
 
 	return (
 		<form
@@ -213,7 +198,7 @@ const AddWordForm = () => {
 							mode="bezeled"
 							type="button"
 							onClick={onPaste}
-							// disabled={submitWordMutation.isPending}
+							disabled={isFormDisabled}
 						>
 							Paste
 						</Button>
@@ -229,41 +214,31 @@ const AddWordForm = () => {
 					</div>
 				</div>
 
-				{images?.length && (
-					<div className="flex gap-2 overflow-x-auto px-5.5 pb-4">
-						{images.map((url) => (
+				{images?.length > 0 && (
+					<div className="flex flex-wrap gap-2 px-5.5 pb-4">
+						{images.map((img) => (
 							<button
 								type="button"
-								key={url}
-								className={`shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden ${selectedImageUrlValue === url ? "border-[#007aff]" : "border-transparent"}`}
+								key={img.url}
+								className={`shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden ${selectedImageUrlValue === img.url ? "border-[#007aff]" : "border-transparent"}`}
 								onClick={() => {
 									setPreviewIsOpen(true);
-									setValue("selectedImageUrl", url);
+									setValue("selectedImage", {
+										type: "remote",
+										url: img.url,
+									});
 								}}
 							>
 								<picture>
-									<source srcSet={url} />
-									<img src={url} alt={url} className="h-24 w-24 object-cover" />
+									<source srcSet={img.url} />
+									<img
+										src={img.url}
+										alt={img.url}
+										className="h-24 w-24 object-cover"
+									/>
 								</picture>
 							</button>
 						))}
-					</div>
-				)}
-				{preview && (
-					<div className="flex gap-2 overflow-x-auto px-5.5 pb-4">
-						<button
-							type="button"
-							className={`shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden "border-[#007aff]"`}
-						>
-							<picture>
-								<source srcSet={preview} />
-								<img
-									src={preview}
-									alt={"preview"}
-									className="h-24 w-24 object-cover"
-								/>
-							</picture>
-						</button>
 					</div>
 				)}
 

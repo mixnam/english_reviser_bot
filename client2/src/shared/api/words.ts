@@ -1,107 +1,171 @@
+import { z } from "zod";
 import { apiFetch } from "./client";
-import type { Word } from "./types";
+import { type Word, WordSchema } from "./types";
 
-export const getReviseWord = (initData: string, chatID: string) => {
-  return apiFetch<Word | null>(`/chat/${chatID}/word/random-revise`, initData);
+const SuccessResponseSchema = z.object({ success: z.boolean() });
+const SimilarWordsResponseSchema = z.object({ words: z.array(z.string()) });
+const ExampleResponseSchema = z.object({ example: z.string() });
+const SearchImagesResponseSchema = z.object({ urls: z.array(z.string()) });
+const UploadImageResponseSchema = z.object({ url: z.string() });
+
+export const getReviseWord = async (initData: string, chatID: string) => {
+	const response = await apiFetch(
+		`/chat/${chatID}/word/random-revise`,
+		initData,
+	);
+	if (!response) return null;
+	const json = await response.json();
+	return WordSchema.nullable().parse(json);
 };
 
-export const updateReviseProgress = (
-  initData: string,
-  chatID: string,
-  wordID: string,
-  remember: boolean,
+export const updateReviseProgress = async (
+	initData: string,
+	chatID: string,
+	wordID: string,
+	remember: boolean,
 ) => {
-  return apiFetch<{ success: boolean }>(
-    `/chat/${chatID}/word/${wordID}/progress`,
-    initData,
-    {
-      method: "POST",
-      body: JSON.stringify({ remember }),
-    },
-  );
+	const response = await apiFetch(
+		`/chat/${chatID}/word/${wordID}/progress`,
+		initData,
+		{
+			method: "POST",
+			body: JSON.stringify({ remember }),
+		},
+	);
+	if (!response) return null;
+	const json = await response.json();
+	return SuccessResponseSchema.parse(json);
 };
 
-export const getLearnWord = (initData: string, chatID: string) => {
-  return apiFetch<Word | null>(`/chat/${chatID}/word/random-learn`, initData);
+export const getLearnWord = async (initData: string, chatID: string) => {
+	const response = await apiFetch(
+		`/chat/${chatID}/word/random-learn`,
+		initData,
+	);
+	if (!response) return null;
+	const json = await response.json();
+	return WordSchema.nullable().parse(json);
 };
 
-export const updateLearnProgress = (
-  initData: string,
-  chatID: string,
-  wordID: string,
-  remember: boolean,
+export const updateLearnProgress = async (
+	initData: string,
+	chatID: string,
+	wordID: string,
+	remember: boolean,
 ) => {
-  return apiFetch<{ success: boolean }>(
-    `/chat/${chatID}/word/${wordID}/learn-progress`,
-    initData,
-    {
-      method: "POST",
-      body: JSON.stringify({ remember }),
-    },
-  );
+	const response = await apiFetch(
+		`/chat/${chatID}/word/${wordID}/learn-progress`,
+		initData,
+		{
+			method: "POST",
+			body: JSON.stringify({ remember }),
+		},
+	);
+	if (!response) return null;
+	const json = await response.json();
+	return SuccessResponseSchema.parse(json);
 };
 
-export const saveWord = (initData: string, chatID: string, word: Partial<Word>) => {
-  return apiFetch<Word>(`/chat/${chatID}/word/${word._id}`, initData, {
-    method: "POST",
-    body: JSON.stringify(word),
-  });
-};
-
-export const submitWord = (
-  initData: string,
-  chatID: string,
-  word: {
-    word: string;
-    translation: string;
-    example: string | null;
-    imageUrl: string | null;
-  },
+export const saveWord = async (
+	initData: string,
+	chatID: string,
+	word: Partial<Word>,
 ) => {
-  return apiFetch<{ success: boolean }>(`/chat/${chatID}/word/save`, initData, {
-    method: "POST",
-    body: JSON.stringify(word),
-  });
+	const response = await apiFetch(
+		`/chat/${chatID}/word/${word._id}`,
+		initData,
+		{
+			method: "POST",
+			body: JSON.stringify(word),
+		},
+	);
+	if (!response) return null;
+	const json = await response.json();
+	return WordSchema.parse(json);
 };
 
-export const checkSimilarWords = (initData: string, chatID: string, word: string) => {
-  return apiFetch<{ words: string[] }>(`/chat/${chatID}/word/similar`, initData, {
-    method: "POST",
-    body: JSON.stringify({ word }),
-  });
-};
-
-export const getExamples = (
-  initData: string,
-  chatID: string,
-  word: string,
-  translation: string,
+export const submitWord = async (
+	initData: string,
+	chatID: string,
+	word: {
+		word: string;
+		translation: string;
+		example: string | null;
+		imageUrl: string | null;
+	},
 ) => {
-  return apiFetch<{ example: string }>(`/chat/${chatID}/word/example`, initData, {
-    method: "POST",
-    body: JSON.stringify({ word, translation }),
-  });
+	await apiFetch(`/chat/${chatID}/word/save`, initData, {
+		method: "POST",
+		body: JSON.stringify(word),
+	});
 };
 
-export const searchImages = (
-  initData: string,
-  chatID: string,
-  word: string,
-  translation: string,
-  offset: number = 0,
+export const checkSimilarWords = async (
+	initData: string,
+	chatID: string,
+	word: string,
 ) => {
-  return apiFetch<{ urls: string[] }>(`/chat/${chatID}/word/image/search`, initData, {
-    method: "POST",
-    body: JSON.stringify({ word, translation, offset }),
-  });
+	const response = await apiFetch(`/chat/${chatID}/word/similar`, initData, {
+		method: "POST",
+		body: JSON.stringify({ word }),
+	});
+	if (!response) return null;
+	const json = await response.json();
+	return SimilarWordsResponseSchema.parse(json);
 };
 
-export const uploadImage = (initData: string, chatID: string, file: File | Blob) => {
-  const formData = new FormData();
-  formData.append("file", file as Blob);
+export const getExamples = async (
+	initData: string,
+	chatID: string,
+	word: string,
+	translation: string,
+) => {
+	const response = await apiFetch(`/chat/${chatID}/word/example`, initData, {
+		method: "POST",
+		body: JSON.stringify({ word, translation }),
+	});
+	if (!response) return null;
+	const json = await response.json();
+	return ExampleResponseSchema.parse(json);
+};
 
-  return apiFetch<{ url: string }>(`/chat/${chatID}/word/image/upload`, initData, {
-    method: "POST",
-    body: formData,
-  });
+export const searchImages = async (
+	initData: string,
+	chatID: string,
+	word: string,
+	translation: string,
+	offset = 0,
+) => {
+	const response = await apiFetch(
+		`/chat/${chatID}/word/image/search`,
+		initData,
+		{
+			method: "POST",
+			body: JSON.stringify({ word, translation, offset }),
+		},
+	);
+	if (!response) return null;
+	const json = await response.json();
+	return SearchImagesResponseSchema.parse(json);
+};
+
+export const uploadImage = async (
+	initData: string,
+	chatID: string,
+	file: File | Blob,
+) => {
+	const formData = new FormData();
+	formData.append("file", file as Blob);
+
+	const response = await apiFetch(
+		`/chat/${chatID}/word/image/upload`,
+		initData,
+		{
+			method: "POST",
+			body: formData,
+		},
+	);
+	if (!response) return null;
+	const json = await response.json();
+	return UploadImageResponseSchema.parse(json);
 };
