@@ -10,7 +10,7 @@ import {
 	Title,
 } from "@telegram-apps/telegram-ui";
 import { useSearchParams } from "next/navigation";
-import { Suspense, startTransition, useEffect } from "react";
+import { Suspense, startTransition, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTelegram } from "@/app/telegram";
 import { useDebounced } from "@/shared/hooks/useDebounced";
@@ -21,6 +21,7 @@ import { useExampleGenerator } from "./hooks/useExampleGenerator";
 import { useSearchImage } from "./hooks/useSearchImage";
 import { useSimilarWordsCheck } from "./hooks/useSimilarWordsCheck";
 import { type AddWordFormData, addWordSchema } from "./schema";
+import { ImagePreview } from "@/shared/ui/ImagePreview";
 
 const AddWordForm = () => {
 	const searchParams = useSearchParams();
@@ -46,6 +47,8 @@ const AddWordForm = () => {
 
 	const wordValue = watch("word");
 	const selectedImageUrlValue = watch("selectedImageUrl");
+
+	const [previewIsOpen, setPreviewIsOpen] = useState(false);
 
 	const { submit, isLoading: isSubmitting } = useAddWordSubmission();
 
@@ -135,7 +138,7 @@ const AddWordForm = () => {
 					status={errors.word ? "error" : undefined}
 				/>
 				{!!similarWords?.length && (
-					<div className="flex items-center text-amber-500 justify-between px-[22px] pb-2 -mt-3 z-50">
+					<div className="flex items-center text-amber-500 justify-between px-5.5 pb-2 -mt-3 z-50">
 						<Caption>{`You have some similar words: ${similarWords.join(", ")}`}</Caption>
 					</div>
 				)}
@@ -165,7 +168,7 @@ const AddWordForm = () => {
 					</div>
 				</div>
 
-				<div className="flex items-center justify-between px-[22px]">
+				<div className="flex items-center justify-between px-5.5">
 					<Caption>Search Image</Caption>
 					<div className="flex items-center gap-2">
 						<Button
@@ -190,42 +193,32 @@ const AddWordForm = () => {
 				</div>
 
 				{images?.length && (
-					<div className="flex gap-2 overflow-x-auto px-[22px] pb-4">
+					<div className="flex gap-2 overflow-x-auto px-5.5 pb-4">
 						{images.map((url) => (
-							<div
+							<button
+								type="button"
 								key={url}
 								className={`shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden ${selectedImageUrlValue === url ? "border-[#007aff]" : "border-transparent"}`}
-								onClick={() => setValue("selectedImageUrl", url)}
-								// onTouchStart={() => onTouchStart(url)}
-								// onTouchEnd={onTouchEnd}
-								// onTouchMove={onTouchEnd}
+								onClick={() => {
+									setPreviewIsOpen(true);
+									setValue("selectedImageUrl", url);
+								}}
 							>
-								<img
-									src={url}
-									alt="result"
-									className="h-24 w-24 object-cover"
-								/>
-							</div>
+								<picture>
+									<source srcSet={url} />
+									<img src={url} alt={url} className="h-24 w-24 object-cover" />
+								</picture>
+							</button>
 						))}
 					</div>
 				)}
 
-				{/* {filePreview && ( */}
-				{/* 	<div className="flex gap-2 px-[22px] pb-4"> */}
-				{/* 		<div */}
-				{/* 			className="shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden border-[#007aff]" */}
-				{/* 			onTouchStart={() => onTouchStart(filePreview)} */}
-				{/* 			onTouchEnd={onTouchEnd} */}
-				{/* 			onTouchMove={onTouchEnd} */}
-				{/* 		> */}
-				{/* 			<img */}
-				{/* 				src={filePreview} */}
-				{/* 				alt="preview" */}
-				{/* 				className="h-24 w-24 object-cover" */}
-				{/* 			/> */}
-				{/* 		</div> */}
-				{/* 	</div> */}
-				{/* )} */}
+				{previewIsOpen && selectedImageUrlValue && (
+					<ImagePreview
+						url={selectedImageUrlValue}
+						onClose={() => setPreviewIsOpen(false)}
+					/>
+				)}
 			</List>
 
 			<div className="flex flex-1 flex-col justify-end mt-4">
