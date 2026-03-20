@@ -20,7 +20,7 @@
     - Only show Delete button if `onDelete` prop is present.
 
 ### Step 2: API Updates
-- [ ] Add `deleteWord` to API client: `client2/src/shared/api/words.ts`.
+- [x] Add `deleteWord` to API client: `client2/src/shared/api/words.ts`.
 
 ### Step 3: Submission Logic
 - [ ] Update `useAddWordSubmission.ts` to use the new `WordFormData` type from `WordForm.tsx`.
