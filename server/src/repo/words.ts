@@ -90,6 +90,21 @@ const updateWord = executionTime('updateWord',
       }
     });
 
+const deleteWord = executionTime('deleteWord',
+    async (wordID: string, logger: Logger): Promise<Error | null> => {
+      const db = await getDb(logger);
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      try {
+        await words.deleteOne({
+          _id: new ObjectId(wordID),
+        });
+        return null;
+      } catch (err) {
+        return new Error(`[repo][deleteWord] - ${err}`);
+      }
+    });
+
 const addNewWord = executionTime(
     'addNewWord',
     async (userID: string, word: Partial<Word>, logger: Logger): Promise<Error | string> => {
@@ -396,5 +411,6 @@ export {
   setWordAsForgottenByWordID,
   setWordTelegramPictureID,
   updateWord,
+  deleteWord,
   getWordsStats,
 };

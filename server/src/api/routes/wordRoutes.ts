@@ -98,6 +98,20 @@ export const wordRoutes = async (
     handler: wordController.editWord,
   });
 
+  fastify.delete('/chat/:chat_id/word/:word_id', {
+    schema: {
+      params: {
+        type: 'object',
+        properties: {
+          chat_id: {type: 'string'},
+          word_id: {type: 'string'},
+        },
+        required: ['chat_id', 'word_id'],
+      },
+    },
+    handler: wordController.deleteWord,
+  });
+
   fastify.post('/chat/:chat_id/word/similar', {
     schema: {
       params: {

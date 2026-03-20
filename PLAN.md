@@ -1,10 +1,10 @@
 # Rework Edit-Word Page and Add Word Deletion
 
 ## Phase 1: Backend Implementation (Adding Delete Word)
-- [ ] Add `deleteWord` to repository: `server/src/repo/words.ts`
-- [ ] Add `deleteWord` to service: `server/src/api/services/wordService.ts`
-- [ ] Add `deleteWord` to controller: `server/src/api/controllers/wordController.ts`
-- [ ] Add `DELETE` route: `server/src/api/routes/wordRoutes.ts`
+- [x] Add `deleteWord` to repository: `server/src/repo/words.ts`
+- [x] Add `deleteWord` to service: `server/src/api/services/wordService.ts`
+- [x] Add `deleteWord` to controller: `server/src/api/controllers/wordController.ts`
+- [x] Add `DELETE` route: `server/src/api/routes/wordRoutes.ts`
 
 ## Phase 2: Frontend Implementation (Edit Word Rework)
 

@@ -222,4 +222,23 @@ export class WordController {
 
     return res.code(200).send();
   };
+
+  deleteWord = async (
+      req: FastifyRequest<{
+      Params: {chat_id: string; word_id: string};
+    }>,
+      res: FastifyReply,
+  ) => {
+    const result = await this.wordService.deleteWord(
+        Number.parseInt(req.params.chat_id),
+        req.params.word_id,
+    );
+
+    if (result instanceof Error) {
+      req.log.error(result);
+      return res.code(500).send({message: result.message});
+    }
+
+    return res.code(200).send({success: true});
+  };
 }

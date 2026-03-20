@@ -13,6 +13,7 @@ import {
   ProgressOrder,
   setWordProgress,
   getWordByID,
+  deleteWord,
 } from '../../repo/words.js';
 import * as OpenAIExamplesService from '../../services/openAIExamples.js';
 import * as GoogleImageService from '../../services/googleImage.js';
@@ -184,5 +185,17 @@ export class WordService {
     } catch (err) {
       return err;
     }
+  }
+
+  async deleteWord(
+      chatID: number,
+      wordID: string,
+  ): Promise<void | Error> {
+    const user = await getUserByChatID(chatID, this.logger);
+    if (user instanceof Error) return user;
+    if (!user) return new Error(`User not found for chatID: ${chatID}`);
+
+    const result = await deleteWord(wordID, this.logger);
+    return result === null ? undefined : result;
   }
 }
