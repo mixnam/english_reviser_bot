@@ -1,61 +1,113 @@
-import { useActionState } from "react";
-import { saveWord } from "@/shared/api/words";
-import type { EditWordFormData } from "../schema";
+import { useActionState, useCallback } from "react";
+import { deleteWord, saveWord, uploadImage } from "@/shared/api/words";
+import type { WordFormData } from "@/shared/ui/WordForm";
 
 type State = {
 	submitted: boolean;
+	deleted: boolean;
 };
 
-type Payload = {
-	data: EditWordFormData;
+type SubmitPayload = {
+	type: "submit";
+	id: string;
+	data: WordFormData;
 	initData: string;
 	chatID: string;
 	messageID?: string;
-	onSubmit?: () => void;
+	onSuccess?: () => void;
 };
 
-const submitReducer = async (
+type DeletePayload = {
+	type: "delete";
+	id: string;
+	initData: string;
+	chatID: string;
+	onSuccess?: () => void;
+};
+
+type Payload = SubmitPayload | DeletePayload;
+
+const editWordReducer = async (
 	state: State,
 	payload: Payload,
 ): Promise<State> => {
-	if (state.submitted) {
+	if (state.submitted || state.deleted) {
 		return state;
 	}
 
-	const { data, initData, chatID, messageID, onSubmit } = payload;
-
 	try {
-		await saveWord(
-			initData,
-			chatID,
-			{
-				_id: data.id,
-				English: data.word,
-				Translation: data.translation,
-				Examples: data.example,
-			},
-			messageID,
-		);
-		onSubmit?.();
+		if (payload.type === "submit") {
+			const { data, initData, chatID, messageID, id, onSuccess } = payload;
+
+			const imageUrl = await (async () => {
+				switch (data.selectedImage?.type) {
+					case undefined:
+						return undefined; // Keep existing if not changed, or maybe we need a way to clear it?
+					case "local": {
+						const uploadRes = await uploadImage(
+							initData,
+							chatID,
+							data.selectedImage.file,
+						);
+						return uploadRes.url;
+					}
+					case "remote": {
+						return data.selectedImage.url;
+					}
+				}
+			})();
+
+			await saveWord(
+				initData,
+				chatID,
+				{
+					_id: id,
+					English: data.word,
+					Translation: data.translation,
+					Examples: data.example,
+					ImageURL: imageUrl,
+				},
+				messageID,
+			);
+			onSuccess?.();
+			return { ...state, submitted: true };
+		} else {
+			const { id, initData, chatID, onSuccess } = payload;
+			await deleteWord(initData, chatID, id);
+			onSuccess?.();
+			return { ...state, deleted: true };
+		}
 	} catch (error) {
-		console.error("Failed to save word:", error);
-		return {
-			submitted: false,
-		};
+		console.error(`Failed to ${payload.type} word:`, error);
+		return state;
 	}
-	return {
-		submitted: true,
-	};
 };
 
 export const useEditWordSubmission = () => {
-	const [state, dispatch, isLoading] = useActionState(submitReducer, {
+	const [state, dispatch, isLoading] = useActionState(editWordReducer, {
 		submitted: false,
+		deleted: false,
 	});
+
+	const submit = useCallback(
+		(payload: Omit<SubmitPayload, "type">) => {
+			dispatch({ type: "submit", ...payload });
+		},
+		[dispatch],
+	);
+
+	const remove = useCallback(
+		(payload: Omit<DeletePayload, "type">) => {
+			dispatch({ type: "delete", ...payload });
+		},
+		[dispatch],
+	);
 
 	return {
 		isSubmitted: state.submitted,
-		submit: dispatch,
+		isDeleted: state.deleted,
+		submit,
+		remove,
 		isLoading,
 	};
 };

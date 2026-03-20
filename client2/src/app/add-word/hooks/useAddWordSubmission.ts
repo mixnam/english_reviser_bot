@@ -1,13 +1,13 @@
 import { useActionState } from "react";
 import { submitWord, uploadImage } from "@/shared/api/words";
-import type { AddWordFormData } from "../schema";
+import type { WordFormData } from "@/shared/ui/WordForm";
 
 type State = {
 	submitted: boolean;
 };
 
 type Payload = {
-	data: AddWordFormData;
+	data: WordFormData;
 	initData: string;
 	chatID: string;
 	onSubmit?: () => void;

@@ -1,16 +1,12 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, List, Textarea, Title } from "@telegram-apps/telegram-ui";
 import { useSearchParams } from "next/navigation";
-import { Suspense, startTransition, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Suspense, startTransition } from "react";
 import { useTelegram } from "@/app/telegram";
-import { i18n } from "@/shared/lib/i18n";
+import { WordForm, type WordFormData } from "@/shared/ui/WordForm";
 import { useEditWordSubmission } from "./hooks/useEditWordSubmission";
-import { type EditWordFormData, editWordSchema } from "./schema";
 
-const EditWordForm = () => {
+const EditWordPageContent = () => {
 	const searchParams = useSearchParams();
 	const chatID = searchParams.get("chat_id") ?? "";
 	const messageID = searchParams.get("message_id") ?? "";
@@ -22,77 +18,54 @@ const EditWordForm = () => {
 		? JSON.parse(decodeURIComponent(atob(wordParam)))
 		: {};
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = useForm<EditWordFormData>({
-		resolver: zodResolver(editWordSchema),
-		mode: "onSubmit",
-		reValidateMode: "onChange",
-		defaultValues: {
-			id: initialWord._id || "",
-			word: initialWord.English || "",
-			translation: initialWord.Translation || "",
-			example: initialWord.Examples || "",
-		},
-	});
+	const { submit, remove, isLoading } = useEditWordSubmission();
 
-	const { submit, isLoading: isSubmitting } = useEditWordSubmission();
-
-	const onSubmit = (data: EditWordFormData) => {
+	const onSubmit = (data: WordFormData) => {
 		startTransition(() => {
 			submit({
+				id: initialWord._id,
 				data,
 				initData,
 				chatID,
 				messageID,
-				onSubmit: () => webApp?.close(),
+				onSuccess: () => webApp?.close(),
 			});
 		});
 	};
 
+	const onDelete = () => {
+		webApp?.showConfirm("Are you sure you want to delete this word?", (confirmed) => {
+			if (confirmed) {
+				startTransition(() => {
+					remove({
+						id: initialWord._id,
+						initData,
+						chatID,
+						onSuccess: () => webApp?.close(),
+					});
+				});
+			}
+		});
+	};
+
+	const defaultValues: Partial<WordFormData> = {
+		word: initialWord.English || "",
+		translation: initialWord.Translation || "",
+		example: initialWord.Examples || "",
+		selectedImage: initialWord.ImageURL ? {
+			type: "remote",
+			url: initialWord.ImageURL,
+		} : undefined,
+	};
+
 	return (
-		<form
-			className="w-full h-full flex flex-col p-4"
-			onSubmit={handleSubmit(onSubmit)}
-		>
-			<Title className="text-center pb-5" level="1" weight="2">
-				Edit word
-			</Title>
-
-			<List>
-				<Textarea
-					{...register("word")}
-					header={i18n.word}
-					disabled={isSubmitting}
-					status={errors.word ? "error" : undefined}
-				/>
-				<Textarea
-					{...register("translation")}
-					header={i18n.translation}
-					disabled={isSubmitting}
-					status={errors.translation ? "error" : undefined}
-				/>
-				<Textarea
-					{...register("example")}
-					header={i18n.examples}
-					disabled={isSubmitting}
-					status={errors.example ? "error" : undefined}
-				/>
-			</List>
-
-			<div className="flex flex-1 flex-col justify-end mt-4">
-				<Button
-					className="max-h-12"
-					type="submit"
-					stretched
-					loading={isSubmitting}
-				>
-					{i18n.save}
-				</Button>
-			</div>
-		</form>
+		<WordForm
+			title="Edit word"
+			defaultValues={defaultValues}
+			onSubmit={onSubmit}
+			onDelete={onDelete}
+			disabled={isLoading}
+		/>
 	);
 };
 
@@ -100,7 +73,7 @@ const EditWordPage = () => (
 	<Suspense
 		fallback={<div className="p-4 text-center text-gray-500">Loading...</div>}
 	>
-		<EditWordForm />
+		<EditWordPageContent />
 	</Suspense>
 );
 
