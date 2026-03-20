@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, List, Textarea, Title } from "@telegram-apps/telegram-ui";
 import { useSearchParams } from "next/navigation";
-import { Suspense, startTransition } from "react";
+import { Suspense, startTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTelegram } from "@/app/telegram";
 import { i18n } from "@/shared/lib/i18n";
@@ -15,7 +15,8 @@ const EditWordForm = () => {
 	const chatID = searchParams.get("chat_id") ?? "";
 	const messageID = searchParams.get("message_id") ?? "";
 	const wordParam = searchParams.get("word");
-	const { initData } = useTelegram();
+	const { webApp } = useTelegram();
+	const initData = webApp?.initData || "";
 
 	const initialWord = wordParam
 		? JSON.parse(decodeURIComponent(atob(wordParam)))
@@ -46,6 +47,7 @@ const EditWordForm = () => {
 				initData,
 				chatID,
 				messageID,
+				onSubmit: () => webApp?.close(),
 			});
 		});
 	};

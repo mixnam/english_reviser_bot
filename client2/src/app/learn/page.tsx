@@ -17,7 +17,8 @@ import { useLearnSession } from "./hooks/useLearnSession";
 const LearnContent = () => {
 	const searchParams = useSearchParams();
 	const chatID = searchParams.get("chat_id") || "";
-	const { initData } = useTelegram();
+	const { webApp } = useTelegram();
+	const initData = webApp?.initData || "";
 
 	const { word, revealed, isLoading, isError, revealWord, submitDecision } = useLearnSession(
 		initData,
@@ -83,7 +84,13 @@ const LearnContent = () => {
 						/>
 					</picture>
 				</Placeholder>
-				<Button size="l" className="mt-8 w-full max-w-xs">
+				<Button
+					size="l"
+					className="mt-8 w-full max-w-xs"
+					onClick={() => {
+						webApp?.close();
+					}}
+				>
 					{i18n.close}
 				</Button>
 			</div>

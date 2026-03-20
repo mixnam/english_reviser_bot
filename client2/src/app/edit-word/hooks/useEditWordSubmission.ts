@@ -11,6 +11,7 @@ type Payload = {
 	initData: string;
 	chatID: string;
 	messageID?: string;
+	onSubmit?: () => void;
 };
 
 const submitReducer = async (
@@ -21,7 +22,7 @@ const submitReducer = async (
 		return state;
 	}
 
-	const { data, initData, chatID, messageID } = payload;
+	const { data, initData, chatID, messageID, onSubmit } = payload;
 
 	try {
 		await saveWord(
@@ -35,6 +36,7 @@ const submitReducer = async (
 			},
 			messageID,
 		);
+		onSubmit?.();
 	} catch (error) {
 		console.error("Failed to save word:", error);
 		return {

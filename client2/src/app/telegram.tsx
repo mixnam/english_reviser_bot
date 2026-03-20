@@ -2,19 +2,19 @@
 
 import { AppRoot } from "@telegram-apps/telegram-ui";
 import { createContext, use, useContext } from "react";
+import type WebApp from "@twa-dev/sdk";
 
 import "@telegram-apps/telegram-ui/dist/styles.css";
 
-interface TelegramContextType {
-	initData: string;
-}
+type TelegramContextType = {
+	webApp: typeof WebApp | null;
+};
 
 const TelegramContext = createContext<TelegramContextType>({
-	initData: "",
+	webApp: null,
 });
 
 export const useTelegram = () => useContext(TelegramContext);
-
 
 const telegramWebAppPromise =
 	typeof window !== "undefined"
@@ -23,10 +23,10 @@ const telegramWebAppPromise =
 				WebApp.ready();
 				WebApp.expand();
 				return {
-					initData: WebApp.initData || "",
+					webApp: WebApp,
 				};
 			})
-		: Promise.resolve({ initData: "" });
+		: Promise.resolve<TelegramContextType>({ webApp: null });
 
 export const TelegramWebAppProvider = ({
 	children,

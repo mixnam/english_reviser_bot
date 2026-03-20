@@ -26,7 +26,8 @@ import { ImagePreview } from "@/shared/ui/ImagePreview";
 const AddWordForm = () => {
 	const searchParams = useSearchParams();
 	const chatID = searchParams.get("chat_id") ?? "";
-	const { initData } = useTelegram();
+	const { webApp } = useTelegram();
+	const initData = webApp?.initData || "";
 
 	const {
 		register,
@@ -95,6 +96,7 @@ const AddWordForm = () => {
 				data,
 				initData,
 				chatID,
+				onSubmit: () => webApp?.close(),
 			});
 		});
 	};

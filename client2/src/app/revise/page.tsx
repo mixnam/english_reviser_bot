@@ -17,7 +17,8 @@ import { useReviseSession } from "./hooks/useReviseSession";
 const ReviseContent = () => {
 	const searchParams = useSearchParams();
 	const chatID = searchParams.get("chat_id") || "";
-	const { initData } = useTelegram();
+	const { webApp } = useTelegram();
+	const initData = webApp?.initData || "";
 
 	const { word, isLoading, revealed, isError, revealWord, submitDecision } =
 		useReviseSession(initData, chatID);
@@ -85,7 +86,7 @@ const ReviseContent = () => {
 					size="l"
 					className="mt-8 w-full max-w-xs"
 					onClick={() => {
-						// WebApp.close();
+						webApp?.close();
 					}}
 				>
 					{i18n.close}
