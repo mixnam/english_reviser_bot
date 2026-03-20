@@ -9,11 +9,11 @@
 ## Phase 2: Frontend Implementation (Edit Word Rework)
 
 ### Step 1: Refactor Shared Logic
-- [ ] Move shared hooks from `client2/src/app/add-word/hooks/` to `client2/src/shared/hooks/`:
+- [x] Move shared hooks from `client2/src/app/add-word/hooks/` to `client2/src/shared/hooks/`:
     - `useImages.ts`
     - `useExampleGenerator.ts`
     - `useSimilarWordsCheck.ts`
-- [ ] Create a reusable `WordForm` component in `client2/src/shared/ui/WordForm.tsx`:
+- [x] Create a reusable `WordForm` component in `client2/src/shared/ui/WordForm.tsx`:
     - Define `WordFormData` (zod schema) and type directly inside this file.
     - Combine form layout, image search UI, and example generation UI.
     - Props: `title`, `defaultValues`, `onSubmit`, `onDelete?`, `disabled?`.
