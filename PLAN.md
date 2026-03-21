@@ -5,9 +5,9 @@
 - [x] Add `deleteWord` to service: `server/src/api/services/wordService.ts`
 - [x] Add `deleteWord` to controller: `server/src/api/controllers/wordController.ts`
 - [x] Add `DELETE` route: `server/src/api/routes/wordRoutes.ts`
-- [ ] **Refactor `saveWord` and `editWord` for immediate response**:
+- [x] **Refactor `saveWord` and `editWord` for immediate response**:
     - [x] Update `WordService.saveWord` to be transactional (TTS + Image migration + DB save in one go, returns status).
-    - [ ] Update `WordService.editWord` to be transactional and bot-independent.
+    - [x] Update `WordService.editWord` to be transactional and bot-independent.
 
 ## Phase 2: Frontend Implementation (Edit Word Rework)
 

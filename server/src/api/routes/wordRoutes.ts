@@ -87,13 +87,6 @@ export const wordRoutes = async (
         },
         required: ['chat_id', 'word_id'],
       },
-      headers: {
-        type: 'object',
-        properties: {
-          'telegram-message-id': {type: 'string'},
-        },
-        required: ['telegram-message-id'],
-      },
     },
     handler: wordController.editWord,
   });

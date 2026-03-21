@@ -15,6 +15,7 @@ import {
   getWordByID,
   deleteWord,
   addNewWord,
+  updateWord,
 } from '../../repo/words.js';
 import * as OpenAIExamplesService from '../../services/openAIExamples.js';
 import * as GoogleImageService from '../../services/googleImage.js';
@@ -213,20 +214,55 @@ export class WordService {
 
   async editWord(
       chatID: number,
-      messageID: number,
       word: Word,
   ): Promise<void | Error> {
+    const user = await getUserByChatID(chatID, this.logger);
+    if (user instanceof Error) return user;
+    if (!user) return new Error(`User not found for chatID: ${chatID}`);
+
+    const existingWord = await getWordByID(word._id, this.logger);
+    if (existingWord instanceof Error) return existingWord;
+    if (!existingWord) return new Error(`Word not found: ${word._id}`);
+
     try {
-      await this.bot.handleWebAppMessage({
-        type: 'edit_word_msg',
-        payload: {
-          word,
-          chatID,
-          messageID,
-        },
-      });
+      if (word.English !== existingWord.English || word.Examples !== existingWord.Examples) {
+        const audio = await TTSService.getInstance().getAudioForText(word.Examples || word.English);
+        if (audio instanceof Error) throw audio;
+
+        const audioURL = await GoogleCloudStorage.getInstance().uploadAudio(
+            audio,
+            `${word._id}.ogg`,
+            this.logger,
+        );
+        word.AudioURL = audioURL;
+      } else {
+        word.AudioURL = existingWord.AudioURL;
+      }
+
+      if (word.ImageURL && word.ImageURL !== existingWord.ImageURL) {
+        if (!word.ImageURL.includes(process.env.GOOGLE_CLOUD_STORAGE_BUCKET!)) {
+          const imageResponse = await this.fetchRemoteImage(word.ImageURL);
+          if (imageResponse instanceof Error) throw imageResponse;
+          if (imageResponse.statusCode !== 200) {
+            throw new Error(`Failed to fetch image: status ${imageResponse.statusCode}`);
+          }
+
+          const contentType = imageResponse.headers['content-type'] || 'image/jpeg';
+          const extension = MIME_TYPES_TO_EXTENSION[contentType] || 'jpeg';
+          const finalImageUrl = await GoogleCloudStorage.getInstance().uploadImage(
+              imageResponse,
+              `${word._id}.${extension}`,
+              this.logger,
+          );
+          word.ImageURL = finalImageUrl;
+        }
+      }
+
+      const result = await updateWord(user._id, word, this.logger);
+      if (result instanceof Error) throw result;
     } catch (err) {
-      return err;
+      this.logger.error({err}, 'Transactional editWord failed');
+      return err instanceof Error ? err : new Error(String(err));
     }
   }
 
