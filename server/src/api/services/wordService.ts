@@ -254,6 +254,11 @@ export class WordService {
               `${word._id}.${extension}`,
               this.logger,
           );
+
+          if (existingWord.ImageURL) {
+            await GoogleCloudStorage.getInstance().deleteFile(existingWord.ImageURL, this.logger);
+          }
+
           word.ImageURL = finalImageUrl;
         }
       }
@@ -274,7 +279,23 @@ export class WordService {
     if (user instanceof Error) return user;
     if (!user) return new Error(`User not found for chatID: ${chatID}`);
 
-    const result = await deleteWord(wordID, this.logger);
-    return result === null ? undefined : result;
+    const existingWord = await getWordByID(wordID, this.logger);
+    if (existingWord instanceof Error) return existingWord;
+    if (!existingWord) return;
+
+    try {
+      if (existingWord.AudioURL) {
+        await GoogleCloudStorage.getInstance().deleteFile(existingWord.AudioURL, this.logger);
+      }
+      if (existingWord.ImageURL) {
+        await GoogleCloudStorage.getInstance().deleteFile(existingWord.ImageURL, this.logger);
+      }
+
+      const result = await deleteWord(wordID, this.logger);
+      return result === null ? undefined : result;
+    } catch (err) {
+      this.logger.error({err}, 'Transactional deleteWord failed');
+      return err instanceof Error ? err : new Error(String(err));
+    }
   }
 }
