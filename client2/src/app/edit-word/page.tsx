@@ -34,33 +34,39 @@ const EditWordPageContent = () => {
 	};
 
 	const onDelete = () => {
-		webApp?.showConfirm("Are you sure you want to delete this word?", (confirmed) => {
-			if (confirmed) {
-				startTransition(() => {
-					remove({
-						id: initialWord._id,
-						initData,
-						chatID,
-						onSuccess: () => webApp?.close(),
+		webApp?.showConfirm(
+			"Are you sure you want to delete this word?",
+			(confirmed) => {
+				if (confirmed) {
+					startTransition(() => {
+						remove({
+							id: initialWord._id,
+							initData,
+							chatID,
+							onSuccess: () => webApp?.close(),
+						});
 					});
-				});
-			}
-		});
+				}
+			},
+		);
 	};
 
 	const defaultValues: Partial<WordFormData> = {
 		word: initialWord.English || "",
 		translation: initialWord.Translation || "",
 		example: initialWord.Examples || "",
-		selectedImage: initialWord.ImageURL ? {
-			type: "remote",
-			url: initialWord.ImageURL,
-		} : undefined,
+		selectedImage: initialWord.ImageURL
+			? {
+					type: "remote",
+					url: initialWord.ImageURL,
+				}
+			: undefined,
 	};
 
 	return (
 		<WordForm
 			title="Edit word"
+			mode="edit"
 			defaultValues={defaultValues}
 			onSubmit={onSubmit}
 			onDelete={onDelete}

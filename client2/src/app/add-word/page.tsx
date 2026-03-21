@@ -28,6 +28,7 @@ const AddWordPageContent = () => {
 	return (
 		<WordForm
 			title="Add new word"
+			mode="add"
 			onSubmit={onSubmit}
 			disabled={isSubmitting}
 		/>

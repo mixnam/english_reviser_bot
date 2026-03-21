@@ -21,6 +21,7 @@ import { useSimilarWordsCheck } from "@/shared/hooks/useSimilarWordsCheck";
 import { i18n } from "@/shared/lib/i18n";
 import { ImagePreview } from "@/shared/ui/ImagePreview";
 import { ReloadIcon } from "@/shared/ui/ReloadIcon";
+import { useSearchParams } from "next/navigation";
 
 export const WordFormDataSchema = z.object({
 	word: z.string().min(1, "Word is required"),
@@ -38,6 +39,7 @@ export type WordFormData = z.infer<typeof WordFormDataSchema>;
 
 type WordFormProps = {
 	title: string;
+	mode: "edit" | "add";
 	defaultValues?: Partial<WordFormData>;
 	onSubmit: (data: WordFormData) => void;
 	onDelete?: () => void;
@@ -46,6 +48,7 @@ type WordFormProps = {
 
 export const WordForm = ({
 	title,
+	mode,
 	defaultValues,
 	onSubmit,
 	onDelete,
@@ -53,8 +56,8 @@ export const WordForm = ({
 }: WordFormProps) => {
 	const { webApp } = useTelegram();
 	const initData = webApp?.initData || "";
-	const chatID =
-		new URLSearchParams(window.location.search).get("chat_id") || "";
+	const searchParams = useSearchParams();
+	const chatID = searchParams.get("chat_id") ?? "";
 
 	const {
 		register,
@@ -103,15 +106,20 @@ export const WordForm = ({
 	const debouncedWord = useDebounced(wordValue, 1000);
 
 	useEffect(() => {
-		if (debouncedWord) {
-			checkWord({
-				initData,
-				chatID,
-				word: debouncedWord,
-			});
-			resetOffset();
+		switch (mode) {
+			case "edit":
+				return;
+			case "add":
+				if (debouncedWord) {
+					checkWord({
+						initData,
+						chatID,
+						word: debouncedWord,
+					});
+					resetOffset();
+				}
 		}
-	}, [checkWord, resetOffset, debouncedWord, initData, chatID]);
+	}, [checkWord, resetOffset, debouncedWord, mode, initData, chatID]);
 
 	useEffect(() => {
 		if (example) {
@@ -238,25 +246,28 @@ export const WordForm = ({
 					</div>
 				</div>
 
-				{(images?.length > 0 || (selectedImageUrlValue && images.every(img => img.url !== selectedImageUrlValue))) && (
+				{(images?.length > 0 ||
+					(selectedImageUrlValue &&
+						images.every((img) => img.url !== selectedImageUrlValue))) && (
 					<div className="flex flex-wrap gap-2 px-5.5 pb-4">
 						{/* If we have a selected image that is not in the search results (e.g. initial image), show it first */}
-						{selectedImageUrlValue && images.every(img => img.url !== selectedImageUrlValue) && (
-							<button
-								type="button"
-								className="shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden border-[#007aff]"
-								onClick={() => setPreviewIsOpen(true)}
-							>
-								<picture>
-									<source srcSet={selectedImageUrlValue} />
-									<img
-										src={selectedImageUrlValue}
-										alt="Current"
-										className="h-24 w-24 object-cover"
-									/>
-								</picture>
-							</button>
-						)}
+						{selectedImageUrlValue &&
+							images.every((img) => img.url !== selectedImageUrlValue) && (
+								<button
+									type="button"
+									className="shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden border-[#007aff]"
+									onClick={() => setPreviewIsOpen(true)}
+								>
+									<picture>
+										<source srcSet={selectedImageUrlValue} />
+										<img
+											src={selectedImageUrlValue}
+											alt="Current"
+											className="h-24 w-24 object-cover"
+										/>
+									</picture>
+								</button>
+							)}
 						{images.map((img) => (
 							<button
 								type="button"
@@ -313,7 +324,7 @@ export const WordForm = ({
 					<Button
 						className="max-h-12"
 						mode="plain"
-						color="negative"
+						color="red"
 						type="button"
 						stretched
 						onClick={onDelete}
