@@ -81,7 +81,10 @@ const updateWord = executionTime('updateWord',
             Translation: word.Translation,
             Examples: word.Examples,
             AudioURL: word.AudioURL,
+            ImageURL: word.ImageURL,
+            Progress: word.Progress,
             TelegramAudioID: undefined,
+            TelegramPictureID: undefined,
           },
         });
         return null;
