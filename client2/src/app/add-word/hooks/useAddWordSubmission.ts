@@ -1,16 +1,16 @@
-// import WebApp from "@twa-dev/sdk";
 import { useActionState } from "react";
 import { submitWord, uploadImage } from "@/shared/api/words";
-import type { AddWordFormData } from "../schema";
+import type { WordFormData } from "@/shared/ui/WordForm";
 
 type State = {
 	submitted: boolean;
 };
 
 type Payload = {
-	data: AddWordFormData;
+	data: WordFormData;
 	initData: string;
 	chatID: string;
+	onSubmit?: () => void;
 };
 
 const submitReducer = async (
@@ -21,7 +21,7 @@ const submitReducer = async (
 		return state;
 	}
 
-	const { data, initData, chatID } = payload;
+	const { data, initData, chatID, onSubmit } = payload;
 
 	try {
 		const imageUrl = await (async () => {
@@ -49,7 +49,7 @@ const submitReducer = async (
 			imageUrl,
 		});
 
-		// WebApp.close();
+		onSubmit?.();
 	} catch (error) {
 		console.error("Failed to submit word:", error);
 		return {

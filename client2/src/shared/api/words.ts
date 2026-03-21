@@ -102,6 +102,16 @@ export const submitWord = async (
 	});
 };
 
+export const deleteWord = async (
+	initData: string,
+	chatID: string,
+	wordID: string,
+) => {
+	await apiFetch(`/chat/${chatID}/word/${wordID}`, initData, {
+		method: "DELETE",
+	});
+};
+
 export const checkSimilarWords = async (
 	initData: string,
 	chatID: string,

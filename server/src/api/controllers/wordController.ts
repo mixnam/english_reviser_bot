@@ -97,15 +97,9 @@ export class WordController {
       }>,
       res: FastifyReply,
   ) => {
-    const messageID = req.headers['telegram-message-id'];
-    if (typeof messageID !== 'string') {
-      return res.code(403).send({message: 'No telegram-message-id header'});
-    }
-
     const word = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body as Word);
     const result = await this.wordService.editWord(
         Number.parseInt(req.params.chat_id),
-        Number.parseInt(messageID),
         word,
     );
 
@@ -221,5 +215,24 @@ export class WordController {
     }
 
     return res.code(200).send();
+  };
+
+  deleteWord = async (
+      req: FastifyRequest<{
+      Params: {chat_id: string; word_id: string};
+    }>,
+      res: FastifyReply,
+  ) => {
+    const result = await this.wordService.deleteWord(
+        Number.parseInt(req.params.chat_id),
+        req.params.word_id,
+    );
+
+    if (result instanceof Error) {
+      req.log.error(result);
+      return res.code(500).send({message: result.message});
+    }
+
+    return res.code(200).send({success: true});
   };
 }

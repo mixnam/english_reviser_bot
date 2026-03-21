@@ -1,9 +1,17 @@
 "use client";
 
-import { Button, Caption, Card, Text } from "@telegram-apps/telegram-ui";
+import {
+	Button,
+	Caption,
+	Card,
+	IconButton,
+	Text,
+} from "@telegram-apps/telegram-ui";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Word } from "../api/types";
 import { i18n } from "../lib/i18n";
+import { EditIcon } from "./EditIcon";
 
 interface WordCardProps {
 	word: Word;
@@ -20,6 +28,10 @@ const progressShadowMap: Record<string, string> = {
 };
 
 export const WordCard = ({ word, revealed, onReveal }: WordCardProps) => {
+	const router = useRouter();
+	const searchParams = useSearchParams();
+	const chatID = searchParams.get("chat_id") || "";
+
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const [revealedExample, setRevealedExample] = useState(false);
 
@@ -33,11 +45,21 @@ export const WordCard = ({ word, revealed, onReveal }: WordCardProps) => {
 		}
 	};
 
+	const onEdit = () => {
+		const encodedWord = btoa(encodeURIComponent(JSON.stringify(word)));
+		router.push(`/edit-word?chat_id=${chatID}&word=${encodedWord}`);
+	};
+
 	const shadowClass = progressShadowMap[word.Progress] || "";
 
 	return (
 		<div className={`rounded-2xl shadow-2xl ${shadowClass}`}>
-			<Card className="flex flex-col w-full h-full overflow-hidden">
+			<Card className="flex flex-col w-full h-full overflow-hidden relative">
+				<div className="absolute top-2 right-2 z-10">
+					<IconButton size="s" mode="bezeled" onClick={onEdit}>
+						<EditIcon size={20} />
+					</IconButton>
+				</div>
 				{word.ImageURL && (
 					<img
 						src={word.ImageURL}

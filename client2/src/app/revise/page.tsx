@@ -17,7 +17,8 @@ import { useReviseSession } from "./hooks/useReviseSession";
 const ReviseContent = () => {
 	const searchParams = useSearchParams();
 	const chatID = searchParams.get("chat_id") || "";
-	const { initData } = useTelegram();
+	const { webApp } = useTelegram();
+	const initData = webApp?.initData || "";
 
 	const { word, isLoading, revealed, isError, revealWord, submitDecision } =
 		useReviseSession(initData, chatID);
@@ -60,9 +61,9 @@ const ReviseContent = () => {
 	if (isError) {
 		return (
 			<div className="flex h-full flex-col items-center justify-center p-4">
-				<Title level="2">{i18n.noWordsLearn}</Title>
+				<Title level="2">{i18n.noWords}</Title>
 				<Button className="mt-4" onClick={() => window.location.reload()}>
-					Retry
+					{i18n.retry}
 				</Button>
 			</div>
 		);
@@ -85,7 +86,7 @@ const ReviseContent = () => {
 					size="l"
 					className="mt-8 w-full max-w-xs"
 					onClick={() => {
-						// WebApp.close();
+						webApp?.close();
 					}}
 				>
 					{i18n.close}
@@ -97,7 +98,7 @@ const ReviseContent = () => {
 	return (
 		<div className="flex flex-col h-full p-4">
 			<Title level="1" weight="2" className="text-center mb-6">
-				Revise
+				{i18n.revise}
 			</Title>
 
 			<div className="flex-1 flex flex-col justify-center mb-6 min-h-0">

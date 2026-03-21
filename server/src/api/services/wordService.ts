@@ -13,11 +13,28 @@ import {
   ProgressOrder,
   setWordProgress,
   getWordByID,
+  deleteWord,
+  addNewWord,
+  updateWord,
 } from '../../repo/words.js';
 import * as OpenAIExamplesService from '../../services/openAIExamples.js';
 import * as GoogleImageService from '../../services/googleImage.js';
 import * as GoogleCloudStorage from '../../services/googleCloudStorage.js';
+import * as TTSService from '../../tts/openaiTts.js';
 import {minusDaysFromNow} from '../../repo/utils.js';
+import http from 'http';
+import https from 'https';
+import {IncomingMessage} from 'http';
+
+const MIME_TYPES_TO_EXTENSION: Record<string, string> = {
+  'image/apng': 'apng',
+  'image/avif': 'avif',
+  'image/gif': 'gif',
+  'image/jpeg': 'jpeg',
+  'image/png': 'png',
+  'image/svg+xml': 'svg',
+  'image/webp': 'webp',
+};
 
 export class WordService {
   constructor(
@@ -51,17 +68,7 @@ export class WordService {
   }
 
   async uploadImage(file: Buffer, mimetype: string): Promise<string | Error> {
-    const MIME_TYPES_TO_EXTENSION = {
-      'image/apng': 'apng',
-      'image/avif': 'avif',
-      'image/gif': 'gif',
-      'image/jpeg': 'jpg',
-      'image/png': 'png',
-      'image/svg+xml': 'svg',
-      'image/webp': 'webp',
-    };
-
-    const extension = (MIME_TYPES_TO_EXTENSION as any)[mimetype] || 'jpg';
+    const extension = MIME_TYPES_TO_EXTENSION[mimetype] || 'jpg';
     const fileName = `${new ObjectId().toString()}.${extension}`;
 
     try {
@@ -70,6 +77,14 @@ export class WordService {
       this.logger.error({err}, 'Failed to upload image to GCS');
       return err instanceof Error ? err : new Error(String(err));
     }
+  }
+
+  private async fetchRemoteImage(imageUrl: string): Promise<IncomingMessage | Error> {
+    return new Promise<IncomingMessage | Error>((resolve) => {
+      const client = imageUrl.startsWith('https') ? https : http;
+      const req = client.get(imageUrl, (response) => resolve(response));
+      req.on('error', (err) => resolve(err));
+    });
   }
 
   async saveWord(
@@ -83,27 +98,57 @@ export class WordService {
     if (user instanceof Error) return user;
     if (!user) return new Error(`User not found for chatID: ${chatID}`);
 
-    const newWord: Word = {
-      '_id': new ObjectId().toString(),
-      'userID': user._id,
-      'English': wordText,
-      'Translation': translation,
-      'Examples': example,
-      'Progress': Progress.HaveProblems,
-      'Last Revised': minusDaysFromNow(30),
-    };
+    const wordId = new ObjectId().toString();
 
     try {
-      await this.bot.handleWebAppMessage({
-        type: 'add_word_msg',
-        payload: {
-          chatID,
-          word: newWord,
-          imageUrl,
-        },
-      });
+      const audio = await TTSService.getInstance().getAudioForText(example || wordText);
+      if (audio instanceof Error) return audio;
+
+      const audioURL = await GoogleCloudStorage.getInstance().uploadAudio(
+          audio,
+          `${wordId}.ogg`,
+          this.logger,
+      );
+
+      let finalImageUrl: string | undefined = undefined;
+      if (imageUrl) {
+        if (imageUrl.includes(process.env.GOOGLE_CLOUD_STORAGE_BUCKET!)) {
+          finalImageUrl = imageUrl;
+        } else {
+          const imageResponse = await this.fetchRemoteImage(imageUrl);
+          if (imageResponse instanceof Error) return imageResponse;
+
+          if (imageResponse.statusCode !== 200) {
+            throw new Error(`Failed to fetch image: status ${imageResponse.statusCode}`);
+          }
+
+          const contentType = imageResponse.headers['content-type'] || 'image/jpeg';
+          const extension = MIME_TYPES_TO_EXTENSION[contentType] || 'jpeg';
+          finalImageUrl = await GoogleCloudStorage.getInstance().uploadImage(
+              imageResponse,
+              `${wordId}.${extension}`,
+              this.logger,
+          );
+        }
+      }
+
+      const newWord: Word = {
+        '_id': wordId,
+        'userID': user._id,
+        'English': wordText,
+        'Translation': translation,
+        'Examples': example,
+        'Progress': Progress.HaveProblems,
+        'Last Revised': minusDaysFromNow(30),
+        'AudioURL': audioURL,
+        'ImageURL': finalImageUrl,
+      };
+
+      const result = await addNewWord(user._id, newWord, this.logger);
+      if (result instanceof Error) throw result;
     } catch (err) {
-      return err;
+      this.logger.error({err}, 'Transactional saveWord failed');
+      return err instanceof Error ? err : new Error(String(err));
     }
   }
 
@@ -169,20 +214,88 @@ export class WordService {
 
   async editWord(
       chatID: number,
-      messageID: number,
       word: Word,
   ): Promise<void | Error> {
+    const user = await getUserByChatID(chatID, this.logger);
+    if (user instanceof Error) return user;
+    if (!user) return new Error(`User not found for chatID: ${chatID}`);
+
+    const existingWord = await getWordByID(word._id, this.logger);
+    if (existingWord instanceof Error) return existingWord;
+    if (!existingWord) return new Error(`Word not found: ${word._id}`);
+
     try {
-      await this.bot.handleWebAppMessage({
-        type: 'edit_word_msg',
-        payload: {
-          word,
-          chatID,
-          messageID,
-        },
-      });
+      if (word.English !== existingWord.English || word.Examples !== existingWord.Examples) {
+        const audio = await TTSService.getInstance().getAudioForText(word.Examples || word.English);
+        if (audio instanceof Error) throw audio;
+
+        const audioURL = await GoogleCloudStorage.getInstance().uploadAudio(
+            audio,
+            `${word._id}.ogg`,
+            this.logger,
+        );
+        word.AudioURL = audioURL;
+      } else {
+        word.AudioURL = existingWord.AudioURL;
+      }
+
+      if (word.ImageURL && word.ImageURL !== existingWord.ImageURL) {
+        if (!word.ImageURL.includes(process.env.GOOGLE_CLOUD_STORAGE_BUCKET!)) {
+          const imageResponse = await this.fetchRemoteImage(word.ImageURL);
+          if (imageResponse instanceof Error) throw imageResponse;
+          if (imageResponse.statusCode !== 200) {
+            throw new Error(`Failed to fetch image: status ${imageResponse.statusCode}`);
+          }
+
+          const contentType = imageResponse.headers['content-type'] || 'image/jpeg';
+          const extension = MIME_TYPES_TO_EXTENSION[contentType] || 'jpeg';
+          const finalImageUrl = await GoogleCloudStorage.getInstance().uploadImage(
+              imageResponse,
+              `${word._id}.${extension}`,
+              this.logger,
+          );
+
+          if (existingWord.ImageURL) {
+            await GoogleCloudStorage.getInstance().deleteFile(existingWord.ImageURL, this.logger);
+          }
+
+          word.ImageURL = finalImageUrl;
+        }
+      }
+
+      const result = await updateWord(user._id, word, this.logger);
+      if (result instanceof Error) throw result;
     } catch (err) {
-      return err;
+      this.logger.error({err}, 'Transactional editWord failed');
+      return err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  async deleteWord(
+      chatID: number,
+      wordID: string,
+  ): Promise<void | Error> {
+    const user = await getUserByChatID(chatID, this.logger);
+    if (user instanceof Error) return user;
+    if (!user) return new Error(`User not found for chatID: ${chatID}`);
+
+    const existingWord = await getWordByID(wordID, this.logger);
+    if (existingWord instanceof Error) return existingWord;
+    if (!existingWord) return;
+
+    try {
+      if (existingWord.AudioURL) {
+        await GoogleCloudStorage.getInstance().deleteFile(existingWord.AudioURL, this.logger);
+      }
+      if (existingWord.ImageURL) {
+        await GoogleCloudStorage.getInstance().deleteFile(existingWord.ImageURL, this.logger);
+      }
+
+      const result = await deleteWord(wordID, this.logger);
+      return result === null ? undefined : result;
+    } catch (err) {
+      this.logger.error({err}, 'Transactional deleteWord failed');
+      return err instanceof Error ? err : new Error(String(err));
     }
   }
 }

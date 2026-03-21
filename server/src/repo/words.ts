@@ -81,12 +81,30 @@ const updateWord = executionTime('updateWord',
             Translation: word.Translation,
             Examples: word.Examples,
             AudioURL: word.AudioURL,
+            ImageURL: word.ImageURL,
+            Progress: word.Progress,
             TelegramAudioID: undefined,
+            TelegramPictureID: undefined,
           },
         });
         return null;
       } catch (err) {
         return new Error(`[repo][updateWord] - ${err}`);
+      }
+    });
+
+const deleteWord = executionTime('deleteWord',
+    async (wordID: string, logger: Logger): Promise<Error | null> => {
+      const db = await getDb(logger);
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      try {
+        await words.deleteOne({
+          _id: new ObjectId(wordID),
+        });
+        return null;
+      } catch (err) {
+        return new Error(`[repo][deleteWord] - ${err}`);
       }
     });
 
@@ -396,5 +414,6 @@ export {
   setWordAsForgottenByWordID,
   setWordTelegramPictureID,
   updateWord,
+  deleteWord,
   getWordsStats,
 };

@@ -70,6 +70,32 @@ class GoogleCloudStorageService {
     await this.upload(fileData, filePath, logger);
     return this.getPublicUrl(filePath);
   };
+
+  /**
+   * Deletes a file from Google Cloud Storage.
+   */
+  deleteFile = async (
+      fileUrl: string,
+      logger: Logger,
+  ): Promise<void> => {
+    const bucketPrefix = `https://storage.googleapis.com/${this.bucket}/`;
+    if (!fileUrl.startsWith(bucketPrefix)) {
+      logger.warn({fileUrl}, 'File URL does not belong to this bucket, skipping deletion');
+      return;
+    }
+
+    const filePath = fileUrl.replace(bucketPrefix, '');
+    logger.debug({filePath, bucket: this.bucket}, 'Deleting file from GCS');
+
+    try {
+      const bucket = this.storage.bucket(this.bucket);
+      const file = bucket.file(filePath);
+      await file.delete();
+      logger.info({filePath, bucket: this.bucket}, 'File deleted successfully from GCS');
+    } catch (err) {
+      logger.error({err, filePath, bucket: this.bucket}, 'Error deleting file from GCS');
+    }
+  };
 }
 
 let instance: GoogleCloudStorageService;
