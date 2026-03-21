@@ -24,8 +24,8 @@ import { ReloadIcon } from "@/shared/ui/ReloadIcon";
 import { useSearchParams } from "next/navigation";
 
 export const WordFormDataSchema = z.object({
-	word: z.string().min(1, "Word is required"),
-	translation: z.string().min(1, "Translation is required"),
+	word: z.string().min(1, i18n.wordRequired),
+	translation: z.string().min(1, i18n.translationRequired),
 	example: z.string().optional(),
 	selectedImage: z
 		.discriminatedUnion("type", [
@@ -192,7 +192,7 @@ export const WordForm = ({
 				/>
 				{!!similarWords?.length && (
 					<div className="flex items-center text-amber-500 justify-between px-5.5 pb-2 -mt-3 z-50">
-						<Caption>{`You have some similar words: ${similarWords.join(", ")}`}</Caption>
+						<Caption>{`${i18n.similarWords}${similarWords.join(", ")}`}</Caption>
 					</div>
 				)}
 				<Textarea
@@ -209,7 +209,7 @@ export const WordForm = ({
 						status={errors.example ? "error" : undefined}
 					/>
 					<div className="flex items-center justify-between px-5.5 pb-2">
-						<Caption>Generate example</Caption>
+						<Caption>{i18n.generateExample}</Caption>
 						<IconButton
 							size="s"
 							mode="plain"
@@ -223,7 +223,7 @@ export const WordForm = ({
 				</div>
 
 				<div className="flex items-center justify-between px-5.5">
-					<Caption>Search Image</Caption>
+					<Caption>{i18n.searchImage}</Caption>
 					<div className="flex items-center gap-2">
 						<Button
 							size="s"
@@ -232,7 +232,7 @@ export const WordForm = ({
 							onClick={onPaste}
 							disabled={isFormDisabled}
 						>
-							Paste
+							{i18n.paste}
 						</Button>
 						<IconButton
 							size="s"
@@ -330,7 +330,7 @@ export const WordForm = ({
 						onClick={onDelete}
 						disabled={isFormDisabled}
 					>
-						Delete word
+						{i18n.deleteWord}
 					</Button>
 				)}
 			</div>

@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { Suspense, startTransition } from "react";
 import { useTelegram } from "@/app/telegram";
+import { i18n } from "@/shared/lib/i18n";
 import { WordForm, type WordFormData } from "@/shared/ui/WordForm";
 import { useAddWordSubmission } from "./hooks/useAddWordSubmission";
 
@@ -27,7 +28,7 @@ const AddWordPageContent = () => {
 
 	return (
 		<WordForm
-			title="Add new word"
+			title={i18n.addNewWord}
 			mode="add"
 			onSubmit={onSubmit}
 			disabled={isSubmitting}

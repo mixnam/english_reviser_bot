@@ -20,10 +20,8 @@ const LearnContent = () => {
 	const { webApp } = useTelegram();
 	const initData = webApp?.initData || "";
 
-	const { word, revealed, isLoading, isError, revealWord, submitDecision } = useLearnSession(
-		initData,
-		chatID,
-	);
+	const { word, revealed, isLoading, isError, revealWord, submitDecision } =
+		useLearnSession(initData, chatID);
 
 	useEffect(() => {
 		if (!isLoading && !word) {
@@ -65,7 +63,7 @@ const LearnContent = () => {
 			<div className="flex h-full flex-col items-center justify-center p-4">
 				<Title level="2">{i18n.noWordsLearn}</Title>
 				<Button className="mt-4" onClick={() => window.location.reload()}>
-					Retry
+					{i18n.retry}
 				</Button>
 			</div>
 		);
@@ -100,7 +98,7 @@ const LearnContent = () => {
 	return (
 		<div className="flex flex-col h-full p-4">
 			<Title level="1" weight="2" className="text-center mb-6">
-				Learn
+				{i18n.learn}
 			</Title>
 
 			<div className="flex-1 flex flex-col justify-center">

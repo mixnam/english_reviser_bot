@@ -1,6 +1,12 @@
 "use client";
 
-import { Button, Caption, Card, IconButton, Text } from "@telegram-apps/telegram-ui";
+import {
+	Button,
+	Caption,
+	Card,
+	IconButton,
+	Text,
+} from "@telegram-apps/telegram-ui";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Word } from "../api/types";

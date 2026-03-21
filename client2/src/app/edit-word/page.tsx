@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { Suspense, startTransition } from "react";
 import { useTelegram } from "@/app/telegram";
+import { i18n } from "@/shared/lib/i18n";
 import { WordForm, type WordFormData } from "@/shared/ui/WordForm";
 import { useEditWordSubmission } from "./hooks/useEditWordSubmission";
 
@@ -34,21 +35,18 @@ const EditWordPageContent = () => {
 	};
 
 	const onDelete = () => {
-		webApp?.showConfirm(
-			"Are you sure you want to delete this word?",
-			(confirmed) => {
-				if (confirmed) {
-					startTransition(() => {
-						remove({
-							id: initialWord._id,
-							initData,
-							chatID,
-							onSuccess: () => webApp?.close(),
-						});
+		webApp?.showConfirm(i18n.deleteConfirm, (confirmed) => {
+			if (confirmed) {
+				startTransition(() => {
+					remove({
+						id: initialWord._id,
+						initData,
+						chatID,
+						onSuccess: () => webApp?.close(),
 					});
-				}
-			},
-		);
+				});
+			}
+		});
 	};
 
 	const defaultValues: Partial<WordFormData> = {
@@ -65,7 +63,7 @@ const EditWordPageContent = () => {
 
 	return (
 		<WordForm
-			title="Edit word"
+			title={i18n.editWord}
 			mode="edit"
 			defaultValues={defaultValues}
 			onSubmit={onSubmit}
