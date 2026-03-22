@@ -224,6 +224,8 @@ export class WordService {
     if (existingWord instanceof Error) return existingWord;
     if (!existingWord) return new Error(`Word not found: ${word._id}`);
 
+    word.Progress = existingWord.Progress;
+
     try {
       if (word.English !== existingWord.English || word.Examples !== existingWord.Examples) {
         const audio = await TTSService.getInstance().getAudioForText(word.Examples || word.English);
