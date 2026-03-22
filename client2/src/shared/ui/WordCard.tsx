@@ -58,7 +58,7 @@ export const WordCard = ({ word, revealed, onReveal }: WordCardProps) => {
 		>
 			<Card className="w-full h-full overflow-hidden relative flex-1 min-h-0 p-0">
 				<div className="flex flex-col w-full h-full absolute inset-0">
-					<div className="absolute top-2 right-2 z-10">
+					<div className="absolute top-4 right-4 z-10">
 						<IconButton size="s" mode="bezeled" onClick={onEdit}>
 							<EditIcon size={20} />
 						</IconButton>

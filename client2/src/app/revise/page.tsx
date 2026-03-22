@@ -2,6 +2,7 @@
 
 import {
 	Button,
+	Caption,
 	Placeholder,
 	Spinner,
 	Title,
@@ -101,7 +102,7 @@ const ReviseContent = () => {
 				{i18n.revise}
 			</Title>
 
-			<div className="flex-1 flex flex-col justify-center mb-6 min-h-0">
+			<div className="flex-1 flex flex-col justify-center min-h-0">
 				<WordCard
 					word={word}
 					revealed={revealed}
@@ -109,8 +110,10 @@ const ReviseContent = () => {
 				/>
 			</div>
 
-			<div className="text-center mt-auto mb-6">
-				<Title level="3">{i18n.doYouRemember}</Title>
+			<div className="text-center my-4">
+				<Caption weight="1" caps className="text-gray-800 tracking-widest">
+					{i18n.doYouRemember}
+				</Caption>
 			</div>
 
 			<div className="flex gap-4 pb-4 shrink-0">
@@ -118,7 +121,7 @@ const ReviseContent = () => {
 					stretched
 					size="l"
 					mode="bezeled"
-					color="negative"
+					className="bg-rose-200! text-rose-700!"
 					onClick={() => handleDecision(false)}
 					loading={isLoading}
 					disabled={isLoading}
@@ -129,6 +132,7 @@ const ReviseContent = () => {
 					stretched
 					size="l"
 					mode="bezeled"
+					className="bg-emerald-200! text-emerald-700!"
 					onClick={() => handleDecision(true)}
 					loading={isLoading}
 					disabled={isLoading}

@@ -2,6 +2,7 @@
 
 import {
 	Button,
+	Caption,
 	Placeholder,
 	Spinner,
 	Title,
@@ -109,8 +110,10 @@ const LearnContent = () => {
 				/>
 			</div>
 
-			<div className="text-center mt-auto mb-6">
-				<Title level="3">{i18n.doYouRemember}</Title>
+			<div className="text-center my-4">
+				<Caption weight="1" caps className="text-gray-800 tracking-widest">
+					{i18n.doYouRemember}
+				</Caption>
 			</div>
 
 			<div className="flex gap-4 pb-4 shrink-0">
@@ -118,6 +121,7 @@ const LearnContent = () => {
 					stretched
 					size="l"
 					mode="bezeled"
+					className="bg-rose-200! text-rose-700!"
 					color="negative"
 					onClick={() => handleDecision(false)}
 					loading={isLoading}
@@ -129,6 +133,7 @@ const LearnContent = () => {
 					stretched
 					size="l"
 					mode="bezeled"
+					className="bg-emerald-200! text-emerald-700!"
 					onClick={() => handleDecision(true)}
 					loading={isLoading}
 					disabled={isLoading}
