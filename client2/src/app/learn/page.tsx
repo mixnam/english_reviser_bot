@@ -101,7 +101,7 @@ const LearnContent = () => {
 				{i18n.learn}
 			</Title>
 
-			<div className="flex-1 flex flex-col justify-center">
+			<div className="flex-1 flex flex-col justify-center min-h-0">
 				<WordCard
 					word={word}
 					revealed={revealed}
