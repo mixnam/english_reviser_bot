@@ -82,7 +82,7 @@ export const WordForm = ({
 	const selectedImageUrlValue = watch("selectedImage.url");
 
 	const [previewIsOpen, setPreviewIsOpen] = useState(false);
-	const hiddenPasteTargetRef = useRef<HTMLTextAreaElement | null>(null);
+	const fileInputRef = useRef<HTMLInputElement | null>(null);
 
 	const {
 		example,
@@ -148,51 +148,16 @@ export const WordForm = ({
 		});
 	};
 
-	const onPaste = async () => {
-		try {
-			if (typeof navigator === "undefined" || !navigator.clipboard?.read) {
-				hiddenPasteTargetRef.current?.focus();
-				return;
-			}
-
-			const items = Array.from(await navigator.clipboard.read());
-			const imageItem = items
-				.map<ClipboardItem & { type: string | null }>((item) => {
-					Object.defineProperty(item, "type", {
-						value: item.types.find((type) => type.startsWith("image/")) ?? null,
-					});
-					return item as ClipboardItem & { type: string | null };
-				})
-				.find<ClipboardItem & { type: string }>(
-					(item): item is ClipboardItem & { type: string } => Boolean(item.type),
-				);
-
-			if (imageItem) {
-				const blob = await imageItem.getType(imageItem.type);
-				if (blob) {
-					addLocalImage(blob);
-					return;
-				}
-			}
-		} catch {
-			// Telegram Mini Apps may not expose navigator.clipboard.read().
-		}
-
-		hiddenPasteTargetRef.current?.focus();
+	const onUploadClick = () => {
+		fileInputRef.current?.click();
 	};
 
-	const onPasteCapture = (event: React.ClipboardEvent<HTMLFormElement>) => {
-		const imageItem = Array.from(event.clipboardData.items).find((item) =>
-			item.type.startsWith("image/"),
-		);
-
-		if (!imageItem) return;
-
-		const file = imageItem.getAsFile();
+	const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
 		if (!file) return;
 
-		event.preventDefault();
 		addLocalImage(file);
+		event.target.value = "";
 	};
 
 	const isFormDisabled =
@@ -202,22 +167,18 @@ export const WordForm = ({
 		isImagesLoading;
 
 	return (
-		<form
-			className="w-full h-full flex flex-col p-4"
-			onSubmit={handleSubmit(onSubmit)}
-			onPaste={onPasteCapture}
-		>
+		<form className="w-full h-full flex flex-col p-4" onSubmit={handleSubmit(onSubmit)}>
 			<Title className="text-center pb-5" level="1" weight="2">
 				{title}
 			</Title>
 
 			<List>
-				<textarea
-					ref={hiddenPasteTargetRef}
-					className="sr-only"
-					aria-hidden="true"
-					tabIndex={-1}
-					readOnly
+				<input
+					ref={fileInputRef}
+					type="file"
+					accept="image/*"
+					className="hidden"
+					onChange={onFileChange}
 				/>
 				<Textarea
 					{...register("word")}
@@ -264,10 +225,10 @@ export const WordForm = ({
 							size="s"
 							mode="bezeled"
 							type="button"
-							onClick={onPaste}
+							onClick={onUploadClick}
 							disabled={isFormDisabled}
 						>
-							{i18n.paste}
+							{i18n.upload}
 						</Button>
 						<IconButton
 							size="s"
@@ -350,7 +311,7 @@ export const WordForm = ({
 					className="max-h-12"
 					type="submit"
 					stretched
-					loading={externalDisabled && !onDelete} // Simple heuristic for loading
+					loading={externalDisabled && !onDelete}
 					disabled={isFormDisabled}
 				>
 					{i18n.save}
