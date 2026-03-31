@@ -1,5 +1,16 @@
 import {Logger} from 'pino';
 
+export type GoogleImageSearchResult = {
+  url: string;
+  title?: string;
+  snippet?: string;
+  displayLink?: string;
+  contextLink?: string;
+  mime?: string;
+  width?: number;
+  height?: number;
+};
+
 /**
  * Service to interact with Google Custom Search API for image search.
  */
@@ -19,13 +30,14 @@ class GoogleImageServiceImpl {
    * @param query The search query.
    * @param logger Logger instance.
    * @param start The index of the first result to return (for pagination).
-   * @returns A promise that resolves to an array of image URLs or an Error.
+   * @returns A promise that resolves to an array of image results or an Error.
    */
   searchImages = async (
       query: string,
       logger: Logger,
       start: number = 1,
-  ): Promise<string[] | Error> => {
+      num: number = 10,
+  ): Promise<GoogleImageSearchResult[] | Error> => {
     if (!this.apiKey || !this.cx) {
       logger.warn('GOOGLE_SEARCH_API_KEY or GOOGLE_SEARCH_ENGINE_ID is not set, skipping image search.');
       return [];
@@ -36,13 +48,11 @@ class GoogleImageServiceImpl {
     searchUrl.searchParams.append('cx', this.cx);
     searchUrl.searchParams.append('q', query);
     searchUrl.searchParams.append('searchType', 'image');
-    searchUrl.searchParams.append('num', '5'); // Request up to 5 images
-    searchUrl.searchParams.append('lr', 'lang_pt');
-    searchUrl.searchParams.append('gr', 'pt');
+    searchUrl.searchParams.append('num', Math.min(Math.max(num, 1), 10).toString());
     searchUrl.searchParams.append('start', start.toString());
-    searchUrl.searchParams.append('safe', 'active'); // Enable SafeSearch
+    searchUrl.searchParams.append('safe', 'active');
 
-    logger.debug({url: searchUrl.toString()}, 'Making Google Custom Search API request');
+    logger.debug({url: searchUrl.toString(), query, start, num}, 'Making Google Custom Search API request');
 
     try {
       const response = await fetch(searchUrl.toString());
@@ -54,22 +64,35 @@ class GoogleImageServiceImpl {
       }
 
       const data = await response.json();
-      const imageLinks: string[] = [];
+      const imageResults: GoogleImageSearchResult[] = [];
 
       if (
         typeof data === 'object' &&
+          data !== null &&
           'items' in data &&
-           Array.isArray(data.items)
+          Array.isArray(data.items)
       ) {
         for (const item of data.items) {
-          if (item.link) {
-            imageLinks.push(item.link);
-          }
+          if (!item?.link || typeof item.link !== 'string') continue;
+
+          imageResults.push({
+            url: item.link,
+            title: typeof item.title === 'string' ? item.title : undefined,
+            snippet: typeof item.snippet === 'string' ? item.snippet : undefined,
+            displayLink: typeof item.displayLink === 'string' ? item.displayLink : undefined,
+            contextLink:
+              typeof item.image?.contextLink === 'string'
+                ? item.image.contextLink
+                : undefined,
+            mime: typeof item.mime === 'string' ? item.mime : undefined,
+            width: typeof item.image?.width === 'number' ? item.image.width : undefined,
+            height: typeof item.image?.height === 'number' ? item.image.height : undefined,
+          });
         }
       }
 
-      logger.info({query, resultsCount: imageLinks.length}, 'Google Custom Search API request successful');
-      return imageLinks;
+      logger.info({query, resultsCount: imageResults.length}, 'Google Custom Search API request successful');
+      return imageResults;
     } catch (err) {
       logger.error({err, query}, 'Error during Google Custom Search API call');
       return err instanceof Error ? err : new Error(String(err));
@@ -90,4 +113,3 @@ const getInstance = (): GoogleImageServiceImpl => {
 };
 
 export {getInstance};
-

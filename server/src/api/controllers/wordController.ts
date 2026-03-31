@@ -152,11 +152,15 @@ export class WordController {
   searchImages = async (
       req: FastifyRequest<{
           Params: {chat_id: string};
-          Body: {word: string; offset?: number};
+          Body: {word: string; translation: string; offset?: number};
         }>,
       res: FastifyReply,
   ) => {
-    const result = await this.wordService.searchImages(req.body.word, req.body.offset);
+    const result = await this.wordService.searchImages(
+        req.body.word,
+        req.body.translation,
+        req.body.offset,
+    );
 
     if (result instanceof Error) {
       req.log.error(result);
