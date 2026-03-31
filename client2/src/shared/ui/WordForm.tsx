@@ -9,7 +9,7 @@ import {
 	Textarea,
 	Title,
 } from "@telegram-apps/telegram-ui";
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -82,6 +82,7 @@ export const WordForm = ({
 	const selectedImageUrlValue = watch("selectedImage.url");
 
 	const [previewIsOpen, setPreviewIsOpen] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement | null>(null);
 
 	const {
 		example,
@@ -147,25 +148,16 @@ export const WordForm = ({
 		});
 	};
 
-	const onPaste = async () => {
-		const items = Array.from(await navigator.clipboard.read());
-		const imageItem = items
-			.map<ClipboardItem & { type: string | null }>((item) => {
-				Object.defineProperty(item, "type", {
-					value: item.types.find((type) => type.startsWith("image/")) ?? null,
-				});
-				return item as ClipboardItem & { type: string | null };
-			})
-			.find<ClipboardItem & { type: string }>(
-				(item): item is ClipboardItem & { type: string } => Boolean(item.type),
-			);
+	const onUploadClick = () => {
+		fileInputRef.current?.click();
+	};
 
-		if (imageItem) {
-			const blob = await imageItem.getType(imageItem.type);
-			if (blob) {
-				addLocalImage(blob);
-			}
-		}
+	const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		addLocalImage(file);
+		event.target.value = "";
 	};
 
 	const isFormDisabled =
@@ -175,15 +167,19 @@ export const WordForm = ({
 		isImagesLoading;
 
 	return (
-		<form
-			className="w-full h-full flex flex-col p-4"
-			onSubmit={handleSubmit(onSubmit)}
-		>
+		<form className="w-full h-full flex flex-col p-4" onSubmit={handleSubmit(onSubmit)}>
 			<Title className="text-center pb-5" level="1" weight="2">
 				{title}
 			</Title>
 
 			<List>
+				<input
+					ref={fileInputRef}
+					type="file"
+					accept="image/*"
+					className="hidden"
+					onChange={onFileChange}
+				/>
 				<Textarea
 					{...register("word")}
 					header={i18n.word}
@@ -229,10 +225,10 @@ export const WordForm = ({
 							size="s"
 							mode="bezeled"
 							type="button"
-							onClick={onPaste}
+							onClick={onUploadClick}
 							disabled={isFormDisabled}
 						>
-							{i18n.paste}
+							{i18n.upload}
 						</Button>
 						<IconButton
 							size="s"
@@ -315,7 +311,7 @@ export const WordForm = ({
 					className="max-h-12"
 					type="submit"
 					stretched
-					loading={externalDisabled && !onDelete} // Simple heuristic for loading
+					loading={externalDisabled && !onDelete}
 					disabled={isFormDisabled}
 				>
 					{i18n.save}
