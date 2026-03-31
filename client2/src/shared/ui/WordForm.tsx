@@ -9,7 +9,7 @@ import {
 	Textarea,
 	Title,
 } from "@telegram-apps/telegram-ui";
-import { startTransition, useEffect, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -82,6 +82,7 @@ export const WordForm = ({
 	const selectedImageUrlValue = watch("selectedImage.url");
 
 	const [previewIsOpen, setPreviewIsOpen] = useState(false);
+	const hiddenPasteTargetRef = useRef<HTMLTextAreaElement | null>(null);
 
 	const {
 		example,
@@ -148,24 +149,50 @@ export const WordForm = ({
 	};
 
 	const onPaste = async () => {
-		const items = Array.from(await navigator.clipboard.read());
-		const imageItem = items
-			.map<ClipboardItem & { type: string | null }>((item) => {
-				Object.defineProperty(item, "type", {
-					value: item.types.find((type) => type.startsWith("image/")) ?? null,
-				});
-				return item as ClipboardItem & { type: string | null };
-			})
-			.find<ClipboardItem & { type: string }>(
-				(item): item is ClipboardItem & { type: string } => Boolean(item.type),
-			);
-
-		if (imageItem) {
-			const blob = await imageItem.getType(imageItem.type);
-			if (blob) {
-				addLocalImage(blob);
+		try {
+			if (typeof navigator === "undefined" || !navigator.clipboard?.read) {
+				hiddenPasteTargetRef.current?.focus();
+				return;
 			}
+
+			const items = Array.from(await navigator.clipboard.read());
+			const imageItem = items
+				.map<ClipboardItem & { type: string | null }>((item) => {
+					Object.defineProperty(item, "type", {
+						value: item.types.find((type) => type.startsWith("image/")) ?? null,
+					});
+					return item as ClipboardItem & { type: string | null };
+				})
+				.find<ClipboardItem & { type: string }>(
+					(item): item is ClipboardItem & { type: string } => Boolean(item.type),
+				);
+
+			if (imageItem) {
+				const blob = await imageItem.getType(imageItem.type);
+				if (blob) {
+					addLocalImage(blob);
+					return;
+				}
+			}
+		} catch {
+			// Telegram Mini Apps may not expose navigator.clipboard.read().
 		}
+
+		hiddenPasteTargetRef.current?.focus();
+	};
+
+	const onPasteCapture = (event: React.ClipboardEvent<HTMLFormElement>) => {
+		const imageItem = Array.from(event.clipboardData.items).find((item) =>
+			item.type.startsWith("image/"),
+		);
+
+		if (!imageItem) return;
+
+		const file = imageItem.getAsFile();
+		if (!file) return;
+
+		event.preventDefault();
+		addLocalImage(file);
 	};
 
 	const isFormDisabled =
@@ -178,12 +205,20 @@ export const WordForm = ({
 		<form
 			className="w-full h-full flex flex-col p-4"
 			onSubmit={handleSubmit(onSubmit)}
+			onPaste={onPasteCapture}
 		>
 			<Title className="text-center pb-5" level="1" weight="2">
 				{title}
 			</Title>
 
 			<List>
+				<textarea
+					ref={hiddenPasteTargetRef}
+					className="sr-only"
+					aria-hidden="true"
+					tabIndex={-1}
+					readOnly
+				/>
 				<Textarea
 					{...register("word")}
 					header={i18n.word}
