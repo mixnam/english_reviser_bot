@@ -62,7 +62,7 @@ export const translations = {
 		editWord: "Editar palavra",
 		generateExample: "Gerar exemplo",
 		searchImage: "Buscar Imagem",
-		upload: "Upload",
+		upload: "Enviar",
 		deleteWord: "Excluir palavra",
 		wordRequired: "A palavra é obrigatória",
 		translationRequired: "A tradução é obrigatória",
