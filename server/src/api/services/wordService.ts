@@ -19,6 +19,7 @@ import {
 } from '../../repo/words.js';
 import * as OpenAIExamplesService from '../../services/openAIExamples.js';
 import * as GoogleImageService from '../../services/googleImage.js';
+import type {GoogleImageSearchResult} from '../../services/googleImage.js';
 import * as GoogleCloudStorage from '../../services/googleCloudStorage.js';
 import * as TTSService from '../../tts/openaiTts.js';
 import {minusDaysFromNow} from '../../repo/utils.js';
@@ -35,6 +36,11 @@ const MIME_TYPES_TO_EXTENSION: Record<string, string> = {
   'image/svg+xml': 'svg',
   'image/webp': 'webp',
 };
+
+const STOP_WORDS = new Set([
+  'a', 'an', 'the', 'de', 'do', 'da', 'dos', 'das', 'o', 'os', 'as',
+  'um', 'uma', 'and', 'or', 'of', 'for', 'to', 'in',
+]);
 
 export class WordService {
   constructor(
@@ -62,9 +68,97 @@ export class WordService {
     );
   }
 
-  async searchImages(word: string, offset: number = 0): Promise<string[] | Error> {
-    const query = `ilustração ${word}`;
-    return GoogleImageService.getInstance().searchImages(query, this.logger, offset + 1);
+  private normalizeSearchTokens(...values: string[]): string[] {
+    return values
+        .flatMap((value) => value
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/\p{Diacritic}/gu, '')
+            .split(/[^\p{L}\p{N}]+/u),
+        )
+        .map((token) => token.trim())
+        .filter((token) => token.length >= 2 && !STOP_WORDS.has(token));
+  }
+
+  private buildImageSearchQueries(word: string, translation: string): string[] {
+    const cleanWord = word.trim();
+    const cleanTranslation = translation.trim();
+
+    return [
+      `${cleanWord} ${cleanTranslation} illustration`,
+      `${cleanWord} ${cleanTranslation} vocabulary`,
+      `${cleanWord} illustration`,
+      `${cleanWord} isolated object`,
+    ].filter((query, index, arr) => query && arr.indexOf(query) === index);
+  }
+
+  private scoreImageResult(
+      result: GoogleImageSearchResult,
+      word: string,
+      translation: string,
+      query: string,
+  ): number {
+    const haystack = [
+      result.title,
+      result.snippet,
+      result.displayLink,
+      result.contextLink,
+      query,
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    const tokens = this.normalizeSearchTokens(word, translation);
+    let score = 0;
+
+    for (const token of tokens) {
+      if (haystack.includes(token)) score += 3;
+    }
+
+    const wordTokens = this.normalizeSearchTokens(word);
+    const translationTokens = this.normalizeSearchTokens(translation);
+
+    if (wordTokens.some((token) => haystack.includes(token))) score += 5;
+    if (translationTokens.some((token) => haystack.includes(token))) score += 5;
+
+    if (/illustration|ilustracao|ilustração|vocabulary|flashcard|educational/.test(haystack)) score += 2;
+    if (/pinterest|facebook|instagram|tiktok|youtube/.test(haystack)) score -= 4;
+    if (/logo|icon|banner|poster|wallpaper|vector|stock/.test(haystack)) score -= 2;
+
+    const area = (result.width ?? 0) * (result.height ?? 0);
+    if (area >= 200_000) score += 1;
+
+    return score;
+  }
+
+  async searchImages(word: string, translation: string, offset: number = 0): Promise<string[] | Error> {
+    const queries = this.buildImageSearchQueries(word, translation);
+    const start = offset + 1;
+    const collected: Array<GoogleImageSearchResult & {score: number}> = [];
+    const seen = new Set<string>();
+
+    for (const query of queries) {
+      const results = await GoogleImageService.getInstance().searchImages(query, this.logger, start, 10);
+      if (results instanceof Error) return results;
+
+      for (const result of results) {
+        if (seen.has(result.url)) continue;
+        seen.add(result.url);
+        collected.push({
+          ...result,
+          score: this.scoreImageResult(result, word, translation, query),
+        });
+      }
+    }
+
+    collected.sort((a, b) => b.score - a.score);
+
+    this.logger.info({
+      word,
+      translation,
+      queries,
+      candidates: collected.slice(0, 10).map(({url, score, title, displayLink}) => ({url, score, title, displayLink})),
+    }, 'Ranked image search candidates');
+
+    return collected.slice(0, 5).map((result) => result.url);
   }
 
   async uploadImage(file: Buffer, mimetype: string): Promise<string | Error> {

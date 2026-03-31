@@ -10,8 +10,7 @@ import {getInstance as getGoogleImageServiceInstance} from '../src/services/goog
 const logger = pino({level: process.env.PINO_LOG_LEVEL || 'info'});
 
 const searchTestImages = async () => {
-  const word = 'cat';
-  const query = `${word} illustration`;
+  const query = 'cat gato illustration';
 
   logger.info(`Searching for images for: "${query}"`);
 

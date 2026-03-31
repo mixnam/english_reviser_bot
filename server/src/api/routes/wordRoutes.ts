@@ -159,9 +159,10 @@ export const wordRoutes = async (
         type: 'object',
         properties: {
           word: {type: 'string'},
+          translation: {type: 'string'},
           offset: {type: 'number'},
         },
-        required: ['word'],
+        required: ['word', 'translation'],
       },
     },
     handler: wordController.searchImages,
