@@ -82,9 +82,7 @@ export const WordForm = ({
 	const selectedImageUrlValue = watch("selectedImage.url");
 
 	const [previewIsOpen, setPreviewIsOpen] = useState(false);
-	const [uploadPopupIsOpen, setUploadPopupIsOpen] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
-	const pasteTargetRef = useRef<HTMLTextAreaElement | null>(null);
 
 	const {
 		example,
@@ -100,8 +98,8 @@ export const WordForm = ({
 
 	const {
 		images,
-		addLocalImage,
 		searchImage,
+		addLocalImage,
 		resetOffset,
 		isLoading: isImagesLoading,
 	} = useImages();
@@ -130,16 +128,6 @@ export const WordForm = ({
 		}
 	}, [example, setValue]);
 
-	useEffect(() => {
-		if (!uploadPopupIsOpen) return;
-
-		const timeout = window.setTimeout(() => {
-			pasteTargetRef.current?.focus();
-		}, 0);
-
-		return () => window.clearTimeout(timeout);
-	}, [uploadPopupIsOpen]);
-
 	const onGenerateExample = () => {
 		startTransition(() => {
 			generateExample({
@@ -161,34 +149,15 @@ export const WordForm = ({
 	};
 
 	const onUploadClick = () => {
-		setUploadPopupIsOpen(true);
-	};
-
-	const handleLocalImage = (file: File | Blob) => {
-		addLocalImage(file);
-		setUploadPopupIsOpen(false);
+		fileInputRef.current?.click();
 	};
 
 	const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
 		if (!file) return;
 
-		handleLocalImage(file);
+		addLocalImage(file);
 		event.target.value = "";
-	};
-
-	const onPaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
-		const imageItem = Array.from(event.clipboardData.items).find((item) =>
-			item.type.startsWith("image/"),
-		);
-
-		if (!imageItem) return;
-
-		const file = imageItem.getAsFile();
-		if (!file) return;
-
-		event.preventDefault();
-		handleLocalImage(file);
 	};
 
 	const isFormDisabled =
@@ -198,200 +167,169 @@ export const WordForm = ({
 		isImagesLoading;
 
 	return (
-		<>
-			<form
-				className="w-full h-full flex flex-col p-4"
-				onSubmit={handleSubmit(onSubmit)}
-			>
-				<Title className="text-center pb-5" level="1" weight="2">
-					{title}
-				</Title>
+		<form className="w-full h-full flex flex-col p-4" onSubmit={handleSubmit(onSubmit)}>
+			<Title className="text-center pb-5" level="1" weight="2">
+				{title}
+			</Title>
 
-				<List>
-					<input
-						ref={fileInputRef}
-						type="file"
-						accept="image/*"
-						className="hidden"
-						onChange={onFileChange}
-					/>
+			<List>
+				<input
+					ref={fileInputRef}
+					type="file"
+					accept="image/*"
+					className="hidden"
+					onChange={onFileChange}
+				/>
+				<Textarea
+					{...register("word")}
+					header={i18n.word}
+					disabled={isFormDisabled}
+					status={errors.word ? "error" : undefined}
+				/>
+				{!!similarWords?.length && (
+					<div className="flex items-center text-amber-500 justify-between px-5.5 pb-2 -mt-3 z-50">
+						<Caption>{`${i18n.similarWords}${similarWords.join(", ")}`}</Caption>
+					</div>
+				)}
+				<Textarea
+					{...register("translation")}
+					header={i18n.translation}
+					disabled={isFormDisabled}
+					status={errors.translation ? "error" : undefined}
+				/>
+				<div className="relative">
 					<Textarea
-						{...register("word")}
-						header={i18n.word}
+						{...register("example")}
+						header={i18n.examples}
 						disabled={isFormDisabled}
-						status={errors.word ? "error" : undefined}
+						status={errors.example ? "error" : undefined}
 					/>
-					{!!similarWords?.length && (
-						<div className="flex items-center text-amber-500 justify-between px-5.5 pb-2 -mt-3 z-50">
-							<Caption>{`${i18n.similarWords}${similarWords.join(", ")}`}</Caption>
-						</div>
-					)}
-					<Textarea
-						{...register("translation")}
-						header={i18n.translation}
-						disabled={isFormDisabled}
-						status={errors.translation ? "error" : undefined}
-					/>
-					<div className="relative">
-						<Textarea
-							{...register("example")}
-							header={i18n.examples}
+					<div className="flex items-center justify-between px-5.5 pb-2">
+						<Caption>{i18n.generateExample}</Caption>
+						<IconButton
+							size="s"
+							mode="plain"
+							type="button"
+							onClick={onGenerateExample}
+							disabled={isFormDisabled || !wordValue || !translationValue}
+						>
+							<ReloadIcon size={18} />
+						</IconButton>
+					</div>
+				</div>
+
+				<div className="flex items-center justify-between px-5.5">
+					<Caption>{i18n.searchImage}</Caption>
+					<div className="flex items-center gap-2">
+						<Button
+							size="s"
+							mode="bezeled"
+							type="button"
+							onClick={onUploadClick}
 							disabled={isFormDisabled}
-							status={errors.example ? "error" : undefined}
-						/>
-						<div className="flex items-center justify-between px-5.5 pb-2">
-							<Caption>{i18n.generateExample}</Caption>
-							<IconButton
-								size="s"
-								mode="plain"
-								type="button"
-								onClick={onGenerateExample}
-								disabled={isFormDisabled || !wordValue || !translationValue}
-							>
-								<ReloadIcon size={18} />
-							</IconButton>
-						</div>
+						>
+							{i18n.upload}
+						</Button>
+						<IconButton
+							size="s"
+							mode="plain"
+							type="button"
+							onClick={onImageSearch}
+							disabled={isFormDisabled || !wordValue}
+						>
+							<ReloadIcon size={18} />
+						</IconButton>
 					</div>
+				</div>
 
-					<div className="flex items-center justify-between px-5.5">
-						<Caption>{i18n.searchImage}</Caption>
-						<div className="flex items-center gap-2">
-							<Button
-								size="s"
-								mode="bezeled"
-								type="button"
-								onClick={onUploadClick}
-								disabled={isFormDisabled}
-							>
-								{i18n.upload}
-							</Button>
-							<IconButton
-								size="s"
-								mode="plain"
-								type="button"
-								onClick={onImageSearch}
-								disabled={isFormDisabled || !wordValue}
-							>
-								<ReloadIcon size={18} />
-							</IconButton>
-						</div>
-					</div>
-
-					{(images?.length > 0 ||
-						(selectedImageUrlValue &&
-							images.every((img) => img.url !== selectedImageUrlValue))) && (
-						<div className="flex flex-wrap gap-2 px-5.5 pb-4">
-							{selectedImageUrlValue &&
-								images.every((img) => img.url !== selectedImageUrlValue) && (
-									<button
-										type="button"
-										className="shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden border-[#007aff]"
-										onClick={() => setPreviewIsOpen(true)}
-									>
-										<picture>
-											<source srcSet={selectedImageUrlValue} />
-											<img
-												src={selectedImageUrlValue}
-												alt="Current"
-												className="h-24 w-24 object-cover"
-											/>
-										</picture>
-									</button>
-								)}
-							{images.map((img) => (
+				{(images?.length > 0 ||
+					(selectedImageUrlValue &&
+						images.every((img) => img.url !== selectedImageUrlValue))) && (
+					<div className="flex flex-wrap gap-2 px-5.5 pb-4">
+						{/* If we have a selected image that is not in the search results (e.g. initial image), show it first */}
+						{selectedImageUrlValue &&
+							images.every((img) => img.url !== selectedImageUrlValue) && (
 								<button
 									type="button"
-									key={img.url}
-									className={`shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden ${selectedImageUrlValue === img.url ? "border-[#007aff]" : "border-transparent"}`}
-									onClick={() => {
-										setPreviewIsOpen(true);
-										if (img.type === "remote") {
-											setValue("selectedImage", {
-												type: "remote",
-												url: img.url,
-											});
-										} else {
-											setValue("selectedImage", {
-												type: "local",
-												url: img.url,
-												file: img.file,
-											});
-										}
-									}}
+									className="shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden border-[#007aff]"
+									onClick={() => setPreviewIsOpen(true)}
 								>
 									<picture>
-										<source srcSet={img.url} />
+										<source srcSet={selectedImageUrlValue} />
 										<img
-											src={img.url}
-											alt={img.url}
+											src={selectedImageUrlValue}
+											alt="Current"
 											className="h-24 w-24 object-cover"
 										/>
 									</picture>
 								</button>
-							))}
-						</div>
-					)}
+							)}
+						{images.map((img) => (
+							<button
+								type="button"
+								key={img.url}
+								className={`shrink-0 cursor-pointer border-2 rounded-lg overflow-hidden ${selectedImageUrlValue === img.url ? "border-[#007aff]" : "border-transparent"}`}
+								onClick={() => {
+									setPreviewIsOpen(true);
+									if (img.type === "remote") {
+										setValue("selectedImage", {
+											type: "remote",
+											url: img.url,
+										});
+									} else {
+										setValue("selectedImage", {
+											type: "local",
+											url: img.url,
+											file: img.file,
+										});
+									}
+								}}
+							>
+								<picture>
+									<source srcSet={img.url} />
+									<img
+										src={img.url}
+										alt={img.url}
+										className="h-24 w-24 object-cover"
+									/>
+								</picture>
+							</button>
+						))}
+					</div>
+				)}
 
-					{previewIsOpen && selectedImageUrlValue && (
-						<ImagePreview
-							url={selectedImageUrlValue}
-							onClose={() => setPreviewIsOpen(false)}
-						/>
-					)}
-				</List>
+				{previewIsOpen && selectedImageUrlValue && (
+					<ImagePreview
+						url={selectedImageUrlValue}
+						onClose={() => setPreviewIsOpen(false)}
+					/>
+				)}
+			</List>
 
-				<div className="flex flex-1 flex-col justify-end mt-4 gap-2">
+			<div className="flex flex-1 flex-col justify-end mt-4 gap-2">
+				<Button
+					className="max-h-12"
+					type="submit"
+					stretched
+					loading={externalDisabled && !onDelete}
+					disabled={isFormDisabled}
+				>
+					{i18n.save}
+				</Button>
+				{onDelete && (
 					<Button
 						className="max-h-12"
-						type="submit"
+						mode="plain"
+						color="red"
+						type="button"
 						stretched
-						loading={externalDisabled && !onDelete}
+						onClick={onDelete}
 						disabled={isFormDisabled}
 					>
-						{i18n.save}
+						{i18n.deleteWord}
 					</Button>
-					{onDelete && (
-						<Button
-							className="max-h-12"
-							mode="plain"
-							color="red"
-							type="button"
-							stretched
-							onClick={onDelete}
-							disabled={isFormDisabled}
-						>
-							{i18n.deleteWord}
-						</Button>
-					)}
-				</div>
-			</form>
-
-			{uploadPopupIsOpen && (
-				<div
-					className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 px-4"
-					onClick={() => setUploadPopupIsOpen(false)}
-				>
-					<div
-						className="w-full max-w-sm rounded-3xl bg-white p-4 shadow-2xl"
-						onClick={(event) => event.stopPropagation()}
-					>
-						<textarea
-							ref={pasteTargetRef}
-							className="sr-only"
-							aria-hidden="true"
-							tabIndex={-1}
-							onPaste={onPaste}
-						/>
-						<button
-							type="button"
-							className="flex min-h-40 w-full items-center justify-center rounded-2xl border-2 border-dashed border-[#d1d5db] px-6 py-10 text-center text-base font-medium text-[#6b7280]"
-							onClick={() => fileInputRef.current?.click()}
-						>
-							{i18n.selectFromGallery}
-						</button>
-					</div>
-				</div>
-			)}
-		</>
+				)}
+			</div>
+		</form>
 	);
 };
