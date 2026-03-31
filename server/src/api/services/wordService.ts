@@ -131,12 +131,20 @@ export class WordService {
 
   async searchImages(word: string, translation: string, offset: number = 0): Promise<string[] | Error> {
     const queries = this.buildImageSearchQueries(word, translation);
-    const start = offset + 1;
+    const pageSize = 5;
+    const targetCount = offset + pageSize;
+    const googleStart = Math.floor(offset / pageSize) * pageSize + 1;
+    const googleNum = Math.min(Math.max(targetCount, 10), 10);
     const collected: Array<GoogleImageSearchResult & {score: number}> = [];
     const seen = new Set<string>();
 
     for (const query of queries) {
-      const results = await GoogleImageService.getInstance().searchImages(query, this.logger, start, 10);
+      const results = await GoogleImageService.getInstance().searchImages(
+          query,
+          this.logger,
+          googleStart,
+          googleNum,
+      );
       if (results instanceof Error) return results;
 
       for (const result of results) {
@@ -154,11 +162,12 @@ export class WordService {
     this.logger.info({
       word,
       translation,
+      offset,
       queries,
-      candidates: collected.slice(0, 10).map(({url, score, title, displayLink}) => ({url, score, title, displayLink})),
+      candidates: collected.slice(0, 15).map(({url, score, title, displayLink}) => ({url, score, title, displayLink})),
     }, 'Ranked image search candidates');
 
-    return collected.slice(0, 5).map((result) => result.url);
+    return collected.slice(offset, offset + pageSize).map((result) => result.url);
   }
 
   async uploadImage(file: Buffer, mimetype: string): Promise<string | Error> {
