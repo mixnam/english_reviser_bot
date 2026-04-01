@@ -44,6 +44,7 @@ const STOP_WORDS = new Set([
 
 const CYRILLIC_RE = /\p{Script=Cyrillic}/u;
 const LATIN_RE = /\p{Script=Latin}/u;
+const PORTUGUESE_VERB_ENDINGS = ['ar', 'er', 'ir'];
 
 export class WordService {
   constructor(
@@ -90,12 +91,31 @@ export class WordService {
     const translationIsLatin = LATIN_RE.test(cleanTranslation) && !translationIsCyrillic;
     const primaryTerm = translationIsLatin ? cleanTranslation : cleanWord;
     const secondaryTerm = translationIsLatin ? cleanWord : cleanTranslation;
+    const normalizedWord = cleanWord.toLowerCase();
+    const normalizedPrimary = primaryTerm.toLowerCase();
+    const isLikelyVerb = PORTUGUESE_VERB_ENDINGS.some((ending) => normalizedWord.endsWith(ending));
+    const primaryGerund =
+      translationIsLatin && normalizedPrimary.endsWith('e')
+        ? `${primaryTerm.slice(0, -1)}ing`
+        : translationIsLatin
+          ? `${primaryTerm}ing`
+          : '';
+
+    const baseQueries = isLikelyVerb
+      ? [
+          primaryGerund ? `${primaryGerund} person` : '',
+          primaryGerund ? `${primaryGerund} people` : '',
+          `${primaryTerm} action illustration`,
+          `${primaryTerm} illustration`,
+        ]
+      : [
+          `${primaryTerm} illustration`,
+          `${primaryTerm} isolated`,
+        ];
 
     return [
-      `${primaryTerm} illustration`,
-      `${primaryTerm} vocabulary`,
+      ...baseQueries,
       secondaryTerm ? `${primaryTerm} ${secondaryTerm} illustration` : '',
-      secondaryTerm ? `${primaryTerm} ${secondaryTerm}` : '',
     ].filter((query, index, arr) => query && arr.indexOf(query) === index);
   }
 
@@ -126,9 +146,9 @@ export class WordService {
     if (wordTokens.some((token) => haystack.includes(token))) score += 5;
     if (translationTokens.some((token) => haystack.includes(token))) score += 5;
 
-    if (/illustration|ilustracao|ilustração|vocabulary|flashcard|educational/.test(haystack)) score += 2;
-    if (/pinterest|facebook|instagram|tiktok|youtube/.test(haystack)) score -= 4;
-    if (/logo|icon|banner|poster|wallpaper|vector|stock/.test(haystack)) score -= 2;
+    if (/illustration|ilustracao|ilustração|action|people|person|conversation/.test(haystack)) score += 2;
+    if (/pinterest|facebook|instagram|tiktok|youtube|researchgate/.test(haystack)) score -= 5;
+    if (/logo|icon|banner|poster|wallpaper|vector|stock|conjugation|grammar|vocabulary/.test(haystack)) score -= 3;
 
     const area = (result.width ?? 0) * (result.height ?? 0);
     if (area >= 200_000) score += 1;
