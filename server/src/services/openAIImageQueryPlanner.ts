@@ -59,36 +59,6 @@ class OpenAIImageQueryPlannerImpl {
           {role: 'system', content: SYSTEM_PROMPT},
           {role: 'user', content: JSON.stringify({word, translation})},
         ],
-        text: {
-          format: {
-            type: 'json_schema',
-            name: 'image_query_plan',
-            schema: {
-              type: 'object',
-              additionalProperties: false,
-              properties: {
-                intent: {type: 'string', enum: ['object', 'action', 'mixed', 'unknown']},
-                confidence: {type: 'number', minimum: 0, maximum: 1},
-                candidates: {
-                  type: 'array',
-                  minItems: 1,
-                  maxItems: 3,
-                  items: {
-                    type: 'object',
-                    additionalProperties: false,
-                    properties: {
-                      subject: {type: 'string', minLength: 1, maxLength: 80},
-                      scene: {type: 'string', minLength: 1, maxLength: 80},
-                      styleHint: {type: 'string', minLength: 1, maxLength: 40},
-                    },
-                    required: ['subject'],
-                  },
-                },
-              },
-              required: ['intent', 'confidence', 'candidates'],
-            },
-          },
-        },
       });
 
       const raw = response.output_text?.trim();
@@ -114,12 +84,12 @@ let instance: OpenAIImageQueryPlannerImpl;
 const getInstance = (): OpenAIImageQueryPlannerImpl => {
   if (!instance) {
     instance = new OpenAIImageQueryPlannerImpl(
-      process.env.OPENAI_API_KEY,
-      process.env.OPENAI_IMAGE_QUERY_MODEL,
-      process.env.OPENAI_BASE_URL,
-      process.env.OPENAI_IMAGE_QUERY_MIN_CONFIDENCE
-        ? Number.parseFloat(process.env.OPENAI_IMAGE_QUERY_MIN_CONFIDENCE)
-        : undefined,
+        process.env.OPENAI_API_KEY,
+        process.env.OPENAI_IMAGE_QUERY_MODEL,
+        process.env.OPENAI_BASE_URL,
+      process.env.OPENAI_IMAGE_QUERY_MIN_CONFIDENCE ?
+        Number.parseFloat(process.env.OPENAI_IMAGE_QUERY_MIN_CONFIDENCE) :
+        undefined,
     );
   }
   return instance;
