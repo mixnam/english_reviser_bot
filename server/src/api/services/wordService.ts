@@ -103,64 +103,6 @@ export class WordService {
         : translationIsLatin
           ? `${primaryTerm}ing`
           : '';
-    const baseQueries = isLikelyVerb
-      ? [
-          primaryGerund ? `${primaryGerund} person` : '',
-          primaryGerund ? `${primaryGerund} people` : '',
-          `${primaryTerm} action illustration`,
-          `${primaryTerm} illustration`,
-        ]
-      : [
-          `${primaryTerm} illustration`,
-          `${primaryTerm} isolated`,
-        ];
-
-    for (const candidate of candidates.slice(0, 3)) {
-      const subject = candidate.subject.trim();
-      const scene = candidate.scene?.trim();
-      const style = candidate.styleHint?.trim();
-
-      if (intent === 'action') {
-        if (scene) queries.push(`${subject} ${scene}`);
-        queries.push(`${subject} action illustration`);
-      } else if (intent === 'mixed') {
-        queries.push(`${subject} illustration`);
-        if (scene) queries.push(`${subject} ${scene} illustration`);
-      } else {
-        queries.push(`${subject} illustration`);
-        queries.push(`${subject} isolated`);
-      }
-
-      if (style) queries.push(`${subject} ${style}`);
-      if (cleanTranslation && cleanTranslation !== subject) queries.push(`${subject} ${cleanTranslation} illustration`);
-      if (cleanWord && cleanWord !== subject) queries.push(`${subject} ${cleanWord} illustration`);
-    }
-
-    return [...new Set(queries)].filter(Boolean).slice(0, 5);
-  }
-
-  private buildPlannedImageSearchQueries(
-      word: string,
-      translation: string,
-      intent: 'object' | 'action' | 'mixed' | 'unknown',
-      candidates: ImageQueryCandidate[],
-  ): string[] {
-    const queries: string[] = [];
-    const cleanWord = word.trim();
-    const cleanTranslation = translation.trim();
-    const translationIsCyrillic = CYRILLIC_RE.test(cleanTranslation);
-    const translationIsLatin = LATIN_RE.test(cleanTranslation) && !translationIsCyrillic;
-    const primaryTerm = translationIsLatin ? cleanTranslation : cleanWord;
-    const secondaryTerm = translationIsLatin ? cleanWord : cleanTranslation;
-    const normalizedWord = cleanWord.toLowerCase();
-    const normalizedPrimary = primaryTerm.toLowerCase();
-    const isLikelyVerb = PORTUGUESE_VERB_ENDINGS.some((ending) => normalizedWord.endsWith(ending));
-    const primaryGerund =
-      translationIsLatin && normalizedPrimary.endsWith('e')
-        ? `${primaryTerm.slice(0, -1)}ing`
-        : translationIsLatin
-          ? `${primaryTerm}ing`
-          : '';
 
     const baseQueries = isLikelyVerb
       ? [
@@ -174,33 +116,13 @@ export class WordService {
           `${primaryTerm} isolated`,
         ];
 
-    for (const candidate of candidates.slice(0, 3)) {
-      const subject = candidate.subject.trim();
-      const scene = candidate.scene?.trim();
-      const style = candidate.styleHint?.trim();
-
-      if (intent === 'action') {
-        if (scene) queries.push(`${subject} ${scene}`);
-        queries.push(`${subject} action illustration`);
-      } else if (intent === 'mixed') {
-        queries.push(`${subject} illustration`);
-        if (scene) queries.push(`${subject} ${scene} illustration`);
-      } else {
-        queries.push(`${subject} illustration`);
-        queries.push(`${subject} isolated`);
-      }
-
-      if (style) queries.push(`${subject} ${style}`);
-      if (cleanTranslation && cleanTranslation !== subject) queries.push(`${subject} ${cleanTranslation} illustration`);
-      if (cleanWord && cleanWord !== subject) queries.push(`${subject} ${cleanWord} illustration`);
-    }
-
-    return [...new Set(queries)].filter(Boolean).slice(0, 5);
     return [
       ...baseQueries,
       secondaryTerm ? `${primaryTerm} ${secondaryTerm} illustration` : '',
     ].filter((query, index, arr) => query && arr.indexOf(query) === index);
   }
+
+
 
   private scoreImageResult(
       result: GoogleImageSearchResult,
@@ -517,5 +439,36 @@ export class WordService {
       this.logger.error({err}, 'Transactional deleteWord failed');
       return err instanceof Error ? err : new Error(String(err));
     }
+  }
+  private buildPlannedImageSearchQueries(
+      word: string,
+      translation: string,
+      intent: 'object' | 'action' | 'mixed' | 'unknown',
+      candidates: ImageQueryCandidate[],
+  ): string[] {
+    const queries: string[] = [];
+
+    for (const candidate of candidates.slice(0, 3)) {
+      const subject = candidate.subject.trim();
+      const scene = candidate.scene?.trim();
+      const style = candidate.styleHint?.trim();
+
+      if (intent === 'action') {
+        if (scene) queries.push(`${subject} ${scene}`);
+        queries.push(`${subject} action illustration`);
+      } else if (intent === 'mixed') {
+        queries.push(`${subject} illustration`);
+        if (scene) queries.push(`${subject} ${scene} illustration`);
+      } else {
+        queries.push(`${subject} illustration`);
+        queries.push(`${subject} isolated`);
+      }
+
+      if (style) queries.push(`${subject} ${style}`);
+      if (translation && translation.trim() && translation.trim() !== subject) queries.push(`${subject} ${translation.trim()} illustration`);
+      if (word && word.trim() && word.trim() !== subject) queries.push(`${subject} ${word.trim()} illustration`);
+    }
+
+    return [...new Set(queries)].filter(Boolean).slice(0, 5);
   }
 }

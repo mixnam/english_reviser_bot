@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
-import {Responses} from 'openai/resources/index';
 import {Logger} from 'pino';
+import {z} from 'zod';
 
 export type ImageSearchIntent = 'object' | 'action' | 'mixed' | 'unknown';
 export type ImageQueryCandidate = {
@@ -14,17 +14,22 @@ export type ImageQueryPlan = {
   candidates: ImageQueryCandidate[];
 };
 
+const ImageQueryPlanSchema = z.object({
+  intent: z.enum(['object', 'action', 'mixed', 'unknown']),
+  confidence: z.number().min(0).max(1),
+  candidates: z.array(z.object({
+    subject: z.string().min(1).max(80),
+    scene: z.string().min(1).max(80).optional(),
+    styleHint: z.string().min(1).max(40).optional(),
+  })).min(1).max(3),
+});
+
 const SYSTEM_PROMPT = `You plan image-search intent for vocabulary study.
 Return ONLY valid JSON with keys: intent, confidence, candidates.
 intent must be one of: object, action, mixed, unknown.
 confidence must be a number from 0 to 1.
 candidates must be a short array (1 to 3) of objects with subject and optional scene/styleHint.
 No markdown, no commentary, no raw search syntax, no operators, no URLs.`;
-
-const clampConfidence = (value: unknown): number => {
-  if (typeof value !== 'number' || Number.isNaN(value)) return 0;
-  return Math.min(1, Math.max(0, value));
-};
 
 class OpenAIImageQueryPlannerImpl {
   private client: OpenAI | null;
@@ -54,42 +59,53 @@ class OpenAIImageQueryPlannerImpl {
           {role: 'system', content: SYSTEM_PROMPT},
           {role: 'user', content: JSON.stringify({word, translation})},
         ],
+        text: {
+          format: {
+            type: 'json_schema',
+            name: 'image_query_plan',
+            schema: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                intent: {type: 'string', enum: ['object', 'action', 'mixed', 'unknown']},
+                confidence: {type: 'number', minimum: 0, maximum: 1},
+                candidates: {
+                  type: 'array',
+                  minItems: 1,
+                  maxItems: 3,
+                  items: {
+                    type: 'object',
+                    additionalProperties: false,
+                    properties: {
+                      subject: {type: 'string', minLength: 1, maxLength: 80},
+                      scene: {type: 'string', minLength: 1, maxLength: 80},
+                      styleHint: {type: 'string', minLength: 1, maxLength: 40},
+                    },
+                    required: ['subject'],
+                  },
+                },
+              },
+              required: ['intent', 'confidence', 'candidates'],
+            },
+          },
+        },
       });
 
-      const raw = this.extractTextFromResponse(response)?.trim();
+      const raw = response.output_text?.trim();
       if (!raw) return null;
 
-      const parsed = JSON.parse(raw) as Partial<ImageQueryPlan>;
-      const intent = this.normalizeIntent(parsed.intent);
-      const confidence = clampConfidence(parsed.confidence);
-      const candidates = Array.isArray(parsed.candidates)
-        ? parsed.candidates
-            .filter((candidate): candidate is ImageQueryCandidate =>
-              !!candidate
-              && typeof candidate === 'object'
-              && typeof candidate.subject === 'string'
-              && candidate.subject.trim().length > 0,
-            )
-            .slice(0, 3)
-        : [];
+      const parsed = ImageQueryPlanSchema.safeParse(JSON.parse(raw));
+      if (!parsed.success) {
+        logger?.warn?.({issues: parsed.error.issues}, 'Image query plan validation failed');
+        return null;
+      }
 
-      if (confidence < this.minConfidence || candidates.length === 0) return null;
-      return {intent, confidence, candidates};
+      if (parsed.data.confidence < this.minConfidence) return null;
+      return parsed.data;
     } catch (err) {
       logger?.warn?.({err}, 'Image query planning failed');
       return null;
     }
-  };
-
-  private normalizeIntent = (intent: unknown): ImageSearchIntent => {
-    if (intent === 'object' || intent === 'action' || intent === 'mixed' || intent === 'unknown') {
-      return intent;
-    }
-    return 'unknown';
-  };
-
-  private extractTextFromResponse = (response: Responses.Response): string | null => {
-    return response?.output_text ?? null;
   };
 }
 
