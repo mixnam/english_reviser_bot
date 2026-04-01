@@ -42,6 +42,9 @@ const STOP_WORDS = new Set([
   'um', 'uma', 'and', 'or', 'of', 'for', 'to', 'in',
 ]);
 
+const CYRILLIC_RE = /\p{Script=Cyrillic}/u;
+const LATIN_RE = /\p{Script=Latin}/u;
+
 export class WordService {
   constructor(
     private bot: Bot,
@@ -83,12 +86,16 @@ export class WordService {
   private buildImageSearchQueries(word: string, translation: string): string[] {
     const cleanWord = word.trim();
     const cleanTranslation = translation.trim();
+    const translationIsCyrillic = CYRILLIC_RE.test(cleanTranslation);
+    const translationIsLatin = LATIN_RE.test(cleanTranslation) && !translationIsCyrillic;
+    const primaryTerm = translationIsLatin ? cleanTranslation : cleanWord;
+    const secondaryTerm = translationIsLatin ? cleanWord : cleanTranslation;
 
     return [
-      `${cleanWord} ${cleanTranslation} illustration`,
-      `${cleanWord} ${cleanTranslation} vocabulary`,
-      `${cleanWord} illustration`,
-      `${cleanWord} isolated object`,
+      `${primaryTerm} illustration`,
+      `${primaryTerm} vocabulary`,
+      secondaryTerm ? `${primaryTerm} ${secondaryTerm} illustration` : '',
+      secondaryTerm ? `${primaryTerm} ${secondaryTerm}` : '',
     ].filter((query, index, arr) => query && arr.indexOf(query) === index);
   }
 
