@@ -2,28 +2,33 @@ import OpenAI from 'openai';
 import {Logger} from 'pino';
 import {z} from 'zod';
 
+export type ImageSearchIntent = 'object' | 'action' | 'mixed' | 'unknown';
+export type ImageQueryCandidate = {
+  subject: string;
+  scene?: string;
+  styleHint?: string;
+};
 export type ImageQueryPlan = {
-  intent: 'object' | 'action' | 'mixed' | 'unknown';
+  intent: ImageSearchIntent;
   confidence: number;
-  queries: string[];
-  reasoning?: string;
+  candidates: ImageQueryCandidate[];
 };
 
 const ImageQueryPlanSchema = z.object({
   intent: z.enum(['object', 'action', 'mixed', 'unknown']),
   confidence: z.number().min(0).max(1),
-  queries: z.array(z.string().min(1).max(120)).min(1).max(4),
-  reasoning: z.string().min(1).max(200).optional(),
+  candidates: z.array(z.object({
+    subject: z.string().min(1).max(80),
+    scene: z.string().min(1).max(80).optional(),
+    styleHint: z.string().min(1).max(40).optional(),
+  })).min(1).max(3),
 });
 
 const SYSTEM_PROMPT = `You plan image-search intent for vocabulary study.
-Return ONLY valid JSON with keys: intent, confidence, queries, reasoning.
+Return ONLY valid JSON with keys: intent, confidence, candidates.
 intent must be one of: object, action, mixed, unknown.
 confidence must be a number from 0 to 1.
-queries must be a short array of 1 to 4 plain-language image search queries.
-Prefer concrete visual phrases that would retrieve a representative picture for the meaning.
-For verbs/adjectives, prefer visually depictable scenes over dictionary or grammar pages.
-Keep queries short. No quotes, no site operators, no boolean operators, no URLs.
+candidates must be a short array (1 to 3) of objects with subject and optional scene/styleHint.
 No markdown, no commentary, no raw search syntax, no operators, no URLs.`;
 
 class OpenAIImageQueryPlannerImpl {
@@ -54,28 +59,6 @@ class OpenAIImageQueryPlannerImpl {
           {role: 'system', content: SYSTEM_PROMPT},
           {role: 'user', content: JSON.stringify({word, translation})},
         ],
-        text: {
-          format: {
-            type: 'json_schema',
-            name: 'image_query_plan',
-            schema: {
-              type: 'object',
-              additionalProperties: false,
-              properties: {
-                intent: {type: 'string', enum: ['object', 'action', 'mixed', 'unknown']},
-                confidence: {type: 'number', minimum: 0, maximum: 1},
-                queries: {
-                  type: 'array',
-                  minItems: 1,
-                  maxItems: 4,
-                  items: {type: 'string', minLength: 1, maxLength: 120},
-                },
-                reasoning: {type: 'string', minLength: 1, maxLength: 200},
-              },
-              required: ['intent', 'confidence', 'queries'],
-            },
-          },
-        },
       });
 
       const raw = response.output_text?.trim();
@@ -88,10 +71,7 @@ class OpenAIImageQueryPlannerImpl {
       }
 
       if (parsed.data.confidence < this.minConfidence) return null;
-      return {
-        ...parsed.data,
-        queries: [...new Set(parsed.data.queries.map((query) => query.trim()).filter(Boolean))].slice(0, 4),
-      };
+      return parsed.data;
     } catch (err) {
       logger?.warn?.({err}, 'Image query planning failed');
       return null;
@@ -104,12 +84,12 @@ let instance: OpenAIImageQueryPlannerImpl;
 const getInstance = (): OpenAIImageQueryPlannerImpl => {
   if (!instance) {
     instance = new OpenAIImageQueryPlannerImpl(
-      process.env.OPENAI_API_KEY,
-      process.env.OPENAI_IMAGE_QUERY_MODEL,
-      process.env.OPENAI_BASE_URL,
-      process.env.OPENAI_IMAGE_QUERY_MIN_CONFIDENCE
-        ? Number.parseFloat(process.env.OPENAI_IMAGE_QUERY_MIN_CONFIDENCE)
-        : undefined,
+        process.env.OPENAI_API_KEY,
+        process.env.OPENAI_IMAGE_QUERY_MODEL,
+        process.env.OPENAI_BASE_URL,
+        process.env.OPENAI_IMAGE_QUERY_MIN_CONFIDENCE ?
+          Number.parseFloat(process.env.OPENAI_IMAGE_QUERY_MIN_CONFIDENCE) :
+          undefined,
     );
   }
   return instance;

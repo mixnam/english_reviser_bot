@@ -81,7 +81,16 @@ const main = async () => {
   for (const testCase of cases as EvalCase[]) {
     const deterministicQueries = buildDeterministicImageSearchQueries(testCase.word, testCase.translation);
     const planned = await planner.plan(testCase.word, testCase.translation, logger);
-    const selectedQueries = planned?.queries?.length ? planned.queries : deterministicQueries;
+    const selectedQueries = planned
+      ? [
+          ...new Set(
+            planned.candidates.flatMap((candidate) => [
+              candidate.scene ? `${candidate.subject} ${candidate.scene}` : `${candidate.subject} illustration`,
+              candidate.styleHint ? `${candidate.subject} ${candidate.styleHint}` : '',
+            ]).filter(Boolean),
+          ),
+        ].slice(0, 5)
+      : deterministicQueries;
 
     const productionPath = await evaluatePath(testCase.word, testCase.translation, selectedQueries);
     if (throttleMs > 0) await delay(throttleMs);
@@ -91,10 +100,9 @@ const main = async () => {
       word: testCase.word,
       translation: testCase.translation,
       kind: testCase.kind ?? null,
-      plannerUsed: Boolean(planned?.queries?.length),
+      plannerUsed: Boolean(planned?.candidates?.length),
       plannerIntent: planned?.intent ?? null,
       plannerConfidence: planned?.confidence ?? null,
-      plannerReasoning: planned?.reasoning ?? null,
       selectedQueries,
       deterministicQueries,
       productionPath,
