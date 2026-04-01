@@ -18,6 +18,7 @@ import {
   updateWord,
 } from '../../repo/words.js';
 import * as OpenAIExamplesService from '../../services/openAIExamples.js';
+import * as OpenAIImageQueryPlanner from '../../services/openAIImageQueryPlanner.js';
 import * as GoogleImageService from '../../services/googleImage.js';
 import type {GoogleImageSearchResult} from '../../services/googleImage.js';
 import * as GoogleCloudStorage from '../../services/googleCloudStorage.js';
@@ -45,6 +46,8 @@ const STOP_WORDS = new Set([
 const CYRILLIC_RE = /\p{Script=Cyrillic}/u;
 const LATIN_RE = /\p{Script=Latin}/u;
 const PORTUGUESE_VERB_ENDINGS = ['ar', 'er', 'ir'];
+
+type ImageQueryCandidate = {subject: string; scene?: string; styleHint?: string};
 
 export class WordService {
   constructor(
@@ -84,7 +87,7 @@ export class WordService {
         .filter((token) => token.length >= 2 && !STOP_WORDS.has(token));
   }
 
-  private buildImageSearchQueries(word: string, translation: string): string[] {
+  private buildDeterministicImageSearchQueries(word: string, translation: string): string[] {
     const cleanWord = word.trim();
     const cleanTranslation = translation.trim();
     const translationIsCyrillic = CYRILLIC_RE.test(cleanTranslation);
@@ -117,6 +120,40 @@ export class WordService {
       ...baseQueries,
       secondaryTerm ? `${primaryTerm} ${secondaryTerm} illustration` : '',
     ].filter((query, index, arr) => query && arr.indexOf(query) === index);
+  }
+
+  private buildPlannedImageSearchQueries(
+      word: string,
+      translation: string,
+      intent: 'object' | 'action' | 'mixed' | 'unknown',
+      candidates: ImageQueryCandidate[],
+  ): string[] {
+    const queries: string[] = [];
+    const cleanWord = word.trim();
+    const cleanTranslation = translation.trim();
+
+    for (const candidate of candidates.slice(0, 3)) {
+      const subject = candidate.subject.trim();
+      const scene = candidate.scene?.trim();
+      const style = candidate.styleHint?.trim();
+
+      if (intent === 'action') {
+        if (scene) queries.push(`${subject} ${scene}`);
+        queries.push(`${subject} action illustration`);
+      } else if (intent === 'mixed') {
+        queries.push(`${subject} illustration`);
+        if (scene) queries.push(`${subject} ${scene} illustration`);
+      } else {
+        queries.push(`${subject} illustration`);
+        queries.push(`${subject} isolated`);
+      }
+
+      if (style) queries.push(`${subject} ${style}`);
+      if (cleanTranslation && cleanTranslation !== subject) queries.push(`${subject} ${cleanTranslation} illustration`);
+      if (cleanWord && cleanWord !== subject) queries.push(`${subject} ${cleanWord} illustration`);
+    }
+
+    return [...new Set(queries)].filter(Boolean).slice(0, 5);
   }
 
   private scoreImageResult(
@@ -157,7 +194,10 @@ export class WordService {
   }
 
   async searchImages(word: string, translation: string, offset: number = 0): Promise<string[] | Error> {
-    const queries = this.buildImageSearchQueries(word, translation);
+    const deterministicQueries = this.buildDeterministicImageSearchQueries(word, translation);
+    const planned = await OpenAIImageQueryPlanner.getInstance().plan(word, translation, this.logger);
+    const plannedQueries = planned ? this.buildPlannedImageSearchQueries(word, translation, planned.intent, planned.candidates) : [];
+    const queries = [...new Set([...plannedQueries, ...deterministicQueries])].slice(0, 5);
     const pageSize = 5;
     const targetCount = offset + pageSize;
     const googleStart = Math.floor(offset / pageSize) * pageSize + 1;
@@ -191,6 +231,8 @@ export class WordService {
       translation,
       offset,
       queries,
+      plannerUsed: Boolean(planned),
+      plannerConfidence: planned?.confidence ?? null,
       candidates: collected.slice(0, 15).map(({url, score, title, displayLink}) => ({url, score, title, displayLink})),
     }, 'Ranked image search candidates');
 

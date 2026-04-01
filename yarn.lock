@@ -8424,7 +8424,7 @@ __metadata:
 
 "server@file:../server::locator=pt_deploy%40workspace%3Apt_deploy":
   version: 1.0.0
-  resolution: "server@file:../server#../server::hash=f6609e&locator=pt_deploy%40workspace%3Apt_deploy"
+  resolution: "server@file:../server#../server::hash=9ec478&locator=pt_deploy%40workspace%3Apt_deploy"
   dependencies:
     "@fastify/cors": "npm:^11.2.0"
     "@fastify/multipart": "npm:^9.4.0"
@@ -8438,7 +8438,7 @@ __metadata:
     openai: "npm:^4"
     pino: "npm:^8.17.1"
     telegram-escape: "npm:^1.1.1"
-  checksum: 10c0/40381acfb505541a8d6222c570a5dcbbb69db9f1bb35ee658d81cd31c5d07c49ae5a43f9650c1efa797af11a029fdceffb956c809db5396bf81515974670208f
+  checksum: 10c0/7298258138c1ea6a702b782ad12f7e6895bd7ddfc6609be3d10c3db62b5ca2f9aca8db8e3f4e85481361ef30b2c1cf11bb5eae9bb2afb49a3d0e4df0c0521a24
   languageName: node
   linkType: hard
 
