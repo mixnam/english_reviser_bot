@@ -1,0 +1,12 @@
+[
+  {"word": "falar", "translation": "speak", "kind": "verb"},
+  {"word": "abrir", "translation": "open", "kind": "verb"},
+  {"word": "correr", "translation": "run", "kind": "verb"},
+  {"word": "mesa", "translation": "table", "kind": "noun"},
+  {"word": "maçã", "translation": "apple", "kind": "noun"},
+  {"word": "cachorro", "translation": "dog", "kind": "noun"},
+  {"word": "feliz", "translation": "happy", "kind": "adjective"},
+  {"word": "grande", "translation": "big", "kind": "adjective"},
+  {"word": "falar", "translation": "говорить", "kind": "verb"},
+  {"word": "mesa", "translation": "стол", "kind": "noun"}
+]

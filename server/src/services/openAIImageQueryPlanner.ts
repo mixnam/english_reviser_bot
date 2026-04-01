@@ -2,33 +2,28 @@ import OpenAI from 'openai';
 import {Logger} from 'pino';
 import {z} from 'zod';
 
-export type ImageSearchIntent = 'object' | 'action' | 'mixed' | 'unknown';
-export type ImageQueryCandidate = {
-  subject: string;
-  scene?: string;
-  styleHint?: string;
-};
 export type ImageQueryPlan = {
-  intent: ImageSearchIntent;
+  intent: 'object' | 'action' | 'mixed' | 'unknown';
   confidence: number;
-  candidates: ImageQueryCandidate[];
+  queries: string[];
+  reasoning?: string;
 };
 
 const ImageQueryPlanSchema = z.object({
   intent: z.enum(['object', 'action', 'mixed', 'unknown']),
   confidence: z.number().min(0).max(1),
-  candidates: z.array(z.object({
-    subject: z.string().min(1).max(80),
-    scene: z.string().min(1).max(80).optional(),
-    styleHint: z.string().min(1).max(40).optional(),
-  })).min(1).max(3),
+  queries: z.array(z.string().min(1).max(120)).min(1).max(4),
+  reasoning: z.string().min(1).max(200).optional(),
 });
 
 const SYSTEM_PROMPT = `You plan image-search intent for vocabulary study.
-Return ONLY valid JSON with keys: intent, confidence, candidates.
+Return ONLY valid JSON with keys: intent, confidence, queries, reasoning.
 intent must be one of: object, action, mixed, unknown.
 confidence must be a number from 0 to 1.
-candidates must be a short array (1 to 3) of objects with subject and optional scene/styleHint.
+queries must be a short array of 1 to 4 plain-language image search queries.
+Prefer concrete visual phrases that would retrieve a representative picture for the meaning.
+For verbs/adjectives, prefer visually depictable scenes over dictionary or grammar pages.
+Keep queries short. No quotes, no site operators, no boolean operators, no URLs.
 No markdown, no commentary, no raw search syntax, no operators, no URLs.`;
 
 class OpenAIImageQueryPlannerImpl {
@@ -69,23 +64,15 @@ class OpenAIImageQueryPlannerImpl {
               properties: {
                 intent: {type: 'string', enum: ['object', 'action', 'mixed', 'unknown']},
                 confidence: {type: 'number', minimum: 0, maximum: 1},
-                candidates: {
+                queries: {
                   type: 'array',
                   minItems: 1,
-                  maxItems: 3,
-                  items: {
-                    type: 'object',
-                    additionalProperties: false,
-                    properties: {
-                      subject: {type: 'string', minLength: 1, maxLength: 80},
-                      scene: {type: 'string', minLength: 1, maxLength: 80},
-                      styleHint: {type: 'string', minLength: 1, maxLength: 40},
-                    },
-                    required: ['subject'],
-                  },
+                  maxItems: 4,
+                  items: {type: 'string', minLength: 1, maxLength: 120},
                 },
+                reasoning: {type: 'string', minLength: 1, maxLength: 200},
               },
-              required: ['intent', 'confidence', 'candidates'],
+              required: ['intent', 'confidence', 'queries'],
             },
           },
         },
@@ -101,7 +88,10 @@ class OpenAIImageQueryPlannerImpl {
       }
 
       if (parsed.data.confidence < this.minConfidence) return null;
-      return parsed.data;
+      return {
+        ...parsed.data,
+        queries: [...new Set(parsed.data.queries.map((query) => query.trim()).filter(Boolean))].slice(0, 4),
+      };
     } catch (err) {
       logger?.warn?.({err}, 'Image query planning failed');
       return null;
