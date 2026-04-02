@@ -11,7 +11,8 @@
     "webhook:on": "node ./scripts/setWebhook.js",
     "check-types": "tsc --noEmit",
     "build": "tsc",
-    "tmp": "tsx ./scripts/testImageQueryPlanner.ts"
+    "tmp": "tsx ./scripts/testImageQueryPlanner.ts",
+    "image:harness": "tsx ./scripts/reviewPr42ImageHarness.ts"
   },
   "author": "",
   "license": "ISC",

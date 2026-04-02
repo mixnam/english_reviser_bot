@@ -3,33 +3,27 @@ import {Logger} from 'pino';
 import {z} from 'zod';
 
 export type ImageSearchIntent = 'object' | 'action' | 'mixed' | 'unknown';
-export type ImageQueryCandidate = {
-  subject: string;
-  scene?: string;
-  styleHint?: string;
-};
 export type ImageQueryPlan = {
   intent: ImageSearchIntent;
   confidence: number;
-  candidates: ImageQueryCandidate[];
+  query: string;
 };
 
 const ImageQueryPlanSchema = z.object({
   intent: z.enum(['object', 'action', 'mixed', 'unknown']),
   confidence: z.number().min(0).max(1),
-  candidates: z.array(z.object({
-    subject: z.string().min(1).max(80),
-    scene: z.string().min(1).max(80).optional(),
-    styleHint: z.string().min(1).max(40).optional(),
-  })).min(1).max(3),
+  query: z.string().min(1).max(120),
 });
 
-const SYSTEM_PROMPT = `You plan image-search intent for vocabulary study.
-Return ONLY valid JSON with keys: intent, confidence, candidates.
+const SYSTEM_PROMPT = `You plan a single image-search query for a vocabulary study app.
+Return ONLY valid JSON with keys: intent, confidence, query.
 intent must be one of: object, action, mixed, unknown.
 confidence must be a number from 0 to 1.
-candidates must be a short array (1 to 3) of objects with subject and optional scene/styleHint.
-No markdown, no commentary, no raw search syntax, no operators, no URLs.`;
+query must be one short, ready-to-use image search query.
+The query should be concrete and optimized to find a representative image for the intended meaning.
+Prefer sense disambiguation using the translation when helpful.
+For verbs and adjectives, prefer visually depictable scenes.
+No markdown, no commentary, no operators, no URLs, no quotes.`;
 
 class OpenAIImageQueryPlannerImpl {
   private client: OpenAI | null;
@@ -71,7 +65,11 @@ class OpenAIImageQueryPlannerImpl {
       }
 
       if (parsed.data.confidence < this.minConfidence) return null;
-      return parsed.data;
+
+      return {
+        ...parsed.data,
+        query: parsed.data.query.trim(),
+      };
     } catch (err) {
       logger?.warn?.({err}, 'Image query planning failed');
       return null;
@@ -87,9 +85,9 @@ const getInstance = (): OpenAIImageQueryPlannerImpl => {
         process.env.OPENAI_API_KEY,
         process.env.OPENAI_IMAGE_QUERY_MODEL,
         process.env.OPENAI_BASE_URL,
-      process.env.OPENAI_IMAGE_QUERY_MIN_CONFIDENCE ?
-        Number.parseFloat(process.env.OPENAI_IMAGE_QUERY_MIN_CONFIDENCE) :
-        undefined,
+        process.env.OPENAI_IMAGE_QUERY_MIN_CONFIDENCE ?
+          Number.parseFloat(process.env.OPENAI_IMAGE_QUERY_MIN_CONFIDENCE) :
+          undefined,
     );
   }
   return instance;

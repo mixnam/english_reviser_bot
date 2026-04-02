@@ -19,8 +19,10 @@ import {
 } from '../../repo/words.js';
 import * as OpenAIExamplesService from '../../services/openAIExamples.js';
 import * as OpenAIImageQueryPlanner from '../../services/openAIImageQueryPlanner.js';
-import * as GoogleImageService from '../../services/googleImage.js';
-import type {GoogleImageSearchResult} from '../../services/googleImage.js';
+import {
+  buildDeterministicImageSearchQuery,
+  searchImagesForQuery,
+} from '../../services/imageSearchPipeline.js';
 import * as GoogleCloudStorage from '../../services/googleCloudStorage.js';
 import * as TTSService from '../../tts/openaiTts.js';
 import {minusDaysFromNow} from '../../repo/utils.js';
@@ -37,17 +39,6 @@ const MIME_TYPES_TO_EXTENSION: Record<string, string> = {
   'image/svg+xml': 'svg',
   'image/webp': 'webp',
 };
-
-const STOP_WORDS = new Set([
-  'a', 'an', 'the', 'de', 'do', 'da', 'dos', 'das', 'o', 'os', 'as',
-  'um', 'uma', 'and', 'or', 'of', 'for', 'to', 'in',
-]);
-
-const CYRILLIC_RE = /\p{Script=Cyrillic}/u;
-const LATIN_RE = /\p{Script=Latin}/u;
-const PORTUGUESE_VERB_ENDINGS = ['ar', 'er', 'ir'];
-
-type ImageQueryCandidate = {subject: string; scene?: string; styleHint?: string};
 
 export class WordService {
   constructor(
@@ -75,136 +66,25 @@ export class WordService {
     );
   }
 
-  private normalizeSearchTokens(...values: string[]): string[] {
-    return values
-        .flatMap((value) => value
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/\p{Diacritic}/gu, '')
-            .split(/[^\p{L}\p{N}]+/u),
-        )
-        .map((token) => token.trim())
-        .filter((token) => token.length >= 2 && !STOP_WORDS.has(token));
-  }
-
-  private buildDeterministicImageSearchQueries(word: string, translation: string): string[] {
-    const cleanWord = word.trim();
-    const cleanTranslation = translation.trim();
-    const translationIsCyrillic = CYRILLIC_RE.test(cleanTranslation);
-    const translationIsLatin = LATIN_RE.test(cleanTranslation) && !translationIsCyrillic;
-    const primaryTerm = translationIsLatin ? cleanTranslation : cleanWord;
-    const secondaryTerm = translationIsLatin ? cleanWord : cleanTranslation;
-    const normalizedWord = cleanWord.toLowerCase();
-    const normalizedPrimary = primaryTerm.toLowerCase();
-    const isLikelyVerb = PORTUGUESE_VERB_ENDINGS.some((ending) => normalizedWord.endsWith(ending));
-    const primaryGerund =
-      translationIsLatin && normalizedPrimary.endsWith('e')
-        ? `${primaryTerm.slice(0, -1)}ing`
-        : translationIsLatin
-          ? `${primaryTerm}ing`
-          : '';
-
-    const baseQueries = isLikelyVerb
-      ? [
-          primaryGerund ? `${primaryGerund} person` : '',
-          primaryGerund ? `${primaryGerund} people` : '',
-          `${primaryTerm} action illustration`,
-          `${primaryTerm} illustration`,
-        ]
-      : [
-          `${primaryTerm} illustration`,
-          `${primaryTerm} isolated`,
-        ];
-
-    return [
-      ...baseQueries,
-      secondaryTerm ? `${primaryTerm} ${secondaryTerm} illustration` : '',
-    ].filter((query, index, arr) => query && arr.indexOf(query) === index);
-  }
-
-
-
-  private scoreImageResult(
-      result: GoogleImageSearchResult,
-      word: string,
-      translation: string,
-      query: string,
-  ): number {
-    const haystack = [
-      result.title,
-      result.snippet,
-      result.displayLink,
-      result.contextLink,
-      query,
-    ].filter(Boolean).join(' ').toLowerCase();
-
-    const tokens = this.normalizeSearchTokens(word, translation);
-    let score = 0;
-
-    for (const token of tokens) {
-      if (haystack.includes(token)) score += 3;
-    }
-
-    const wordTokens = this.normalizeSearchTokens(word);
-    const translationTokens = this.normalizeSearchTokens(translation);
-
-    if (wordTokens.some((token) => haystack.includes(token))) score += 5;
-    if (translationTokens.some((token) => haystack.includes(token))) score += 5;
-
-    if (/illustration|ilustracao|ilustração|action|people|person|conversation/.test(haystack)) score += 2;
-    if (/pinterest|facebook|instagram|tiktok|youtube|researchgate/.test(haystack)) score -= 5;
-    if (/logo|icon|banner|poster|wallpaper|vector|stock|conjugation|grammar|vocabulary/.test(haystack)) score -= 3;
-
-    const area = (result.width ?? 0) * (result.height ?? 0);
-    if (area >= 200_000) score += 1;
-
-    return score;
-  }
-
   async searchImages(word: string, translation: string, offset: number = 0): Promise<string[] | Error> {
-    const deterministicQueries = this.buildDeterministicImageSearchQueries(word, translation);
+    const deterministicQuery = buildDeterministicImageSearchQuery(word, translation);
     const planned = await OpenAIImageQueryPlanner.getInstance().plan(word, translation, this.logger);
-    const plannedQueries = planned ? this.buildPlannedImageSearchQueries(word, translation, planned.intent, planned.candidates) : [];
-    const queries = [...new Set([...plannedQueries, ...deterministicQueries])].slice(0, 5);
-    const pageSize = 5;
-    const targetCount = offset + pageSize;
-    const googleStart = Math.floor(offset / pageSize) * pageSize + 1;
-    const googleNum = Math.min(Math.max(targetCount, 10), 10);
-    const collected: Array<GoogleImageSearchResult & {score: number}> = [];
-    const seen = new Set<string>();
+    const query = planned?.query || deterministicQuery;
 
-    for (const query of queries) {
-      const results = await GoogleImageService.getInstance().searchImages(
-          query,
-          this.logger,
-          googleStart,
-          googleNum,
-      );
-      if (results instanceof Error) return results;
-
-      for (const result of results) {
-        if (seen.has(result.url)) continue;
-        seen.add(result.url);
-        collected.push({
-          ...result,
-          score: this.scoreImageResult(result, word, translation, query),
-        });
-      }
-    }
-
-    collected.sort((a, b) => b.score - a.score);
+    const results = await searchImagesForQuery(query, this.logger, offset, 5);
+    if (results instanceof Error) return results;
 
     this.logger.info({
       word,
       translation,
       offset,
-      queries,
-      plannerUsed: Boolean(planned),
+      query,
+      plannerUsed: Boolean(planned?.query),
       plannerConfidence: planned?.confidence ?? null,
-      candidates: collected.slice(0, 15).map(({url, score, title, displayLink}) => ({url, score, title, displayLink})),
-    }, 'Ranked image search candidates');
+      candidates: results.map(({url, title, displayLink}) => ({url, title, displayLink})),
+    }, 'Image search candidates');
 
-    return collected.slice(offset, offset + pageSize).map((result) => result.url);
+    return results.map(({url}) => url);
   }
 
   async uploadImage(file: Buffer, mimetype: string): Promise<string | Error> {
@@ -339,7 +219,6 @@ export class WordService {
       return new Error('word not found in DB');
     }
 
-
     const currentProgressIdx = ProgressOrder.findIndex((i) => i === word.Progress);
     let nextProgress;
     if (remember) {
@@ -439,36 +318,5 @@ export class WordService {
       this.logger.error({err}, 'Transactional deleteWord failed');
       return err instanceof Error ? err : new Error(String(err));
     }
-  }
-  private buildPlannedImageSearchQueries(
-      word: string,
-      translation: string,
-      intent: 'object' | 'action' | 'mixed' | 'unknown',
-      candidates: ImageQueryCandidate[],
-  ): string[] {
-    const queries: string[] = [];
-
-    for (const candidate of candidates.slice(0, 3)) {
-      const subject = candidate.subject.trim();
-      const scene = candidate.scene?.trim();
-      const style = candidate.styleHint?.trim();
-
-      if (intent === 'action') {
-        if (scene) queries.push(`${subject} ${scene}`);
-        queries.push(`${subject} action illustration`);
-      } else if (intent === 'mixed') {
-        queries.push(`${subject} illustration`);
-        if (scene) queries.push(`${subject} ${scene} illustration`);
-      } else {
-        queries.push(`${subject} illustration`);
-        queries.push(`${subject} isolated`);
-      }
-
-      if (style) queries.push(`${subject} ${style}`);
-      if (translation && translation.trim() && translation.trim() !== subject) queries.push(`${subject} ${translation.trim()} illustration`);
-      if (word && word.trim() && word.trim() !== subject) queries.push(`${subject} ${word.trim()} illustration`);
-    }
-
-    return [...new Set(queries)].filter(Boolean).slice(0, 5);
   }
 }
