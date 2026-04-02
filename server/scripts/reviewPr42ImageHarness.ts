@@ -2,7 +2,6 @@ import dotenv from 'dotenv';
 import {pino} from 'pino';
 import cases from './imageSearchEvalCases.json' with {type: 'json'};
 import {getInstance as getPlanner} from '../src/services/openAIImageQueryPlanner.js';
-import {getInstance as getReranker} from '../src/services/openAIImageSearchReranker.js';
 import {
   buildDeterministicImageSearchQueries,
   collectImageSearchCandidates,
@@ -21,7 +20,6 @@ type EvalCase = {
 
 const logger = pino({level: process.env.PINO_LOG_LEVEL || 'silent'});
 const planner = getPlanner();
-const reranker = getReranker();
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -62,14 +60,11 @@ const evaluatePath = async (
     };
   }
 
-  const reranked = await reranker.rerank(word, translation, candidates, logger);
-  const orderedUrls = orderImageCandidates(word, translation, candidates, reranked?.orderedUrls);
+  const orderedUrls = orderImageCandidates(word, translation, candidates);
 
   return {
     queries,
     candidateCount: candidates.length,
-    rerankerUsed: Boolean(reranked?.orderedUrls?.length),
-    rerankerReasoning: reranked?.reasoning ?? null,
     top: summarizeCandidates(word, translation, candidates, orderedUrls),
   };
 };
@@ -81,32 +76,23 @@ const main = async () => {
   for (const testCase of cases as EvalCase[]) {
     const deterministicQueries = buildDeterministicImageSearchQueries(testCase.word, testCase.translation);
     const planned = await planner.plan(testCase.word, testCase.translation, logger);
-    const selectedQueries = planned
-      ? [
-          ...new Set(
-            planned.candidates.flatMap((candidate) => [
-              candidate.scene ? `${candidate.subject} ${candidate.scene}` : `${candidate.subject} illustration`,
-              candidate.styleHint ? `${candidate.subject} ${candidate.styleHint}` : '',
-            ]).filter(Boolean),
-          ),
-        ].slice(0, 5)
-      : deterministicQueries;
+    const plannedQueries = planned?.queries?.length ? planned.queries : [];
 
-    const productionPath = await evaluatePath(testCase.word, testCase.translation, selectedQueries);
+    const llmPlannedPath = await evaluatePath(testCase.word, testCase.translation, plannedQueries);
     if (throttleMs > 0) await delay(throttleMs);
-    const deterministicBaseline = await evaluatePath(testCase.word, testCase.translation, deterministicQueries);
+    const deterministicPath = await evaluatePath(testCase.word, testCase.translation, deterministicQueries);
 
     report.push({
       word: testCase.word,
       translation: testCase.translation,
       kind: testCase.kind ?? null,
-      plannerUsed: Boolean(planned?.candidates?.length),
+      plannerUsed: Boolean(planned?.queries?.length),
       plannerIntent: planned?.intent ?? null,
       plannerConfidence: planned?.confidence ?? null,
-      selectedQueries,
+      plannedQueries,
       deterministicQueries,
-      productionPath,
-      deterministicBaseline,
+      llmPlannedPath,
+      deterministicPath,
     });
 
     if (throttleMs > 0) await delay(throttleMs);

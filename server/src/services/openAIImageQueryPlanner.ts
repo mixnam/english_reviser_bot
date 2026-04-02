@@ -3,33 +3,27 @@ import {Logger} from 'pino';
 import {z} from 'zod';
 
 export type ImageSearchIntent = 'object' | 'action' | 'mixed' | 'unknown';
-export type ImageQueryCandidate = {
-  subject: string;
-  scene?: string;
-  styleHint?: string;
-};
 export type ImageQueryPlan = {
   intent: ImageSearchIntent;
   confidence: number;
-  candidates: ImageQueryCandidate[];
+  queries: string[];
 };
 
 const ImageQueryPlanSchema = z.object({
   intent: z.enum(['object', 'action', 'mixed', 'unknown']),
   confidence: z.number().min(0).max(1),
-  candidates: z.array(z.object({
-    subject: z.string().min(1).max(80),
-    scene: z.string().min(1).max(80).optional(),
-    styleHint: z.string().min(1).max(40).optional(),
-  })).min(1).max(3),
+  queries: z.array(z.string().min(1).max(120)).min(1).max(5),
 });
 
-const SYSTEM_PROMPT = `You plan image-search intent for vocabulary study.
-Return ONLY valid JSON with keys: intent, confidence, candidates.
+const SYSTEM_PROMPT = `You plan image-search queries for a vocabulary study app.
+Return ONLY valid JSON with keys: intent, confidence, queries.
 intent must be one of: object, action, mixed, unknown.
 confidence must be a number from 0 to 1.
-candidates must be a short array (1 to 3) of objects with subject and optional scene/styleHint.
-No markdown, no commentary, no raw search syntax, no operators, no URLs.`;
+queries must be an array of 1 to 5 ready-to-use image search queries.
+Each query should be short, concrete, and optimized to find a representative image for the target meaning.
+Prefer sense-disambiguated queries using the translation when helpful.
+For verbs and adjectives, prefer visually depictable scenes.
+No markdown, no commentary, no operators, no URLs, no quotes.`;
 
 class OpenAIImageQueryPlannerImpl {
   private client: OpenAI | null;
@@ -71,7 +65,11 @@ class OpenAIImageQueryPlannerImpl {
       }
 
       if (parsed.data.confidence < this.minConfidence) return null;
-      return parsed.data;
+
+      return {
+        ...parsed.data,
+        queries: [...new Set(parsed.data.queries.map((query) => query.trim()).filter(Boolean))].slice(0, 5),
+      };
     } catch (err) {
       logger?.warn?.({err}, 'Image query planning failed');
       return null;
