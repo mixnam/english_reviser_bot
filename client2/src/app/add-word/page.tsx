@@ -2,9 +2,8 @@
 
 import { Button } from "@telegram-apps/telegram-ui";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { useTelegram } from "@/app/telegram";
-import type { Word } from "@/shared/api/types";
 import { i18n } from "@/shared/lib/i18n";
 import { WordCard } from "@/shared/ui/WordCard";
 import { WordForm, type WordFormData } from "@/shared/ui/WordForm";
@@ -15,46 +14,46 @@ const AddWordPageContent = () => {
 	const chatID = searchParams.get("chat_id") ?? "";
 	const { webApp } = useTelegram();
 	const initData = webApp?.initData || "";
-	const [savedWord, setSavedWord] = useState<Word | null>(null);
-	const [submitError, setSubmitError] = useState<string | null>(null);
 
 	const {
+		state,
 		submit,
+		reset,
 		isLoading: isSubmitting,
-		error: submissionError,
 	} = useAddWordSubmission();
 
 	const onSubmit = (data: WordFormData) => {
-		setSubmitError(null);
 		submit({
 			data,
 			initData,
 			chatID,
-			onSubmit: setSavedWord,
-			onError: setSubmitError,
 		});
 	};
 
 	const onAddNewWord = () => {
-		setSavedWord(null);
+		reset();
 	};
 
 	const onClose = () => {
 		webApp?.close();
 	};
 
-	if (submissionError && !savedWord) {
+	if (state.status === "error") {
 		return (
 			<div className="w-full h-full flex items-center justify-center p-4 text-center text-red-500">
-				<div className="max-w-sm">{submitError || submissionError}</div>
+				<div className="max-w-sm">{state.error}</div>
 			</div>
 		);
 	}
 
-	if (savedWord) {
+	if (state.status === "submitted" && state.word) {
 		return (
 			<div className="w-full h-full flex flex-col p-4">
-				<WordCard word={savedWord} revealed={true} onReveal={() => undefined} />
+				<WordCard
+					word={state.word}
+					revealed={true}
+					onReveal={() => undefined}
+				/>
 				<div className="flex flex-col justify-end mt-4 gap-2">
 					<Button
 						className="max-h-12"

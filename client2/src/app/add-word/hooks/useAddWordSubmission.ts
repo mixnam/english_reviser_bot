@@ -2,28 +2,29 @@ import { useActionState } from "react";
 import { submitWord, uploadImage } from "@/shared/api/words";
 import type { WordFormData } from "@/shared/ui/WordForm";
 
-type State = {
-	submitted: boolean;
-	error: string | null;
-};
+type State =
+	| { status: "editing" }
+	| { status: "submitted"; word: Awaited<ReturnType<typeof submitWord>> }
+	| { status: "error"; error: string };
 
 type Payload = {
 	data: WordFormData;
 	initData: string;
 	chatID: string;
-	onSubmit?: (word: Awaited<ReturnType<typeof submitWord>>) => void;
-	onError?: (message: string) => void;
 };
 
-const submitReducer = async (
-	state: State,
-	payload: Payload,
-): Promise<State> => {
-	if (state.submitted) {
+type Action = { type: "submit"; payload: Payload } | { type: "reset" };
+
+const submitReducer = async (state: State, action: Action): Promise<State> => {
+	if (action.type === "reset") {
+		return { status: "editing" };
+	}
+
+	if (state.status !== "editing") {
 		return state;
 	}
 
-	const { data, initData, chatID, onSubmit, onError } = payload;
+	const { data, initData, chatID } = action.payload;
 
 	try {
 		const imageUrl = await (async () => {
@@ -51,33 +52,30 @@ const submitReducer = async (
 			imageUrl,
 		});
 
-		onSubmit?.(savedWord);
+		return {
+			status: "submitted",
+			word: savedWord,
+		};
 	} catch (error) {
 		const message =
 			error instanceof Error ? error.message : "Failed to save word";
 		console.error("Failed to submit word:", error);
-		onError?.(message);
 		return {
-			submitted: false,
+			status: "error",
 			error: message,
 		};
 	}
-	return {
-		submitted: true,
-		error: null,
-	};
 };
 
 export const useAddWordSubmission = () => {
 	const [state, dispatch, isLoading] = useActionState(submitReducer, {
-		submitted: false,
-		error: null,
+		status: "editing",
 	});
 
 	return {
-		isSubmitted: state.submitted,
-		error: state.error,
-		submit: dispatch,
+		state,
+		submit: (payload: Payload) => dispatch({ type: "submit", payload }),
+		reset: () => dispatch({ type: "reset" }),
 		isLoading,
 	};
 };
