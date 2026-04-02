@@ -96,10 +96,13 @@ export const submitWord = async (
 		imageUrl: string | null;
 	},
 ) => {
-	await apiFetch(`/chat/${chatID}/word/save`, initData, {
+	const response = await apiFetch(`/chat/${chatID}/word/save`, initData, {
 		method: "POST",
 		body: JSON.stringify(word),
 	});
+	if (!response) return null;
+	const json = await response.json();
+	return WordSchema.parse(json);
 };
 
 export const deleteWord = async (
