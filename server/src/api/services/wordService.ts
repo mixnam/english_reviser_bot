@@ -113,7 +113,7 @@ export class WordService {
       translation: string,
       example: string | null,
       imageUrl: string | null,
-  ): Promise<void | Error> {
+  ): Promise<Word | Error> {
     const user = await getUserByChatID(chatID, this.logger);
     if (user instanceof Error) return user;
     if (!user) return new Error(`User not found for chatID: ${chatID}`);
@@ -166,6 +166,8 @@ export class WordService {
 
       const result = await addNewWord(user._id, newWord, this.logger);
       if (result instanceof Error) throw result;
+
+      return newWord;
     } catch (err) {
       this.logger.error({err}, 'Transactional saveWord failed');
       return err instanceof Error ? err : new Error(String(err));
