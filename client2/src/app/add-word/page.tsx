@@ -2,7 +2,7 @@
 
 import { Button } from "@telegram-apps/telegram-ui";
 import { useSearchParams } from "next/navigation";
-import { Suspense, startTransition, useState } from "react";
+import { Suspense, useState } from "react";
 import { useTelegram } from "@/app/telegram";
 import type { Word } from "@/shared/api/types";
 import { submitWord } from "@/shared/api/words";
@@ -18,23 +18,21 @@ const AddWordPageContent = () => {
 	const [savedWord, setSavedWord] = useState<Word | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const onSubmit = (data: WordFormData) => {
+	const onSubmit = async (data: WordFormData) => {
 		setIsSubmitting(true);
-		startTransition(async () => {
-			try {
-				const word = await submitWord(initData, chatID, {
-					word: data.word,
-					translation: data.translation,
-					example: data.example || null,
-					imageUrl: data.selectedImage?.url ?? null,
-				});
-				if (word) {
-					setSavedWord(word);
-				}
-			} finally {
-				setIsSubmitting(false);
+		try {
+			const word = await submitWord(initData, chatID, {
+				word: data.word,
+				translation: data.translation,
+				example: data.example || null,
+				imageUrl: data.selectedImage?.url ?? null,
+			});
+			if (word) {
+				setSavedWord(word);
 			}
-		});
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	const onAddNewWord = () => {
