@@ -5,10 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useTelegram } from "@/app/telegram";
 import type { Word } from "@/shared/api/types";
-import { submitWord } from "@/shared/api/words";
 import { i18n } from "@/shared/lib/i18n";
 import { WordCard } from "@/shared/ui/WordCard";
 import { WordForm, type WordFormData } from "@/shared/ui/WordForm";
+import { useAddWordSubmission } from "./hooks/useAddWordSubmission";
 
 const AddWordPageContent = () => {
 	const searchParams = useSearchParams();
@@ -16,23 +16,16 @@ const AddWordPageContent = () => {
 	const { webApp } = useTelegram();
 	const initData = webApp?.initData || "";
 	const [savedWord, setSavedWord] = useState<Word | null>(null);
-	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	const onSubmit = async (data: WordFormData) => {
-		setIsSubmitting(true);
-		try {
-			const word = await submitWord(initData, chatID, {
-				word: data.word,
-				translation: data.translation,
-				example: data.example || null,
-				imageUrl: data.selectedImage?.url ?? null,
-			});
-			if (word) {
-				setSavedWord(word);
-			}
-		} finally {
-			setIsSubmitting(false);
-		}
+	const { submit, isLoading: isSubmitting } = useAddWordSubmission();
+
+	const onSubmit = (data: WordFormData) => {
+		submit({
+			data,
+			initData,
+			chatID,
+			onSubmit: setSavedWord,
+		});
 	};
 
 	const onAddNewWord = () => {
