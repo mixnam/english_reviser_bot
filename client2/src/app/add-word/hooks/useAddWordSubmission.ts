@@ -10,7 +10,7 @@ type Payload = {
 	data: WordFormData;
 	initData: string;
 	chatID: string;
-	onSubmit?: () => void;
+	onSubmit?: (word: Awaited<ReturnType<typeof submitWord>>) => void;
 };
 
 const submitReducer = async (
@@ -42,14 +42,14 @@ const submitReducer = async (
 			}
 		})();
 
-		await submitWord(initData, chatID, {
+		const savedWord = await submitWord(initData, chatID, {
 			word: data.word,
 			translation: data.translation,
 			example: data.example || null,
 			imageUrl,
 		});
 
-		onSubmit?.();
+		onSubmit?.(savedWord);
 	} catch (error) {
 		console.error("Failed to submit word:", error);
 		return {
