@@ -215,7 +215,7 @@ export class WordController {
 
     if (result instanceof Error) {
       req.log.error(result);
-      return res.code(500).send({message: result.message});
+      return res.code(400).send({message: result.message});
     }
 
     return res.code(200).send(result);
