@@ -4,6 +4,7 @@ import type { WordFormData } from "@/shared/ui/WordForm";
 
 type State = {
 	submitted: boolean;
+	error: string | null;
 };
 
 type Payload = {
@@ -11,6 +12,7 @@ type Payload = {
 	initData: string;
 	chatID: string;
 	onSubmit?: (word: Awaited<ReturnType<typeof submitWord>>) => void;
+	onError?: (message: string) => void;
 };
 
 const submitReducer = async (
@@ -21,7 +23,7 @@ const submitReducer = async (
 		return state;
 	}
 
-	const { data, initData, chatID, onSubmit } = payload;
+	const { data, initData, chatID, onSubmit, onError } = payload;
 
 	try {
 		const imageUrl = await (async () => {
@@ -51,23 +53,30 @@ const submitReducer = async (
 
 		onSubmit?.(savedWord);
 	} catch (error) {
+		const message =
+			error instanceof Error ? error.message : "Failed to save word";
 		console.error("Failed to submit word:", error);
+		onError?.(message);
 		return {
 			submitted: false,
+			error: message,
 		};
 	}
 	return {
 		submitted: true,
+		error: null,
 	};
 };
 
 export const useAddWordSubmission = () => {
 	const [state, dispatch, isLoading] = useActionState(submitReducer, {
 		submitted: false,
+		error: null,
 	});
 
 	return {
 		isSubmitted: state.submitted,
+		error: state.error,
 		submit: dispatch,
 		isLoading,
 	};

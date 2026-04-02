@@ -16,15 +16,22 @@ const AddWordPageContent = () => {
 	const { webApp } = useTelegram();
 	const initData = webApp?.initData || "";
 	const [savedWord, setSavedWord] = useState<Word | null>(null);
+	const [submitError, setSubmitError] = useState<string | null>(null);
 
-	const { submit, isLoading: isSubmitting } = useAddWordSubmission();
+	const {
+		submit,
+		isLoading: isSubmitting,
+		error: submissionError,
+	} = useAddWordSubmission();
 
 	const onSubmit = (data: WordFormData) => {
+		setSubmitError(null);
 		submit({
 			data,
 			initData,
 			chatID,
 			onSubmit: setSavedWord,
+			onError: setSubmitError,
 		});
 	};
 
@@ -35,6 +42,14 @@ const AddWordPageContent = () => {
 	const onClose = () => {
 		webApp?.close();
 	};
+
+	if (submissionError && !savedWord) {
+		return (
+			<div className="w-full h-full flex items-center justify-center p-4 text-center text-red-500">
+				<div className="max-w-sm">{submitError || submissionError}</div>
+			</div>
+		);
+	}
 
 	if (savedWord) {
 		return (
