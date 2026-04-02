@@ -15,7 +15,12 @@ const AddWordPageContent = () => {
 	const { webApp } = useTelegram();
 	const initData = webApp?.initData || "";
 
-	const { state, submit, isLoading: isSubmitting } = useAddWordSubmission();
+	const {
+		state,
+		submit,
+		reset,
+		isLoading: isSubmitting,
+	} = useAddWordSubmission();
 
 	const onSubmit = (data: WordFormData) => {
 		submit({
@@ -26,7 +31,7 @@ const AddWordPageContent = () => {
 	};
 
 	const onAddNewWord = () => {
-		window.location.reload();
+		reset();
 	};
 
 	const onClose = () => {

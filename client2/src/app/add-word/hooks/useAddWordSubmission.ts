@@ -13,15 +13,18 @@ type Payload = {
 	chatID: string;
 };
 
-const submitReducer = async (
-	state: State,
-	payload: Payload,
-): Promise<State> => {
+type Action = { type: "submit"; payload: Payload } | { type: "reset" };
+
+const submitReducer = async (state: State, action: Action): Promise<State> => {
+	if (action.type === "reset") {
+		return { status: "editing" };
+	}
+
 	if (state.status !== "editing") {
 		return state;
 	}
 
-	const { data, initData, chatID } = payload;
+	const { data, initData, chatID } = action.payload;
 
 	try {
 		const imageUrl = await (async () => {
@@ -71,7 +74,8 @@ export const useAddWordSubmission = () => {
 
 	return {
 		state,
-		submit: dispatch,
+		submit: (payload: Payload) => dispatch({ type: "submit", payload }),
+		reset: () => dispatch({ type: "reset" }),
 		isLoading,
 	};
 };
