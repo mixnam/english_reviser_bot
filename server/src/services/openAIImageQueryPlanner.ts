@@ -6,22 +6,22 @@ export type ImageSearchIntent = 'object' | 'action' | 'mixed' | 'unknown';
 export type ImageQueryPlan = {
   intent: ImageSearchIntent;
   confidence: number;
-  queries: string[];
+  query: string;
 };
 
 const ImageQueryPlanSchema = z.object({
   intent: z.enum(['object', 'action', 'mixed', 'unknown']),
   confidence: z.number().min(0).max(1),
-  queries: z.array(z.string().min(1).max(120)).min(1).max(5),
+  query: z.string().min(1).max(120),
 });
 
-const SYSTEM_PROMPT = `You plan image-search queries for a vocabulary study app.
-Return ONLY valid JSON with keys: intent, confidence, queries.
+const SYSTEM_PROMPT = `You plan a single image-search query for a vocabulary study app.
+Return ONLY valid JSON with keys: intent, confidence, query.
 intent must be one of: object, action, mixed, unknown.
 confidence must be a number from 0 to 1.
-queries must be an array of 1 to 5 ready-to-use image search queries.
-Each query should be short, concrete, and optimized to find a representative image for the target meaning.
-Prefer sense-disambiguated queries using the translation when helpful.
+query must be one short, ready-to-use image search query.
+The query should be concrete and optimized to find a representative image for the intended meaning.
+Prefer sense disambiguation using the translation when helpful.
 For verbs and adjectives, prefer visually depictable scenes.
 No markdown, no commentary, no operators, no URLs, no quotes.`;
 
@@ -68,7 +68,7 @@ class OpenAIImageQueryPlannerImpl {
 
       return {
         ...parsed.data,
-        queries: [...new Set(parsed.data.queries.map((query) => query.trim()).filter(Boolean))].slice(0, 5),
+        query: parsed.data.query.trim(),
       };
     } catch (err) {
       logger?.warn?.({err}, 'Image query planning failed');

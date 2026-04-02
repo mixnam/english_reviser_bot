@@ -3,11 +3,8 @@ import {pino} from 'pino';
 import cases from './imageSearchEvalCases.json' with {type: 'json'};
 import {getInstance as getPlanner} from '../src/services/openAIImageQueryPlanner.js';
 import {
-  buildDeterministicImageSearchQueries,
-  collectImageSearchCandidates,
-  deterministicFallbackScore,
-  orderImageCandidates,
-  type RankedImageSearchCandidate,
+  buildDeterministicImageSearchQuery,
+  searchImagesForQuery,
 } from '../src/services/imageSearchPipeline.js';
 
 dotenv.config({path: '.env.dev'});
@@ -23,49 +20,28 @@ const planner = getPlanner();
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const summarizeCandidates = (
-    word: string,
-    translation: string,
-    candidates: RankedImageSearchCandidate[],
-    orderedUrls: string[],
-) => {
-  const scoreByUrl = new Map(
-    candidates.map((candidate) => [candidate.url, deterministicFallbackScore(candidate, word, translation)]),
-  );
-  const candidateByUrl = new Map(candidates.map((candidate) => [candidate.url, candidate]));
-
-  return orderedUrls.slice(0, 5).map((url, index) => {
-    const candidate = candidateByUrl.get(url);
-    return {
-      rank: index + 1,
-      query: candidate?.query ?? null,
-      title: candidate?.title ?? '',
-      displayLink: candidate?.displayLink ?? '',
-      score: scoreByUrl.get(url) ?? null,
-      url,
-    };
-  });
-};
-
 const evaluatePath = async (
     word: string,
     translation: string,
-    queries: string[],
+    query: string,
 ) => {
-  const candidates = await collectImageSearchCandidates(queries, logger);
-  if (candidates instanceof Error) {
+  const results = await searchImagesForQuery(query, logger, 0, 5);
+  if (results instanceof Error) {
     return {
-      queries,
-      error: candidates.message,
+      query,
+      error: results.message,
     };
   }
 
-  const orderedUrls = orderImageCandidates(word, translation, candidates);
-
   return {
-    queries,
-    candidateCount: candidates.length,
-    top: summarizeCandidates(word, translation, candidates, orderedUrls),
+    query,
+    candidateCount: results.length,
+    top: results.slice(0, 5).map((result, index) => ({
+      rank: index + 1,
+      title: result.title ?? '',
+      displayLink: result.displayLink ?? '',
+      url: result.url,
+    })),
   };
 };
 
@@ -74,23 +50,25 @@ const main = async () => {
   const report: unknown[] = [];
 
   for (const testCase of cases as EvalCase[]) {
-    const deterministicQueries = buildDeterministicImageSearchQueries(testCase.word, testCase.translation);
+    const deterministicQuery = buildDeterministicImageSearchQuery(testCase.word, testCase.translation);
     const planned = await planner.plan(testCase.word, testCase.translation, logger);
-    const plannedQueries = planned?.queries?.length ? planned.queries : [];
+    const plannedQuery = planned?.query ?? null;
 
-    const llmPlannedPath = await evaluatePath(testCase.word, testCase.translation, plannedQueries);
+    const llmPlannedPath = plannedQuery ?
+      await evaluatePath(testCase.word, testCase.translation, plannedQuery) :
+      {query: null, error: 'Planner unavailable'};
     if (throttleMs > 0) await delay(throttleMs);
-    const deterministicPath = await evaluatePath(testCase.word, testCase.translation, deterministicQueries);
+    const deterministicPath = await evaluatePath(testCase.word, testCase.translation, deterministicQuery);
 
     report.push({
       word: testCase.word,
       translation: testCase.translation,
       kind: testCase.kind ?? null,
-      plannerUsed: Boolean(planned?.queries?.length),
+      plannerUsed: Boolean(plannedQuery),
       plannerIntent: planned?.intent ?? null,
       plannerConfidence: planned?.confidence ?? null,
-      plannedQueries,
-      deterministicQueries,
+      plannedQuery,
+      deterministicQuery,
       llmPlannedPath,
       deterministicPath,
     });

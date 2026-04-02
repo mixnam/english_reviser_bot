@@ -20,9 +20,8 @@ import {
 import * as OpenAIExamplesService from '../../services/openAIExamples.js';
 import * as OpenAIImageQueryPlanner from '../../services/openAIImageQueryPlanner.js';
 import {
-  buildDeterministicImageSearchQueries,
-  collectImageSearchCandidates,
-  orderImageCandidates,
+  buildDeterministicImageSearchQuery,
+  searchImagesForQuery,
 } from '../../services/imageSearchPipeline.js';
 import * as GoogleCloudStorage from '../../services/googleCloudStorage.js';
 import * as TTSService from '../../tts/openaiTts.js';
@@ -68,26 +67,24 @@ export class WordService {
   }
 
   async searchImages(word: string, translation: string, offset: number = 0): Promise<string[] | Error> {
-    const deterministicQueries = buildDeterministicImageSearchQueries(word, translation);
+    const deterministicQuery = buildDeterministicImageSearchQuery(word, translation);
     const planned = await OpenAIImageQueryPlanner.getInstance().plan(word, translation, this.logger);
-    const queries = planned?.queries?.length ? planned.queries : deterministicQueries;
-    const pageSize = 5;
-    const collected = await collectImageSearchCandidates(queries, this.logger, offset, pageSize);
-    if (collected instanceof Error) return collected;
+    const query = planned?.query || deterministicQuery;
 
-    const orderedUrls = orderImageCandidates(word, translation, collected);
+    const results = await searchImagesForQuery(query, this.logger, offset, 5);
+    if (results instanceof Error) return results;
 
     this.logger.info({
       word,
       translation,
       offset,
-      queries,
-      plannerUsed: Boolean(planned?.queries?.length),
+      query,
+      plannerUsed: Boolean(planned?.query),
       plannerConfidence: planned?.confidence ?? null,
-      candidates: collected.slice(0, 15).map(({url, query, rankHint, title, displayLink}) => ({url, query, rankHint, title, displayLink})),
-    }, 'Ranked image search candidates');
+      candidates: results.map(({url, title, displayLink}) => ({url, title, displayLink})),
+    }, 'Image search candidates');
 
-    return orderedUrls.slice(offset, offset + pageSize);
+    return results.map(({url}) => url);
   }
 
   async uploadImage(file: Buffer, mimetype: string): Promise<string | Error> {
