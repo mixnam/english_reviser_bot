@@ -139,7 +139,9 @@ export class WordService {
           if (imageResponse instanceof Error) return imageResponse;
 
           if (imageResponse.statusCode !== 200) {
-            throw new Error(`Failed to fetch image: status ${imageResponse.statusCode}`);
+            return new Error(
+                'Could not use the selected image. Please pick a different image and try again.',
+            );
           }
 
           const contentType = imageResponse.headers['content-type'] || 'image/jpeg';
