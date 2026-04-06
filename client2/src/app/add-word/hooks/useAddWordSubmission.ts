@@ -3,9 +3,8 @@ import { submitWord, uploadImage } from "@/shared/api/words";
 import type { WordFormData } from "@/shared/ui/WordForm";
 
 type State =
-	| { status: "editing" }
-	| { status: "submitted"; word: Awaited<ReturnType<typeof submitWord>> }
-	| { status: "error"; error: string };
+	| { status: "editing"; error?: string }
+	| { status: "submitted"; word: Awaited<ReturnType<typeof submitWord>> };
 
 type Payload = {
 	data: WordFormData;
@@ -20,7 +19,7 @@ const submitReducer = async (state: State, action: Action): Promise<State> => {
 		return { status: "editing" };
 	}
 
-	if (state.status !== "editing") {
+	if (state.status === "submitted") {
 		return state;
 	}
 
@@ -61,7 +60,7 @@ const submitReducer = async (state: State, action: Action): Promise<State> => {
 			error instanceof Error ? error.message : "Failed to save word";
 		console.error("Failed to submit word:", error);
 		return {
-			status: "error",
+			status: "editing",
 			error: message,
 		};
 	}
