@@ -38,13 +38,7 @@ const AddWordPageContent = () => {
 		webApp?.close();
 	};
 
-	if (state.status === "error") {
-		return (
-			<div className="w-full h-full flex items-center justify-center p-4 text-center text-red-500">
-				<div className="max-w-sm">{state.error}</div>
-			</div>
-		);
-	}
+	const submitError = state.status === "error" ? state.error : undefined;
 
 	if (state.status === "submitted" && state.word) {
 		return (
@@ -83,6 +77,7 @@ const AddWordPageContent = () => {
 			mode="add"
 			onSubmit={onSubmit}
 			disabled={isSubmitting}
+			submitError={submitError}
 		/>
 	);
 };

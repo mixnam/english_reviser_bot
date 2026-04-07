@@ -9,10 +9,10 @@ import {
 	Textarea,
 	Title,
 } from "@telegram-apps/telegram-ui";
+import { useSearchParams } from "next/navigation";
 import { startTransition, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
 import { useTelegram } from "@/app/telegram";
 import { useDebounced } from "@/shared/hooks/useDebounced";
 import { useExampleGenerator } from "@/shared/hooks/useExampleGenerator";
@@ -21,7 +21,6 @@ import { useSimilarWordsCheck } from "@/shared/hooks/useSimilarWordsCheck";
 import { i18n } from "@/shared/lib/i18n";
 import { ImagePreview } from "@/shared/ui/ImagePreview";
 import { ReloadIcon } from "@/shared/ui/ReloadIcon";
-import { useSearchParams } from "next/navigation";
 
 export const WordFormDataSchema = z.object({
 	word: z.string().min(1, i18n.wordRequired),
@@ -44,6 +43,7 @@ type WordFormProps = {
 	onSubmit: (data: WordFormData) => void;
 	onDelete?: () => void;
 	disabled?: boolean;
+	submitError?: string;
 };
 
 export const WordForm = ({
@@ -53,6 +53,7 @@ export const WordForm = ({
 	onSubmit,
 	onDelete,
 	disabled: externalDisabled,
+	submitError,
 }: WordFormProps) => {
 	const { webApp } = useTelegram();
 	const initData = webApp?.initData || "";
@@ -167,7 +168,10 @@ export const WordForm = ({
 		isImagesLoading;
 
 	return (
-		<form className="w-full h-full flex flex-col p-4" onSubmit={handleSubmit(onSubmit)}>
+		<form
+			className="w-full h-full flex flex-col p-4"
+			onSubmit={handleSubmit(onSubmit)}
+		>
 			<Title className="text-center pb-5" level="1" weight="2">
 				{title}
 			</Title>
@@ -307,6 +311,9 @@ export const WordForm = ({
 			</List>
 
 			<div className="flex flex-1 flex-col justify-end mt-4 gap-2">
+				{submitError && (
+					<Caption className="text-red-500">{submitError}</Caption>
+				)}
 				<Button
 					className="max-h-12"
 					type="submit"
