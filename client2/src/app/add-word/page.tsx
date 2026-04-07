@@ -2,7 +2,7 @@
 
 import { Button } from "@telegram-apps/telegram-ui";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, startTransition } from "react";
 import { useTelegram } from "@/app/telegram";
 import { i18n } from "@/shared/lib/i18n";
 import { WordCard } from "@/shared/ui/WordCard";
@@ -23,10 +23,12 @@ const AddWordPageContent = () => {
 	} = useAddWordSubmission();
 
 	const onSubmit = (data: WordFormData) => {
-		submit({
-			data,
-			initData,
-			chatID,
+		startTransition(() => {
+			submit({
+				data,
+				initData,
+				chatID,
+			});
 		});
 	};
 
