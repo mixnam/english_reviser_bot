@@ -33,7 +33,9 @@ const AddWordPageContent = () => {
 	};
 
 	const onAddNewWord = () => {
-		reset();
+		startTransition(() => {
+			reset();
+		});
 	};
 
 	const onClose = () => {
@@ -42,46 +44,51 @@ const AddWordPageContent = () => {
 
 	const submitError = state.status === "error" ? state.error : undefined;
 
-	if (state.status === "submitted" && state.word) {
-		return (
-			<div className="w-full h-full flex flex-col p-4">
-				<WordCard
-					word={state.word}
-					revealed={true}
-					onReveal={() => undefined}
+	switch (state.status) {
+		case "editing":
+		case "error":
+			return (
+				<WordForm
+					title={i18n.addNewWord}
+					mode="add"
+					onSubmit={onSubmit}
+					disabled={isSubmitting}
+					submitError={submitError}
 				/>
-				<div className="flex flex-col justify-end mt-4 gap-2">
-					<Button
-						className="max-h-12"
-						type="button"
-						stretched
-						onClick={onAddNewWord}
-					>
-						{i18n.addNewWord}
-					</Button>
-					<Button
-						className="max-h-12"
-						mode="plain"
-						type="button"
-						stretched
-						onClick={onClose}
-					>
-						{i18n.close}
-					</Button>
+			);
+		case "submitted":
+			return (
+				<div className="w-full h-full flex flex-col p-4">
+					<WordCard
+						word={state.word}
+						revealed={true}
+						onReveal={() => undefined}
+					/>
+					<div className="flex flex-col justify-end mt-4 gap-2">
+						<Button
+							className="max-h-12"
+							type="button"
+							stretched
+							onClick={onAddNewWord}
+						>
+							{i18n.addNewWord}
+						</Button>
+						<Button
+							className="max-h-12"
+							mode="plain"
+							type="button"
+							stretched
+							onClick={onClose}
+						>
+							{i18n.close}
+						</Button>
+					</div>
 				</div>
-			</div>
-		);
+			);
+		default:
+			// not reachable
+			return null;
 	}
-
-	return (
-		<WordForm
-			title={i18n.addNewWord}
-			mode="add"
-			onSubmit={onSubmit}
-			disabled={isSubmitting}
-			submitError={submitError}
-		/>
-	);
 };
 
 const AddWordPage = () => (

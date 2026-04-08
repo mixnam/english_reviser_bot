@@ -20,7 +20,7 @@ const submitReducer = async (state: State, action: Action): Promise<State> => {
 		return { status: "editing" };
 	}
 
-	if (state.status !== "editing") {
+	if (state.status === "submitted") {
 		return state;
 	}
 
