@@ -7,7 +7,9 @@ const main = async (): Promise<void> => {
   await runDueWordNotifications(logger);
 };
 
-main().catch((err) => {
+main().then(() =>
+  process.exit(0),
+).catch((err) => {
   // eslint-disable-next-line no-console
   console.error(err);
   process.exit(1);
