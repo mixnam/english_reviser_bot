@@ -31,6 +31,39 @@ const ProgressTimeSpace = {
   [Progress.Learned]: 27,
 };
 
+const learnEligibilityMatch = (userID: string) => ({
+  $or: [
+    {
+      userID,
+      'Progress': Progress.HaveProblems,
+      'Last Revised': {
+        $lt: minusDaysFromNow(ProgressTimeSpace[Progress.HaveProblems]),
+      },
+    },
+    {
+      userID,
+      'Progress': Progress.HaveToPayAttention,
+      'Last Revised': {
+        $lt: minusDaysFromNow(ProgressTimeSpace[Progress.HaveToPayAttention]),
+      },
+    },
+    {
+      userID,
+      'Progress': Progress.NeedToRepeat,
+      'Last Revised': {
+        $lt: minusDaysFromNow(ProgressTimeSpace[Progress.NeedToRepeat]),
+      },
+    },
+    {
+      userID,
+      'Progress': Progress.ActiveLearning,
+      'Last Revised': {
+        $lt: minusDaysFromNow(ProgressTimeSpace[Progress.ActiveLearning]),
+      },
+    },
+  ],
+});
+
 export type Word = {
   _id: string;
   userID: string;
@@ -163,38 +196,7 @@ const getRandomWordByUserIDForLearn = executionTime(
 
       const result = words.aggregate([
         {
-          $match: {
-            $or: [
-              {
-                userID,
-                'Progress': Progress.HaveProblems,
-                'Last Revised': {
-                  $lt: minusDaysFromNow(ProgressTimeSpace[Progress.HaveProblems]),
-                },
-              },
-              {
-                userID,
-                'Progress': Progress.HaveToPayAttention,
-                'Last Revised': {
-                  $lt: minusDaysFromNow(ProgressTimeSpace[Progress.HaveToPayAttention]),
-                },
-              },
-              {
-                userID,
-                'Progress': Progress.NeedToRepeat,
-                'Last Revised': {
-                  $lt: minusDaysFromNow(ProgressTimeSpace[Progress.NeedToRepeat]),
-                },
-              },
-              {
-                userID,
-                'Progress': Progress.ActiveLearning,
-                'Last Revised': {
-                  $lt: minusDaysFromNow(ProgressTimeSpace[Progress.ActiveLearning]),
-                },
-              },
-            ],
-          },
+          $match: learnEligibilityMatch(userID),
         },
         {
           $sample: {
@@ -206,6 +208,19 @@ const getRandomWordByUserIDForLearn = executionTime(
       const wordDto = await result.next() as unknown as WordDTO;
 
       return wordDto ? mapWord(wordDto) : null;
+    });
+
+const getDueLearnWordCountByUserID = executionTime(
+    'getDueLearnWordCountByUserID',
+    async (userID: string, logger: Logger): Promise<number | Error> => {
+      const db = await getDb(logger);
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      try {
+        return await words.countDocuments(learnEligibilityMatch(userID));
+      } catch (err) {
+        return new Error(`[repo][getDueLearnWordCountByUserID] - ${err}`);
+      }
     });
 
 const setWordProgress = executionTime(
@@ -407,6 +422,7 @@ export {
   getWordByText,
   getRandomWordByUserIDForRevise,
   getRandomWordByUserIDForLearn,
+  getDueLearnWordCountByUserID,
   getSpelcheckSuggestions,
   setWordProgress,
   setWordTelegramAudioID,
