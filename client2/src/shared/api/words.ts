@@ -95,12 +95,14 @@ export const submitWord = async (
 		example: string | null;
 		imageUrl: string | null;
 	},
-) => {
+): Promise<Word> => {
 	const response = await apiFetch(`/chat/${chatID}/word/save`, initData, {
 		method: "POST",
 		body: JSON.stringify(word),
 	});
-	if (!response) return null;
+	if (!response) {
+		throw new Error("No word returned after save");
+	}
 	const json = await response.json();
 	return WordSchema.parse(json);
 };
