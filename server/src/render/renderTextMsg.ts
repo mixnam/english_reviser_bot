@@ -24,6 +24,8 @@ interface LanguageTranslations {
   renderNoWordsFound: () => string;
   renderReviseInTMA: () => string;
   renderLearnInTMA: () => string;
+  renderDueWordsNotification: (wordCount: number) => string;
+  renderDueWordsNotificationCta: () => string;
 }
 
 const languageTokenMap: {[key: string]: LanguageTranslations} = {
@@ -56,6 +58,8 @@ ${renderWordWithCustomStatus(word)}`,
     renderNoWordsFound: () => 'You have no words yet.',
     renderReviseInTMA: () => 'Ready to revise some words?',
     renderLearnInTMA: () => 'Ready to learn some words?',
+    renderDueWordsNotification: (wordCount) => `You have ${wordCount} words due today 📚\nA short practice session now will help them stick.`,
+    renderDueWordsNotificationCta: () => 'Learn now',
   },
   pt: {
     renderNoMoreWordsToLearnForToday: () => `Cobriu todas as palavras designadas para aprendizado hoje 🎉
@@ -86,6 +90,8 @@ ${renderWordWithCustomStatus(word)}`,
     renderNoWordsFound: () => 'Ainda não tem palavras.',
     renderReviseInTMA: () => 'Pronto para revisar algumas palavras?',
     renderLearnInTMA: () => 'Pronto para aprender algumas palavras?',
+    renderDueWordsNotification: (wordCount) => `Tem ${wordCount} palavras para estudar hoje 📚\nUma sessão curta agora ajuda a fixá-las.`,
+    renderDueWordsNotificationCta: () => 'Aprender agora',
   },
 };
 
@@ -112,6 +118,8 @@ const {
   renderNoWordsFound,
   renderReviseInTMA,
   renderLearnInTMA,
+  renderDueWordsNotification,
+  renderDueWordsNotificationCta,
 } = translations;
 
 export {
@@ -135,5 +143,7 @@ export {
   renderNoWordsFound,
   renderReviseInTMA,
   renderLearnInTMA,
+  renderDueWordsNotification,
+  renderDueWordsNotificationCta,
 };
 export default translations;

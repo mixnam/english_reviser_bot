@@ -7,6 +7,7 @@
   "scripts": {
     "telegram": "tsx dev.ts --bot | pino-pretty",
     "api": "tsx dev.ts --api",
+    "notify:due-words": "tsx ./src/jobs/dueWordNotifications.ts",
     "webhook:off": "node ./scripts/removeWebhook.js",
     "webhook:on": "node ./scripts/setWebhook.js",
     "check-types": "tsc --noEmit",
