@@ -10,11 +10,11 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }} 
   REGION: europe-west1 
   REPO_NAME: pt-revise-word
   IMAGE_NAME: notify-due-words
   SERVICE_NAME: notify-due-words
+  SERVER_PATH: server/
 
 jobs:
   deploy:
@@ -34,31 +34,14 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }} 
-          service_account: ${{ env.SERVICE_ACCOUNT }} 
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Docker Auth
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGION }}-docker.pkg.dev
-          username: oauth2accesstoken
-          password: ${{ steps.auth.outputs.access_token }}
-
-      - name: Build and Push Container
-        uses: docker/build-push-action@v5
-        with:
-          context: server             
-          file: server/Dockerfile 
-          push: true
-          tags: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-
       - name: Deploy Cloud Run Job
         run: |
           gcloud run jobs deploy ${{ env.SERVICE_NAME }} \
-            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --source ${{ env.SERVER_PATH }} \
             --region ${{ env.REGION }} \
-            --schedule="0 11 * * *" \
             --set-env-vars="PINO_LOG_LEVEL=info" \
             --max-retries 3
