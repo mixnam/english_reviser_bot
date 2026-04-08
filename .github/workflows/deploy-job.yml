@@ -10,6 +10,7 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }} 
   REGION: europe-west1 
   REPO_NAME: pt-revise-word
   IMAGE_NAME: notify-due-words
@@ -33,6 +34,7 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }} 
+          service_account: ${{ env.SERVICE_ACCOUNT }} 
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
