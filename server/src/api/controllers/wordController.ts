@@ -27,6 +27,24 @@ export class WordController {
     return res.code(200).send(result);
   };
 
+  getLearnSummary = async (
+      req: FastifyRequest<{
+      Params: {chat_id: string};
+    }>,
+      res: FastifyReply,
+  ) => {
+    const result = await this.wordService.getLearnSummary(
+        Number.parseInt(req.params.chat_id),
+    );
+
+    if (result instanceof Error) {
+      req.log.error(result);
+      return res.code(500).send({message: result.message});
+    }
+
+    return res.code(200).send({stats: result});
+  };
+
   updateLearnWordProgress = async (
       req: FastifyRequest<{
       Params: {chat_id: string; word_id: string};

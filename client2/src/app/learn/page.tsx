@@ -9,10 +9,11 @@ import {
 } from "@telegram-apps/telegram-ui";
 import confetti from "canvas-confetti";
 import { useSearchParams } from "next/navigation";
-import { Suspense, startTransition, useEffect } from "react";
+import { Suspense, startTransition, useEffect, useRef } from "react";
 import { useTelegram } from "@/app/telegram";
 import { i18n } from "@/shared/lib/i18n";
 import { WordCard } from "@/shared/ui/WordCard";
+import { LearnCompletionSummary } from "./components/LearnCompletionSummary";
 import { useLearnSession } from "./hooks/useLearnSession";
 
 const LearnContent = () => {
@@ -20,12 +21,23 @@ const LearnContent = () => {
 	const chatID = searchParams.get("chat_id") || "";
 	const { webApp } = useTelegram();
 	const initData = webApp?.initData || "";
+	const didConfetti = useRef(false);
 
-	const { word, revealed, isLoading, isError, revealWord, submitDecision } =
-		useLearnSession(initData, chatID);
+	const {
+		word,
+		revealed,
+		isLoading,
+		isError,
+		revealWord,
+		submitDecision,
+		completionSummary,
+		beforeStats,
+		sessionWordCount,
+	} = useLearnSession(initData, chatID);
 
 	useEffect(() => {
-		if (!isLoading && !word) {
+		if (!isLoading && !word && completionSummary && !didConfetti.current) {
+			didConfetti.current = true;
 			confetti({
 				particleCount: 150,
 				spread: 70,
@@ -41,7 +53,7 @@ const LearnContent = () => {
 				],
 			});
 		}
-	}, [isLoading, word]);
+	}, [completionSummary, isLoading, word]);
 
 	const handleDecision = (remember: boolean) => {
 		if (!word) return;
@@ -51,7 +63,7 @@ const LearnContent = () => {
 		});
 	};
 
-	if (isLoading && !word) {
+	if (isLoading && !word && !completionSummary) {
 		return (
 			<div className="flex h-full items-center justify-center p-4">
 				<Spinner size="l" />
@@ -67,6 +79,17 @@ const LearnContent = () => {
 					{i18n.retry}
 				</Button>
 			</div>
+		);
+	}
+
+	if (completionSummary) {
+		return (
+			<LearnCompletionSummary
+				before={beforeStats}
+				after={completionSummary.stats}
+				sessionWordCount={sessionWordCount}
+				onClose={() => webApp?.close()}
+			/>
 		);
 	}
 
@@ -86,9 +109,7 @@ const LearnContent = () => {
 				<Button
 					size="l"
 					className="mt-8 w-full max-w-xs"
-					onClick={() => {
-						webApp?.close();
-					}}
+					onClick={() => webApp?.close()}
 				>
 					{i18n.close}
 				</Button>
@@ -97,12 +118,12 @@ const LearnContent = () => {
 	}
 
 	return (
-		<div className="flex flex-col h-full p-4">
-			<Title level="1" weight="2" className="text-center mb-6">
+		<div className="flex h-full flex-col p-4">
+			<Title level="1" weight="2" className="mb-6 text-center">
 				{i18n.learn}
 			</Title>
 
-			<div className="flex-1 flex flex-col justify-center min-h-0">
+			<div className="flex min-h-0 flex-1 flex-col justify-center">
 				<WordCard
 					word={word}
 					revealed={revealed}
@@ -110,13 +131,13 @@ const LearnContent = () => {
 				/>
 			</div>
 
-			<div className="text-center my-4">
-				<Caption weight="1" caps className="text-gray-800 tracking-widest">
+			<div className="my-4 text-center">
+				<Caption weight="1" caps className="tracking-widest text-gray-800">
 					{i18n.doYouRemember}
 				</Caption>
 			</div>
 
-			<div className="flex gap-4 pb-4 shrink-0">
+			<div className="shrink-0 gap-4 pb-4 flex">
 				<Button
 					stretched
 					size="l"

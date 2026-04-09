@@ -16,6 +16,7 @@ import {
   deleteWord,
   addNewWord,
   updateWord,
+  getNormalizedWordsStats,
 } from '../../repo/words.js';
 import * as OpenAIExamplesService from '../../services/openAIExamples.js';
 import * as OpenAIImageQueryPlanner from '../../services/openAIImageQueryPlanner.js';
@@ -208,6 +209,14 @@ export class WordService {
     if (!user) return new Error(`User not found for chatID: ${chatID}`);
 
     return getRandomWordByUserIDForLearn(user._id, this.logger);
+  }
+
+  async getLearnSummary(chatID: number): Promise<Record<string, number> | Error> {
+    const user = await getUserByChatID(chatID, this.logger);
+    if (user instanceof Error) return user;
+    if (!user) return new Error(`User not found for chatID: ${chatID}`);
+
+    return getNormalizedWordsStats(user._id, this.logger);
   }
 
   async updateLearnWordProgress(

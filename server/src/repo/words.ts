@@ -15,6 +15,8 @@ const Progress = {
   Learned: 'Learned',
 };
 
+type ProgressKey = typeof Progress[keyof typeof Progress];
+
 const ProgressOrder = [
   Progress.HaveProblems,
   Progress.HaveToPayAttention,
@@ -379,6 +381,13 @@ const getSpelcheckSuggestions = executionTime(
       }
     });
 
+const normalizeProgressStats = (stats: Record<string, number>): Record<ProgressKey, number> => {
+  return ProgressOrder.reduce((acc, progress) => {
+    acc[progress as ProgressKey] = stats[progress] || 0;
+    return acc;
+  }, {} as Record<ProgressKey, number>);
+};
+
 const getWordsStats = executionTime(
     'getWordsStats',
     async (userID: string, logger: Logger): Promise<Error | Record<string, number>> => {
@@ -413,6 +422,14 @@ const getWordsStats = executionTime(
       }
     });
 
+const getNormalizedWordsStats = executionTime(
+    'getNormalizedWordsStats',
+    async (userID: string, logger: Logger): Promise<Error | Record<ProgressKey, number>> => {
+      const stats = await getWordsStats(userID, logger);
+      if (stats instanceof Error) return stats;
+      return normalizeProgressStats(stats);
+    });
+
 
 export {
   ProgressOrder,
@@ -424,6 +441,7 @@ export {
   getRandomWordByUserIDForLearn,
   getDueLearnWordCountByUserID,
   getSpelcheckSuggestions,
+  getNormalizedWordsStats,
   setWordProgress,
   setWordTelegramAudioID,
   setWordAsRevisedByWordID,
