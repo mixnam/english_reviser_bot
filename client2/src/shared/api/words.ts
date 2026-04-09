@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { apiFetch } from "./client";
-import { type Word, WordSchema } from "./types";
+import {
+	type LearnSummary,
+	LearnSummarySchema,
+	type Word,
+	WordSchema,
+} from "./types";
 
 const SuccessResponseSchema = z.object({ success: z.boolean() });
 const SimilarWordsResponseSchema = z.object({ words: z.array(z.string()) });
@@ -45,6 +50,19 @@ export const getLearnWord = async (initData: string, chatID: string) => {
 	if (!response) return null;
 	const json = await response.json();
 	return WordSchema.nullable().parse(json);
+};
+
+export const getLearnSummary = async (
+	initData: string,
+	chatID: string,
+): Promise<LearnSummary | null> => {
+	const response = await apiFetch(
+		`/chat/${chatID}/word/learn-summary`,
+		initData,
+	);
+	if (!response) return null;
+	const json = await response.json();
+	return LearnSummarySchema.parse(json);
 };
 
 export const updateLearnProgress = async (

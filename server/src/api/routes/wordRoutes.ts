@@ -22,6 +22,19 @@ export const wordRoutes = async (
     handler: wordController.getRandomLearnWord,
   });
 
+  fastify.get('/chat/:chat_id/word/learn-summary', {
+    schema: {
+      params: {
+        type: 'object',
+        properties: {
+          chat_id: {type: 'string'},
+        },
+        required: ['chat_id'],
+      },
+    },
+    handler: wordController.getLearnSummary,
+  });
+
   fastify.post('/chat/:chat_id/word/:word_id/learn-progress', {
     schema: {
       params: {
