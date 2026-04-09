@@ -30,6 +30,10 @@ export const translations = {
 		retry: "Retry",
 		similarWords: "You have some similar words: ",
 		deleteConfirm: "Are you sure you want to delete this word?",
+		studiedWordsCountPrefix: "You studied ",
+		studiedWordsCountSuffix: " words this session",
+		progressTitle: "Progress",
+		wordsCount: "words",
 		progress: {
 			haveProblems: "Have problems",
 			payAttention: "Have to pay attention",
@@ -71,6 +75,10 @@ export const translations = {
 		retry: "Tentar novamente",
 		similarWords: "Você tem algumas palavras semelhantes: ",
 		deleteConfirm: "Tem certeza de que deseja excluir esta palavra?",
+		studiedWordsCountPrefix: "Você estudou ",
+		studiedWordsCountSuffix: " palavras nesta sessão",
+		progressTitle: "Progresso",
+		wordsCount: "palavras",
 		progress: {
 			haveProblems: "Com problemas",
 			payAttention: "Prestar atenção",

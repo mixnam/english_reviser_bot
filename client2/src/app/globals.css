@@ -12,6 +12,23 @@
   --font-mono: var(--font-geist-mono);
 }
 
+@layer base {
+  @property --num {
+    syntax: '<integer>';
+    initial-value: 0;
+    inherits: false;
+  }
+}
+
+@layer utilities {
+  .counter-reset {
+    counter-reset: num var(--num);
+  }
+  .counter-content::after {
+    content: counter(num);
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

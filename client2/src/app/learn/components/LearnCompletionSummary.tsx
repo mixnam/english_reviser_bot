@@ -64,21 +64,29 @@ export const LearnCompletionSummary = ({
 }) => {
 	const [animateAfter, setAnimateAfter] = useState(false);
 	useEffect(() => {
-		const t = window.setTimeout(() => setAnimateAfter(true), 50);
+		const t = window.setTimeout(() => setAnimateAfter(true), 500);
 		return () => window.clearTimeout(t);
 	}, []);
 
-	const rows = useMemo(
-		() =>
-			progressOrder.map((key) => ({
-				key,
-				label: bucketLabel[key],
-				color: bucketColor[key],
-				before: before?.[key] || 0,
-				after: after[key] || 0,
-			})),
-		[after, before],
-	);
+	const rows = useMemo(() => {
+		const maxBucketAfter = Object.entries(after).reduce(
+			(res, [key, val]) => (key === "Learned" ? res : Math.max(res, val)),
+			0,
+		);
+
+		const rows = progressOrder.map((key) => ({
+			key,
+			label: bucketLabel[key],
+			color: bucketColor[key],
+			before: before?.[key] || 0,
+			after: after[key] || 0,
+			progressAfter: ((after[key] || 0) / maxBucketAfter) * 100,
+			progressBefore: ((before?.[key] || 0) / maxBucketAfter) * 100,
+		}));
+
+		return rows;
+	}, [after, before]);
+
 	const beforeProgress = weightedProgress(before || after);
 	const afterProgress = weightedProgress(after);
 
@@ -100,11 +108,13 @@ export const LearnCompletionSummary = ({
 					{i18n.congrats}
 				</Title>
 				<Caption className="mt-2 text-center">
-					You studied {sessionWordCount} words this session
+					{i18n.studiedWordsCountPrefix}
+					{sessionWordCount}
+					{i18n.studiedWordsCountSuffix}
 				</Caption>
 				<div className="mt-4">
 					<div className="flex justify-between text-sm mb-2">
-						<span>Progress</span>
+						<span>{i18n.progressTitle}</span>
 						<span>
 							{beforeProgress}% → {afterProgress}%
 						</span>
@@ -138,19 +148,33 @@ export const LearnCompletionSummary = ({
 							<div className="flex items-center justify-between gap-3">
 								<div>
 									<div className="font-medium">{row.label}</div>
-									<div className="text-xs text-gray-500">{row.after} words</div>
+									<div className="text-xs text-gray-500">
+										{row.after} {i18n.wordsCount}
+									</div>
 								</div>
-								<div
-									className={`rounded-full px-2 py-1 text-xs font-semibold ${delta > 0 ? "bg-emerald-100 text-emerald-700" : delta < 0 ? "bg-rose-100 text-rose-700" : "bg-slate-100 text-slate-700"}`}
-								>
-									{delta > 0 ? `+${delta}` : delta}
+								<div className="flex flex-row items-center gap-1">
+									{delta > 0 && (
+										<div
+											className={`rounded-full p-1 text-xs bg-green-100 text-green-600 transition-opacity duration-1000 ${animateAfter ? "opacity-100" : "opacity-0"} `}
+										>
+											+{delta}
+										</div>
+									)}
+									<div
+										style={{
+											"--num": animateAfter ? row.after : row.before,
+										}}
+										className={`rounded-full px-2 py-1 text-xs font-semibold bg-slate-100 text-slate-700 transition-[--num] duration-1000 counter-reset counter-content`}
+									></div>
 								</div>
 							</div>
 							<div className="mt-3 h-2 rounded-full bg-slate-200 overflow-hidden">
 								<div
 									className={`h-full ${row.color} transition-all duration-700 ease-out`}
 									style={{
-										width: animateAfter ? `${row.after}%` : `${row.before}%`,
+										width: animateAfter
+											? `${row.progressAfter}%`
+											: `${row.progressBefore}%`,
 									}}
 								/>
 							</div>
