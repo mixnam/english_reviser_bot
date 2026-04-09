@@ -6,7 +6,7 @@ import {
 	Placeholder,
 	Title,
 } from "@telegram-apps/telegram-ui";
-import { useEffect, useMemo, useState } from "react";
+import { CSSProperties, useEffect, useMemo, useState } from "react";
 import type { ProgressStats } from "@/shared/api/types";
 import { i18n } from "@/shared/lib/i18n";
 
@@ -161,9 +161,11 @@ export const LearnCompletionSummary = ({
 										</div>
 									)}
 									<div
-										style={{
-											"--num": animateAfter ? row.after : row.before,
-										}}
+										style={
+											{
+												"--num": animateAfter ? row.after : row.before,
+											} as CSSProperties
+										}
 										className={`rounded-full px-2 py-1 text-xs font-semibold bg-slate-100 text-slate-700 transition-[--num] duration-1000 counter-reset counter-content`}
 									></div>
 								</div>
