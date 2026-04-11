@@ -84,11 +84,11 @@ ${renderWordWithCustomStatus(word, mapWordProgressToStatus[word.Progress])}`,
     renderDoYouWantToAddContext: () => escapeMarkdown('Quer adicionar algum contexto (por exemplo, significado, uso, etc.) a esta palavra?'),
     renderSuggestedExampleQuestion: (example) => `Posso sugerir esta frase de exemplo:
 "${escapeMarkdown(example)}"
-Quer usá\-la? Toque em 'Sim' para aceitá\-la ou em 'Não' para escrever seu próprio exemplo`,
+Quer usá\\-la? Toque em 'Sim' para aceitá\\-la ou em 'Não' para escrever seu próprio exemplo`,
     renderDoYouWantToAddPicture: () => 'Quer adicionar alguma imagem a esta palavra?',
-    renderYouAreAddingExistingWord: (word) => `Está adicionando a seguinte palavra \- __${word}__
-Já existem palavras semelhantes em sua lista de palavras\. Esqueceu delas? 
-Clique na palavra correta para movê\-la para o estado 'Tem Problemas', ou clique em 'Continuar' se estiver adicionando uma nova palavra`,
+    renderYouAreAddingExistingWord: (word) => `Está adicionando a seguinte palavra \\- __${word}__
+Já existem palavras semelhantes em sua lista de palavras\\. Esqueceu delas? 
+Clique na palavra correta para movê\\-la para o estado 'Tem Problemas', ou clique em 'Continuar' se estiver adicionando uma nova palavra`,
     renderYouJustAddedNewWord: (word) => `Acabou de adicionar uma nova palavra 🎉: 
 ${renderWordWithCustomStatus(word)}`,
     renderNoWordsFound: () => 'Ainda não tem palavras.',
