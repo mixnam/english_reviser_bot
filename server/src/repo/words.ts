@@ -66,6 +66,14 @@ const learnEligibilityMatch = (userID: string) => ({
   ],
 });
 
+const reviseEligibilityMatch = (userID: string) => ({
+  userID,
+  'Progress': Progress.Learned,
+  'Last Revised': {
+    $lt: minusDaysFromNow(ProgressTimeSpace[Progress.Learned]),
+  },
+});
+
 export type Word = {
   _id: string;
   userID: string;
@@ -170,13 +178,7 @@ const getRandomWordByUserIDForRevise = executionTime(
 
       const result = words.aggregate([
         {
-          $match: {
-            userID,
-            'Progress': Progress.Learned,
-            'Last Revised': {
-              $lt: minusDaysFromNow(ProgressTimeSpace[Progress.Learned]),
-            },
-          },
+          $match: reviseEligibilityMatch(userID),
         },
         {
           $sample: {
@@ -222,6 +224,19 @@ const getDueLearnWordCountByUserID = executionTime(
         return await words.countDocuments(learnEligibilityMatch(userID));
       } catch (err) {
         return new Error(`[repo][getDueLearnWordCountByUserID] - ${err}`);
+      }
+    });
+
+const getDueReviseWordCountByUserID = executionTime(
+    'getDueReviseWordCountByUserID',
+    async (userID: string, logger: Logger): Promise<number | Error> => {
+      const db = await getDb(logger);
+      const words = db.collection(WORD_COLLECTION_NAME);
+
+      try {
+        return await words.countDocuments(reviseEligibilityMatch(userID));
+      } catch (err) {
+        return new Error(`[repo][getDueReviseWordCountByUserID] - ${err}`);
       }
     });
 
@@ -440,6 +455,7 @@ export {
   getRandomWordByUserIDForRevise,
   getRandomWordByUserIDForLearn,
   getDueLearnWordCountByUserID,
+  getDueReviseWordCountByUserID,
   getSpelcheckSuggestions,
   getNormalizedWordsStats,
   setWordProgress,

@@ -13,7 +13,8 @@
     "check-types": "tsc --noEmit",
     "build": "tsc",
     "tmp": "tsx ./scripts/testImageQueryPlanner.ts",
-    "image:harness": "tsx ./scripts/reviewPr42ImageHarness.ts"
+    "image:harness": "tsx ./scripts/reviewPr42ImageHarness.ts",
+    "notify:revise-words": "tsx ./src/jobs/reviseWordNotifications.ts"
   },
   "author": "",
   "license": "ISC",

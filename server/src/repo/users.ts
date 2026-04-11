@@ -25,6 +25,7 @@ export type User = {
     dueWordsEnabled?: boolean;
     dueWordsCadenceDays?: number;
     lastDueWordsNotificationAt?: Date;
+    lastReviseWordsNotificationAt?: Date;
   };
 }
 
@@ -155,6 +156,42 @@ const getUsersEligibleForDueWordNotification = executionTime(
       }
     });
 
+const getUsersEligibleForReviseWordNotification = executionTime(
+    'getUsersEligibleForReviseWordNotification',
+    async (now: Date, logger: Logger): Promise<User[] | Error> => {
+      const db = await getDb(logger);
+      const users = db.collection('users');
+      try {
+        const cursor = users.find({
+          chatID: {$exists: true, $ne: null},
+          $or: [
+            {'notificationSettings.dueWordsEnabled': {$exists: false}},
+            {'notificationSettings.dueWordsEnabled': true},
+          ],
+          $expr: {
+            $let: {
+              vars: {
+                cadence: {$ifNull: ['$notificationSettings.dueWordsCadenceDays', 2]},
+                lastSent: '$notificationSettings.lastReviseWordsNotificationAt',
+              },
+              in: {
+                $or: [
+                  {$eq: ['$$lastSent', null]},
+                  {$lte: [
+                    {'$dateAdd': {startDate: '$$lastSent', unit: 'day', amount: '$$cadence'}},
+                    now,
+                  ]},
+                ],
+              },
+            },
+          },
+        });
+        return await cursor.toArray() as unknown as User[];
+      } catch (err) {
+        return new Error(`[repo][getUsersEligibleForReviseWordNotification] - ${err}`);
+      }
+    });
+
 const setUserDueWordsNotificationSent = executionTime(
     'setUserDueWordsNotificationSent',
     async (userID: string, sentAt: Date, logger: Logger): Promise<Error | null> => {
@@ -168,6 +205,19 @@ const setUserDueWordsNotificationSent = executionTime(
       }
     });
 
+const setUserReviseWordsNotificationSent = executionTime(
+    'setUserReviseWordsNotificationSent',
+    async (userID: string, sentAt: Date, logger: Logger): Promise<Error | null> => {
+      const db = await getDb(logger);
+      const users = db.collection('users');
+      try {
+        await users.findOneAndUpdate({_id: new ObjectId(userID)}, {$set: {'notificationSettings.lastReviseWordsNotificationAt': sentAt}});
+        return null;
+      } catch (err) {
+        return new Error(`[repo][setUserReviseWordsNotificationSent] - ${err}`);
+      }
+    });
+
 
 export {
   addNewUser,
@@ -175,5 +225,7 @@ export {
   setUserState,
   setUserStepID,
   getUsersEligibleForDueWordNotification,
+  getUsersEligibleForReviseWordNotification,
   setUserDueWordsNotificationSent,
+  setUserReviseWordsNotificationSent,
 };
