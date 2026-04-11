@@ -23,9 +23,9 @@ jobs:
       matrix:
         job:
           - name: notify-due-words
-            command: yarn run notify:due-words:prod
+            command: yarn,run,notify:due-words:prod
           - name: notify-revise-words
-            command: yarn run notify:revise-words:prod
+            command: yarn,run,notify:revise-words:prod
 
     permissions:
       contents: read
@@ -50,5 +50,5 @@ jobs:
           gcloud run jobs deploy ${{ matrix.job.name }} \
             --source ${{ env.SERVER_PATH }} \
             --region ${{ env.REGION }} \
-            --command "${{ matrix.job.command }}" \
+            --command ${{ matrix.job.command }} \
             --max-retries 3
