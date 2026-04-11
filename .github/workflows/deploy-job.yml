@@ -1,28 +1,35 @@
-name: Deploy Scheduled Google Cloud Job
+name: Deploy Scheduled Google Cloud Jobs
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'server/src/jobs/**'
+      - 'server/src/**'
+      - 'server/Dockerfile'
+      - '.github/workflows/deploy-job.yml'
   workflow_dispatch:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  REGION: europe-west1 
-  REPO_NAME: pt-revise-word
-  IMAGE_NAME: notify-due-words
-  SERVICE_NAME: notify-due-words
+  REGION: europe-west1
   SERVER_PATH: server/
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        job:
+          - name: notify-due-words
+            command: yarn run notify:due-words
+          - name: notify-revise-words
+            command: yarn run notify:revise-words
+
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout repository
@@ -33,15 +40,16 @@ jobs:
         uses: google-github-actions/auth@v3
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }} 
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Deploy Cloud Run Job
         run: |
-          gcloud run jobs deploy ${{ env.SERVICE_NAME }} \
+          gcloud run jobs deploy ${{ matrix.job.name }} \
             --source ${{ env.SERVER_PATH }} \
             --region ${{ env.REGION }} \
+            --command "${{ matrix.job.command }}" \
             --set-env-vars="PINO_LOG_LEVEL=info" \
             --max-retries 3
