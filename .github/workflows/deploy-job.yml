@@ -23,9 +23,9 @@ jobs:
       matrix:
         job:
           - name: notify-due-words
-            command: yarn run notify:due-words
+            command: yarn run notify:due-words:prod
           - name: notify-revise-words
-            command: yarn run notify:revise-words
+            command: yarn run notify:revise-words:prod
 
     permissions:
       contents: read

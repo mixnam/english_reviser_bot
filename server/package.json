@@ -8,13 +8,15 @@
     "telegram": "tsx dev.ts --bot | pino-pretty",
     "api": "tsx dev.ts --api",
     "notify:due-words": "tsx ./src/jobs/dueWordNotifications.ts",
+    "notify:due-words:prod": "node ./dist/src/jobs/dueWordNotifications.js",
     "webhook:off": "node ./scripts/removeWebhook.js",
     "webhook:on": "node ./scripts/setWebhook.js",
     "check-types": "tsc --noEmit",
     "build": "tsc",
     "tmp": "tsx ./scripts/testImageQueryPlanner.ts",
     "image:harness": "tsx ./scripts/reviewPr42ImageHarness.ts",
-    "notify:revise-words": "tsx ./src/jobs/reviseWordNotifications.ts"
+    "notify:revise-words": "tsx ./src/jobs/reviseWordNotifications.ts",
+    "notify:revise-words:prod": "node ./dist/src/jobs/reviseWordNotifications.js"
   },
   "author": "",
   "license": "ISC",
