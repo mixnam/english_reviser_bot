@@ -51,5 +51,4 @@ jobs:
             --source ${{ env.SERVER_PATH }} \
             --region ${{ env.REGION }} \
             --command "${{ matrix.job.command }}" \
-            --set-env-vars="PINO_LOG_LEVEL=info" \
             --max-retries 3
