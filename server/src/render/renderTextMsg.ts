@@ -52,8 +52,8 @@ ${renderWordWithCustomStatus(word, mapWordProgressToStatus[word.Progress])}`,
 "${escapeMarkdown(example)}"
 Do you want to use it? Tap 'Yes' to keep it or 'No' to write your own example`,
     renderDoYouWantToAddPicture: () => 'Do you want to add any picture to this word?',
-    renderYouAreAddingExistingWord: (word) => `You're adding the following word \- __${word}__
-There are already some similar words in your word list\. Did you forget about them? 
+    renderYouAreAddingExistingWord: (word) => `You're adding the following word \\- __${word}__
+There are already some similar words in your word list\\. Did you forget about them? 
 Click on the correct word to move it to the 'Have Problems' state, or click 'Continue' if you are adding new word`,
     renderYouJustAddedNewWord: (word) => `You just added new word 🎉: 
 ${renderWordWithCustomStatus(word)}`,
@@ -75,9 +75,9 @@ Volte e repita amanhã!`,
     renderYouHaveRevised_N_Words: (wordCount) => `Revisou ${wordCount} palavras hoje`,
     renderNoIdea: () => 'Não faço ideia do que quer de mim',
     renderSendMeContextForThisWord: () => escapeMarkdown('Envie-me um contexto (por exemplo, significado, uso, etc.) para esta palavra'),
-    renderSendMePictureForThisWord: () => 'Envie\-me uma imagem para esta palavra',
-    renderSendMeWordToAdd: () => 'Envie\-me uma palavra que deseja adicionar',
-    renderSendMeTranslationForThisWord: () => 'Envie\-me a tradução para esta palavra',
+    renderSendMePictureForThisWord: () => 'Envie\\-me uma imagem para esta palavra',
+    renderSendMeWordToAdd: () => 'Envie\\-me uma palavra que deseja adicionar',
+    renderSendMeTranslationForThisWord: () => 'Envie\\-me a tradução para esta palavra',
     renderYouAreNotMyMaster: () => 'Não é meu mestre, não sou seu escravo',
     renderYouHaveMovedThisWordBackToStady: (word) => `Moveu esta palavra de volta para a lista de aprendizado
 ${renderWordWithCustomStatus(word, mapWordProgressToStatus[word.Progress])}`,
