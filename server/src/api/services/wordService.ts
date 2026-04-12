@@ -289,10 +289,6 @@ export class WordService {
               this.logger,
           );
 
-          if (existingWord.ImageURL) {
-            await GoogleCloudStorage.getInstance().deleteFile(existingWord.ImageURL, this.logger);
-          }
-
           word.ImageURL = finalImageUrl;
         }
       }
