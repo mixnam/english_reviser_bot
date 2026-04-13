@@ -16,7 +16,7 @@ interface WordCardProps {
 	word: Word;
 	revealed: boolean;
 	onReveal: () => void;
-	onEditClick: (word: Word) => void;
+	onEditClick?: (word: Word) => void;
 }
 
 const progressShadowMap: Record<string, string> = {
@@ -54,15 +54,17 @@ export const WordCard = ({
 		>
 			<Card className="w-full h-full overflow-hidden relative flex-1 min-h-0 p-0">
 				<div className="flex flex-col w-full h-full absolute inset-0">
-					<div className="absolute top-4 right-4 z-10">
-						<IconButton
-							size="s"
-							mode="bezeled"
-							onClick={() => onEditClick(word)}
-						>
-							<EditIcon size={20} />
-						</IconButton>
-					</div>
+					{onEditClick && (
+						<div className="absolute top-4 right-4 z-10">
+							<IconButton
+								size="s"
+								mode="bezeled"
+								onClick={() => onEditClick(word)}
+							>
+								<EditIcon size={20} />
+							</IconButton>
+						</div>
+					)}
 					{word.ImageURL && (
 						<div
 							className={`w-full bg-gray-50 relative transition-all duration-500 ease-in-out overflow-hidden flex-1 min-h-[120px]`}

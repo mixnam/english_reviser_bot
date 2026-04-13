@@ -44,10 +44,13 @@ class AddNewWordSubbmit extends Step {
       renderYouJustAddedNewWord(newWord),
       null,
       audio,
-      async (fileID) =>
+      async (fileID: string): Promise<null> =>
         setWordTelegramAudioID(newWordID, fileID, logger)
-            .then(() => null)
-            .catch((err) => logger.error(err)),
+            .then((): null => null)
+            .catch((err): null => {
+              logger.error(err);
+              return null;
+            }),
       newWord.TelegramPictureID ?? null,
     ];
   };

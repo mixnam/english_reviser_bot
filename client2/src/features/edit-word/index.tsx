@@ -75,6 +75,7 @@ const EditWordPageContent = ({
 			defaultValues={defaultValues}
 			onSubmit={onSubmit}
 			onDelete={onDelete}
+			onBack={onClose}
 			disabled={isLoading}
 		/>
 	);

@@ -87,7 +87,8 @@ class AddWordCommand extends WebAppCommand<AddWordMsg> {
         };
 
         try {
-          const fileExtension = MIME_TYPES_TO_EXTENSION[imageResponse.headers['content-type']];
+          const contentType = imageResponse.headers['content-type'] as string;
+          const fileExtension = (MIME_TYPES_TO_EXTENSION as Record<string, string>)[contentType];
           if (!fileExtension) {
             this.logger.error(
                 {contentType: imageResponse.headers['content-type']},
@@ -143,7 +144,7 @@ class AddWordCommand extends WebAppCommand<AddWordMsg> {
 
       if (msg.voice) {
         setWordTelegramAudioID(result, msg.voice.file_id, this.logger)
-            .then(() => null)
+            .then((): null => null)
             .catch((err) => this.logger.error(err));
       }
     } catch (err) {

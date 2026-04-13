@@ -21,6 +21,7 @@ import { useSimilarWordsCheck } from "@/shared/hooks/useSimilarWordsCheck";
 import { i18n } from "@/shared/lib/i18n";
 import { ImagePreview } from "@/shared/ui/ImagePreview";
 import { ReloadIcon } from "@/shared/ui/ReloadIcon";
+import { BackIcon } from "@/shared/ui/BackIcon";
 
 export const WordFormDataSchema = z.object({
 	word: z.string().min(1, i18n.wordRequired),
@@ -174,10 +175,22 @@ export const WordForm = ({
 			className="w-full h-full flex flex-col p-4"
 			onSubmit={handleSubmit(onSubmit)}
 		>
-			{/* TODO if onBack, then render back icon on the left top corrner on the same row with title */}
-			<Title className="text-center pb-5" level="1" weight="2">
-				{title}
-			</Title>
+			<div className="relative flex items-center justify-center pb-5">
+				{onBack && (
+					<IconButton
+						size="s"
+						mode="plain"
+						type="button"
+						onClick={onBack}
+						className="absolute left-0"
+					>
+						<BackIcon size={24} />
+					</IconButton>
+				)}
+				<Title level="1" weight="2">
+					{title}
+				</Title>
+			</div>
 
 			<List>
 				<input
