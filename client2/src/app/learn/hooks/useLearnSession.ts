@@ -22,12 +22,20 @@ type State =
 			summary: LearnSummary;
 			before: ProgressStats | null;
 			sessionWordCount: number;
+	  }
+	| {
+			type: "editing";
+			word: Word;
+			sessionWordCount: number;
+			before: ProgressStats | null;
 	  };
 
 type Payload = (
 	| { type: "init" }
 	| { type: "mark_word"; wordID: string; remember: boolean }
 	| { type: "reveal_word" }
+	| { type: "edit_word" }
+	| { type: "continue_learn"; word: Word | null }
 ) & {
 	initData: string;
 	chatId: string;
@@ -60,6 +68,7 @@ const useLearnSessionReducer = async (
 				case "no_words":
 				case "error":
 				case "completed":
+				case "editing":
 					return state;
 				case "word":
 					return { ...state, revealed: true };
@@ -99,6 +108,71 @@ const useLearnSessionReducer = async (
 				before: state.type === "word" ? state.before : null,
 			};
 		}
+		case "edit_word": {
+			switch (state.type) {
+				case "init":
+				case "no_words":
+				case "error":
+				case "completed":
+				case "editing":
+					return state;
+				case "word":
+					return {
+						type: "editing",
+						word: state.word,
+						sessionWordCount: state.sessionWordCount,
+						before: state.before,
+					};
+			}
+			return state;
+		}
+		case "continue_learn": {
+			switch (state.type) {
+				case "init":
+				case "no_words":
+				case "error":
+				case "word":
+				case "completed":
+					return state;
+				case "editing": {
+					if (payload.word) {
+						return {
+							type: "word",
+							word: payload.word,
+							revealed: false,
+							sessionWordCount: state.sessionWordCount,
+							before: state.before,
+						};
+					}
+					const nextWord = await getLearnWord(payload.initData, payload.chatId);
+					if (nextWord) {
+						return {
+							type: "word",
+							word: nextWord,
+							revealed: false,
+							sessionWordCount: state.sessionWordCount,
+							before: state.before,
+						};
+					}
+					const summary = await getLearnSummary(
+						payload.initData,
+						payload.chatId,
+					);
+					if (summary) {
+						return {
+							type: "completed",
+							summary,
+							before: state.before,
+							sessionWordCount: state.sessionWordCount,
+						};
+					}
+					return {
+						type: "no_words",
+						before: state.before 
+					};
+				}
+			}
+		}
 	}
 };
 
@@ -112,32 +186,8 @@ export const useLearnSession = (initData: string, chatID: string) => {
 	}, [initData, chatID, dispatch]);
 
 	return {
-		word: state.type === "word" ? state.word : null,
-		revealed: (() => {
-			switch (state.type) {
-				case "no_words":
-				case "error":
-				case "completed":
-					return false;
-				case "word":
-					return state.revealed;
-				default:
-					return false;
-			}
-		})(),
-		isError: state.type === "error",
-		isLoading: isLoading || state.type === "init",
-		sessionWordCount:
-			state.type === "word" || state.type === "completed"
-				? state.sessionWordCount
-				: 0,
-		completionSummary: state.type === "completed" ? state.summary : null,
-		beforeStats:
-			state.type === "completed"
-				? state.before
-				: state.type === "word" || state.type === "no_words"
-					? state.before
-					: null,
+		state,
+		isLoading: isLoading,
 		revealWord: () => {
 			startTransition(() =>
 				dispatch({
@@ -146,6 +196,16 @@ export const useLearnSession = (initData: string, chatID: string) => {
 					chatId: chatID,
 				}),
 			);
+		},
+		editWord: () => {
+			startTransition(() => {
+				dispatch({ type: "edit_word", initData, chatId: chatID });
+			});
+		},
+		continueLearn: (word: Word | null) => {
+			startTransition(() => {
+				dispatch({ type: "continue_learn", word, initData, chatId: chatID });
+			});
 		},
 		submitDecision: (wordID: string, remember: boolean) =>
 			startTransition(() =>

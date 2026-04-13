@@ -16,7 +16,7 @@ const main = async () => {
   const words = db.collection(WORD_COLLECTION_NAME);
 
   const filter = {
-    Audio: {$exists: true, $ne: null},
+    Audio: {$exists: true, $ne: null as any},
     AudioURL: {$exists: false},
   };
 

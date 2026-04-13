@@ -37,7 +37,7 @@ const main = async () => {
   const words = db.collection(WORD_COLLECTION_NAME);
 
   const filter = {
-    TelegramPictureID: {$exists: true, $ne: null},
+    TelegramPictureID: {$exists: true, $ne: null as any},
     ImageURL: {$exists: false},
   };
 

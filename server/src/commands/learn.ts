@@ -4,6 +4,7 @@ import {Command} from './command.js';
 import {
   getRandomWordByUserIDForLearn,
   ProgressOrder,
+  Progress,
   getWordByID,
   setWordProgress,
   setWordTelegramAudioID,
@@ -219,8 +220,7 @@ class LearnCommand extends Command {
         (i) => i === word.Progress,
     );
 
-    // TODO :: define this as a Progress
-    let nextProgress;
+    let nextProgress: typeof Progress[keyof typeof Progress];
     if (data.remember) {
       nextProgress = ProgressOrder[currentProgressIdx + 1] ?? word.Progress;
     } else {

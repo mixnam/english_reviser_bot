@@ -48,9 +48,9 @@ const normalizeLanguageCode = (languageCode?: string): 'en' | 'pt' => {
  * for a given English word.
  */
 class OpenAIExamplesServiceImpl {
-  private client: OpenAI;
+  private client: OpenAI | null;
   private model: string;
-  private defaultLanguage: string;
+  private defaultLanguage: 'en' | 'pt';
 
   constructor(
       apiKey?: string,
@@ -82,7 +82,7 @@ class OpenAIExamplesServiceImpl {
     const langKey = languageCode ?
       normalizeLanguageCode(languageCode) :
       this.defaultLanguage;
-    const promptConfig = LANGUAGE_PROMPTS[langKey] ?? LANGUAGE_PROMPTS.en;
+    const promptConfig = (LANGUAGE_PROMPTS as Record<'en' | 'pt', {system: string}>)[langKey] ?? LANGUAGE_PROMPTS.en;
     try {
       const response = await this.client.responses.create({
         model: this.model,

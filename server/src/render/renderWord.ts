@@ -94,7 +94,10 @@ const renderWordsStats = (stats: Record<string, number>): string => {
 
   const reversedProgressOrder = [...ProgressOrder].reverse();
 
-  const progressWeightMap = reversedProgressOrder.reduce(({result, weight}, progress) => {
+  const progressWeightMap = reversedProgressOrder.reduce<{
+    result: Record<string, number>,
+    weight: number
+  }>(({result, weight}, progress) => {
     return {
       result: {
         ...result,
@@ -109,7 +112,7 @@ const renderWordsStats = (stats: Record<string, number>): string => {
 
   reversedProgressOrder.forEach((progress) => {
     const count = stats[progress] || 0;
-    currentWeight += count * progressWeightMap[progress];
+    currentWeight += count * (progressWeightMap[progress] ?? 0);
     if (count > 0) {
       const percentage = ((count / totalWords) * 100).toFixed(1);
       const statusLabel = mapWordProgressToStatus[progress] || progress;
