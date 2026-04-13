@@ -247,7 +247,7 @@ export class WordService {
   async editWord(
       chatID: number,
       word: Word,
-  ): Promise<void | Error> {
+  ): Promise<Word | Error> {
     const user = await getUserByChatID(chatID, this.logger);
     if (user instanceof Error) return user;
     if (!user) return new Error(`User not found for chatID: ${chatID}`);
@@ -295,6 +295,7 @@ export class WordService {
 
       const result = await updateWord(user._id, word, this.logger);
       if (result instanceof Error) throw result;
+      return word;
     } catch (err) {
       this.logger.error({err}, 'Transactional editWord failed');
       return err instanceof Error ? err : new Error(String(err));

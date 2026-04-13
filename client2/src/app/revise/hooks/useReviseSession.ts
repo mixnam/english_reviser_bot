@@ -12,6 +12,10 @@ type State =
 			type: "word";
 			word: Word;
 			revealed: boolean;
+	  }
+	| {
+			type: "editing";
+			word: Word;
 	  };
 
 type Payload = (
@@ -25,6 +29,13 @@ type Payload = (
 	  }
 	| {
 			type: "reveal_word";
+	  }
+	| {
+			type: "edit_word";
+	  }
+	| {
+			type: "continue_revise";
+			word: Word | null;
 	  }
 ) & {
 	initData: string;
@@ -53,10 +64,12 @@ const useReviseSessionReducer = async (
 				case "init":
 				case "no_words":
 				case "error":
+				case "editing":
 					return state;
 				case "word":
 					return { ...state, revealed: true };
 			}
+			return state;
 		}
 		case "mark_word": {
 			await updateReviseProgress(
@@ -65,6 +78,41 @@ const useReviseSessionReducer = async (
 				payload.wordID,
 				payload.remember,
 			);
+			const nextWord = await getReviseWord(payload.initData, payload.chatId);
+			if (nextWord) {
+				return {
+					...state,
+					type: "word",
+					word: nextWord,
+					revealed: false,
+				};
+			}
+			return { type: "no_words" };
+		}
+		case "edit_word": {
+			switch (state.type) {
+				case "init":
+				case "no_words":
+				case "error":
+				case "editing":
+					return state;
+				case "word":
+					return {
+						type: "editing",
+						word: state.word,
+					};
+			}
+			return state;
+		}
+		case "continue_revise": {
+            if (payload.word) {
+                return {
+					...state,
+					type: "word",
+					word: payload.word,
+					revealed: false,
+                }
+            }
 			const nextWord = await getReviseWord(payload.initData, payload.chatId);
 			if (nextWord) {
 				return {
@@ -89,28 +137,8 @@ export const useReviseSession = (initData: string, chatID: string) => {
 	}, [initData, chatID, dispatch]);
 
 	return {
-		word: (() => {
-			switch (state.type) {
-				case "no_words":
-				case "error":
-					return null;
-				case "word":
-					return state.word;
-			}
-		})(),
-		revealed: (() => {
-			switch (state.type) {
-				case "no_words":
-				case "error":
-					return false;
-				case "word":
-					return state.revealed;
-				default:
-					return false;
-			}
-		})(),
-		isError: state.type === "error",
-		isLoading: isLoading || state.type === "init",
+		state,
+		isLoading,
 		revealWord: () => {
 			startTransition(() =>
 				dispatch({
@@ -119,6 +147,16 @@ export const useReviseSession = (initData: string, chatID: string) => {
 					chatId: chatID,
 				}),
 			);
+		},
+		editWord: () => {
+			startTransition(() => {
+				dispatch({ type: "edit_word", initData, chatId: chatID });
+			});
+		},
+		continueRevise: (word: Word | null) => {
+			startTransition(() => {
+				dispatch({ type: "continue_revise", word, initData, chatId: chatID });
+			});
 		},
 		submitDecision: (wordID: string, remember: boolean) =>
 			startTransition(() =>

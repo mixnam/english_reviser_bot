@@ -126,7 +126,7 @@ export class WordController {
       return res.code(500).send({message: result.message});
     }
 
-    return res.code(200).send();
+    return res.code(200).send(result);
   };
   getSimilarWords = async (
       req: FastifyRequest<{

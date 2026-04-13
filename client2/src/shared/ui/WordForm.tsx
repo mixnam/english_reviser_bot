@@ -41,6 +41,7 @@ type WordFormProps = {
 	mode: "edit" | "add";
 	defaultValues?: Partial<WordFormData>;
 	onSubmit: (data: WordFormData) => void;
+	onBack?: () => void;
 	onDelete?: () => void;
 	disabled?: boolean;
 	submitError?: string;
@@ -50,6 +51,7 @@ export const WordForm = ({
 	title,
 	mode,
 	defaultValues,
+	onBack,
 	onSubmit,
 	onDelete,
 	disabled: externalDisabled,
@@ -172,6 +174,7 @@ export const WordForm = ({
 			className="w-full h-full flex flex-col p-4"
 			onSubmit={handleSubmit(onSubmit)}
 		>
+			{/* TODO if onBack, then render back icon on the left top corrner on the same row with title */}
 			<Title className="text-center pb-5" level="1" weight="2">
 				{title}
 			</Title>
