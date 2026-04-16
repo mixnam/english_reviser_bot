@@ -5,7 +5,7 @@ export const WordSchema = z.object({
 	English: z.string(),
 	Translation: z.string(),
 	Examples: z.nullable(z.string()).optional(),
-	ImageURL: z.string().optional(),
+	ImageURL: z.string().nullable(),
 	AudioURL: z.string().optional(),
 	Progress: z.string(),
 });
